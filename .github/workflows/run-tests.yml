@@ -33,5 +33,5 @@ jobs:
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: tests-report            # Name of the check run which will be created
-          path: app/build/test-results/testProdReleaseUnitTest/TEST-*.xml    # Path to test results
+          path: app/build/test-results/testDebugUnitTest/TEST-*.xml    # Path to test results
           reporter: java-junit        # Format of test results
