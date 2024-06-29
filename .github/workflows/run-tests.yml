@@ -1,0 +1,41 @@
+name: Run tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  checks: write
+
+jobs:
+  launch-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Checkout LFS files
+        run: git lfs pull
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          cache: 'gradle'
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run unit tests
+        run: ./gradlew test
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: tests-report            # Name of the check run which will be created
+          path: app/build/test-results/testProdReleaseUnitTest/TEST-*.xml    # Path to test results
+          reporter: java-junit        # Format of test results
