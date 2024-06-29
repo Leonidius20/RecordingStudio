@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         style="?attr/materialIconButtonFilledStyle"
         android:id="@+id/recordButton"
         android:layout_width="wrap_content"

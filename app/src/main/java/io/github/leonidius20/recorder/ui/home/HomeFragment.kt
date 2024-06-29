@@ -17,6 +17,7 @@ import io.github.leonidius20.recorder.ui.common.setIcon
  * to compare drawables in a test case.
  */
 const val BTN_IMG_TAG_RECORD = "record"
+const val BTN_IMG_TAG_PAUSE = "pause"
 
 class HomeFragment : Fragment() {
 
@@ -45,6 +46,14 @@ class HomeFragment : Fragment() {
 
         val recPauseButton = binding.recordButton
         recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+        recPauseButton.setOnClickListener {
+
+            if (recPauseButton.tag == BTN_IMG_TAG_PAUSE) {
+                recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+            } else {
+                recPauseButton.setIcon(R.drawable.ic_pause, BTN_IMG_TAG_PAUSE)
+            }
+        }
 
         return root
     }

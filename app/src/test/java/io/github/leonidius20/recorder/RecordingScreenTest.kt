@@ -2,9 +2,11 @@ package io.github.leonidius20.recorder
 
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
+import io.github.leonidius20.recorder.ui.home.BTN_IMG_TAG_PAUSE
 import io.github.leonidius20.recorder.ui.home.BTN_IMG_TAG_RECORD
 import io.github.leonidius20.recorder.ui.home.HomeFragment
 import org.hamcrest.core.IsEqual
@@ -32,7 +34,23 @@ class RecordingScreenTest {
                 withTagValue(IsEqual(BTN_IMG_TAG_RECORD))
             )
         )
-        // onView(withId(R.id.recordButton)).perform(click())
+
+        onView(withId(R.id.recordButton)).perform(click())
+
+        onView(withId(R.id.recordButton)).check(
+            ViewAssertions.matches(
+                withTagValue(IsEqual(BTN_IMG_TAG_PAUSE))
+            )
+        )
+
+        onView(withId(R.id.recordButton)).perform(click())
+
+        onView(withId(R.id.recordButton)).check(
+
+            ViewAssertions.matches(
+                withTagValue(IsEqual(BTN_IMG_TAG_RECORD))
+            )
+        )
     }
 
 }
