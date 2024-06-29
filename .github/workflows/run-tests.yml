@@ -17,10 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
-      - name: Checkout LFS files
-        run: git lfs pull
       - uses: actions/setup-java@v2
         with:
           java-version: 17
