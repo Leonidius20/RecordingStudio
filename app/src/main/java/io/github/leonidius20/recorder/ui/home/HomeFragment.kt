@@ -7,7 +7,16 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
+import io.github.leonidius20.recorder.ui.common.setIcon
+
+/**
+ * a tag value used to mark that the record button shows "Record" icon (as
+ * opposed to "Pause"). Used for testing purposes because it is impossible
+ * to compare drawables in a test case.
+ */
+const val BTN_IMG_TAG_RECORD = "record"
 
 class HomeFragment : Fragment() {
 
@@ -28,10 +37,15 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
+        /*val textView: TextView = binding.textHome
         homeViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
-        }
+        }*/
+
+
+        val recPauseButton = binding.recordButton
+        recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+
         return root
     }
 
@@ -40,3 +54,4 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
+
