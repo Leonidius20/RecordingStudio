@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import dagger.hilt.android.qualifiers.ActivityContext
@@ -45,9 +47,10 @@ class RecPermissionManager @Inject constructor(
 
 
     /**
+     * Checks if the recording permission is granted, and requests it if it's not.
      * @return true if the permission is granted, false otherwise
      */
-    suspend fun requestRecordingPermission(): Boolean = suspendCoroutine {
+    suspend fun checkOrRequestRecordingPermission(): Boolean = suspendCoroutine {
         when {
             ContextCompat.checkSelfPermission(
                 context,
@@ -57,21 +60,43 @@ class RecPermissionManager @Inject constructor(
                 it.resume(true)
             }
             // todo: explain to the user why the permission is needed
-            /*ActivityCompat.shouldShowRequestPermissionRationale(
+            ActivityCompat.shouldShowRequestPermissionRationale(
                 activity, android.Manifest.permission.RECORD_AUDIO) -> {
                 // In an educational UI, explain to the user why your app requires this
                 // permission for a specific feature to behave as expected, and what
                 // features are disabled if it's declined. In this UI, include a
                 // "cancel" or "no thanks" button that lets the user continue
                 // using your app without granting the permission.
-                 showInContextUI(...)
+                    AlertDialog.Builder(activity)
+                        .setTitle("Permission needed")
+                        .setMessage("This permission is needed for recording audio")
+                        .setPositiveButton("ok") { _, _ ->
+                            isPermissionGranted.observe(activity) { isGranted ->
+                                println("isGranted: $isGranted")
+                                if (isGranted) {
+                                    it.resume(true)
+                                    isPermissionGranted.removeObservers(activity)
+                                } else {
+                                    it.resume(false)
+                                    isPermissionGranted.removeObservers(activity)
+                                }
+                            }
 
-            }*/
+                            requestPermissionLauncher.launch(
+                                android.Manifest.permission.RECORD_AUDIO)
+                        }
+                        .setNegativeButton("cancel") { _, _ ->
+                            it.resume(false)
+                        }
+                        //.create()
+                        .show()
+
+            }
             else -> {
                 // You can directly ask for the permission.
                 // The registered ActivityResultCallback gets the result of this request.
 
-                val observer = isPermissionGranted.observe(activity) { isGranted ->
+                isPermissionGranted.observe(activity) { isGranted ->
                     println("isGranted: $isGranted")
                     if (isGranted) {
                         it.resume(true)
@@ -86,6 +111,22 @@ class RecPermissionManager @Inject constructor(
                     android.Manifest.permission.RECORD_AUDIO)
             }
         }
+    }
+
+    private suspend fun requestPermission(): Boolean = suspendCoroutine {
+        isPermissionGranted.observe(activity) { isGranted ->
+            println("isGranted: $isGranted")
+            if (isGranted) {
+                it.resume(true)
+                isPermissionGranted.removeObservers(activity)
+            } else {
+                it.resume(false)
+                isPermissionGranted.removeObservers(activity)
+            }
+        }
+
+        requestPermissionLauncher.launch(
+            android.Manifest.permission.RECORD_AUDIO)
     }
 
 }

@@ -5,8 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -62,7 +60,7 @@ class HomeFragment : Fragment() {
             } else {
                 lifecycleScope.launch {
                     val permissionGranted = (requireActivity() as MainActivity)
-                        .permissionManager.requestRecordingPermission()
+                        .permissionManager.checkOrRequestRecordingPermission()
 
 
                     if (permissionGranted) {
