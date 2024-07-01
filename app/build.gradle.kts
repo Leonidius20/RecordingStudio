@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -59,4 +61,7 @@ dependencies {
     testImplementation(libs.robolectric)
 
     debugImplementation(libs.androidx.fragment.testing)
+
+    implementation(libs.hilt)
+    ksp(libs.hilt.compiler)
 }
