@@ -1,19 +1,27 @@
 package io.github.leonidius20.recorder.ui.home
 
+import android.content.ContentValues
+import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.RecPermissionManager
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.common.setIcon
-import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileDescriptor
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -36,6 +44,11 @@ class HomeFragment : Fragment() {
     @Inject
     lateinit var permissionManager: RecPermissionManager
 
+    private var recorder: MediaRecorder? = null
+
+    private lateinit var descriptor: ParcelFileDescriptor
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,23 +68,54 @@ class HomeFragment : Fragment() {
 
         val recPauseButton = binding.recordButton
         recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+
+
         recPauseButton.setOnClickListener {
+            // if playing then
 
             if (recPauseButton.tag == BTN_IMG_TAG_PAUSE) {
+                recorder?.apply {
+                    stop()
+                    release()
+                }
+                recorder = null
+                descriptor.close()
                 recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
             } else {
-                lifecycleScope.launch {
+
                     val permissionGranted = permissionManager
-                        .checkOrRequestRecordingPermission(this@HomeFragment)
+                        .obtainRecordingPermission(this@HomeFragment)
+
+                // if (!recordingsDirectory.exists()) mkdirs
+
+                // todo: formatted time YYYY-MM-DD-HH-MM-SS-SSS
+                    val fileName = "${System.currentTimeMillis()}"
+
+                    descriptor = getRecFileUri(fileName)
 
 
                     if (permissionGranted) {
-                        Toast.makeText(context, "Granted", Toast.LENGTH_SHORT).show()
+
+                        recorder = MediaRecorder().apply {
+                            setAudioSource(MediaRecorder.AudioSource.MIC)
+                            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                            setOutputFile(descriptor.fileDescriptor)
+                            // todo: check what codecs there are and provide user with options
+                            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+
+                            try {
+                                prepare()
+                            } catch (e: IOException) {
+                                Log.e("Recorder", "prepare() failed")
+                            }
+
+                            start()
+                        }
+
                         recPauseButton.setIcon(R.drawable.ic_pause, BTN_IMG_TAG_PAUSE)
                     } else {
                         Toast.makeText(context, "Denied", Toast.LENGTH_SHORT).show()
                     }
-                }
 
             }
         }
@@ -87,6 +131,19 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun getRecFileUri(name: String): ParcelFileDescriptor {
+        val resolver = requireContext().contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp") // todo: other types
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
+        }
+
+        val uri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        return resolver.openFileDescriptor(uri!!, "w")!!
     }
 }
 

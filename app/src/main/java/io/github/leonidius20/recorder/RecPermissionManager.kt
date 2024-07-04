@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import dagger.hilt.android.scopes.FragmentScoped
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -42,12 +43,16 @@ class RecPermissionManager @Inject constructor(
             }
     }
 
+    fun obtainRecordingPermission(fragment: Fragment) = runBlocking {
+        checkOrRequestRecordingPermission(fragment)
+    }
+
 
     /**
      * Checks if the recording permission is granted, and requests it if it's not.
      * @return true if the permission is granted, false otherwise
      */
-    suspend fun checkOrRequestRecordingPermission(
+    private suspend fun checkOrRequestRecordingPermission(
         fragment: Fragment
     ): Boolean = suspendCoroutine {
         when {
