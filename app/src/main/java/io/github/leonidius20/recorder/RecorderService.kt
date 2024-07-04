@@ -9,19 +9,29 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
 import android.os.Build
-import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.lifecycle.MutableLiveData
 import java.io.IOException
 
 class RecorderService : Service() {
 
+    enum class State {
+        RECORDING,
+        PAUSED,
+    }
+
     private lateinit var descriptor: ParcelFileDescriptor
 
     private lateinit var recorder: MediaRecorder
+
+    private val binder = Binder()
+
+    val state = MutableLiveData<State>()
 
     override fun onCreate() {
         super.onCreate()
@@ -100,12 +110,12 @@ class RecorderService : Service() {
             start()
         }
 
+        state.value = State.RECORDING
+
         return START_NOT_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent?) = binder
 
     override fun onDestroy() {
         super.onDestroy()
@@ -115,9 +125,24 @@ class RecorderService : Service() {
         descriptor.close()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun toggleRecPause() {
+        when(state.value) {
+            State.RECORDING -> {
+                recorder.pause()
+                state.value = State.PAUSED
+            }
+            State.PAUSED -> {
+                recorder.resume()
+                state.value = State.RECORDING
+            }
+            else -> throw IllegalStateException()
+        }
+    }
 
-
-
+    fun stop() {
+        stopSelf()
+    }
 
 
     private fun getRecFileUri(name: String): ParcelFileDescriptor {
@@ -132,5 +157,13 @@ class RecorderService : Service() {
 
         return resolver.openFileDescriptor(uri!!, "w")!!
     }
+
+    inner class Binder: android.os.Binder() {
+
+        val service = this@RecorderService
+
+    }
+
+
 
 }

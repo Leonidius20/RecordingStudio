@@ -1,21 +1,22 @@
 package io.github.leonidius20.recorder.ui.home
 
+import android.content.ComponentName
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.media.MediaRecorder
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
+import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
@@ -23,9 +24,6 @@ import io.github.leonidius20.recorder.RecPermissionManager
 import io.github.leonidius20.recorder.RecorderService
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.common.setIcon
-import java.io.File
-import java.io.FileDescriptor
-import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -52,6 +50,20 @@ class HomeFragment : Fragment() {
 
     private lateinit var descriptor: ParcelFileDescriptor
 
+    private var binder: RecorderService.Binder? = null
+
+    private val isRecServiceRunning
+        get() = binder != null
+
+
+    enum class UiState {
+        IDLE,
+        RECORDING,
+        PAUSED
+    }
+
+    private val uiState = MutableLiveData<UiState>(UiState.IDLE)
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,72 +81,96 @@ class HomeFragment : Fragment() {
             textView.text = it
         }*/
 
+        uiState.observe(viewLifecycleOwner) {
+            when(it) {
+                UiState.IDLE -> {
+                    binding.recordButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+                    binding.stopButton.visibility = View.GONE
+                }
+                UiState.RECORDING -> {
+                    binding.recordButton.setIcon(R.drawable.ic_pause, BTN_IMG_TAG_PAUSE)
+                    binding.stopButton.visibility = View.VISIBLE
+                }
+                UiState.PAUSED -> {
+                    binding.recordButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+                    binding.stopButton.visibility = View.VISIBLE
+                }
+                else -> throw IllegalStateException()
+            }
+        }
+
+        val stopButton = binding.stopButton
+        stopButton.setOnClickListener {
+            requireActivity().stopService(
+                Intent(requireActivity(), RecorderService::class.java)
+            )
+            uiState.value = UiState.IDLE
+        }
+
 
         val recPauseButton = binding.recordButton
-        recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
-
-
         recPauseButton.setOnClickListener {
             // if playing then
 
-            if (recPauseButton.tag == BTN_IMG_TAG_PAUSE) {
-                /*recorder?.apply {
-                    stop()
-                    release()
+            if (isRecServiceRunning) {
+                binder!!.service.toggleRecPause()
+            } else {
+                val permissionGranted = permissionManager
+                    .obtainRecordingPermission(this@HomeFragment)
+
+                if (!permissionGranted) {
+                    Toast.makeText(context, "Denied", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
-                recorder = null
-                descriptor.close()*/
-                recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
-                requireActivity().stopService(
+
+
+
+                // if (!recordingsDirectory.exists()) mkdirs
+
+                // todo: formatted time YYYY-MM-DD-HH-MM-SS-SSS
+                /*val fileName = "${System.currentTimeMillis()}"
+
+                descriptor = getRecFileUri(fileName)*/
+
+                ActivityCompat.startForegroundService(
+                    requireActivity(),
                     Intent(requireActivity(), RecorderService::class.java)
                 )
-            } else {
 
-                    val permissionGranted = permissionManager
-                        .obtainRecordingPermission(this@HomeFragment)
-
-
-
-
-                    if (permissionGranted) {
-                        // if (!recordingsDirectory.exists()) mkdirs
-
-                        // todo: formatted time YYYY-MM-DD-HH-MM-SS-SSS
-                        /*val fileName = "${System.currentTimeMillis()}"
-
-                        descriptor = getRecFileUri(fileName)*/
-
-                        ActivityCompat.startForegroundService(
-                            requireActivity(),
-                            Intent(requireActivity(), RecorderService::class.java)
-                        )
-
-
-
-                        /*recorder = MediaRecorder().apply {
-                            setAudioSource(MediaRecorder.AudioSource.MIC)
-                            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-                            setOutputFile(descriptor.fileDescriptor)
-                            // todo: check what codecs there are and provide user with options
-                            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-                            try {
-                                prepare()
-                            } catch (e: IOException) {
-                                Log.e("Recorder", "prepare() failed")
+                requireActivity().bindService(
+                    Intent(requireActivity(), RecorderService::class.java),
+                    object: ServiceConnection {
+                        override fun onServiceConnected(
+                            name: ComponentName?,
+                            service: IBinder?
+                        ) {
+                            binder = service as RecorderService.Binder
+                            binder!!.service.state.observe(viewLifecycleOwner) {
+                                when(it) {
+                                    RecorderService.State.RECORDING -> uiState.value = UiState.RECORDING
+                                    RecorderService.State.PAUSED -> uiState.value = UiState.PAUSED
+                                    else -> throw IllegalStateException()
+                                }
                             }
+                        }
 
-                            start()
-                        }*/
+                        override fun onServiceDisconnected(name: ComponentName?) {
+                            binder!!.service.state.removeObservers(viewLifecycleOwner)
+                            // nothing?
+                        }
 
-                        // todo: recorder.maxAmplitude visalize
 
-                        recPauseButton.setIcon(R.drawable.ic_pause, BTN_IMG_TAG_PAUSE)
-                    } else {
-                        Toast.makeText(context, "Denied", Toast.LENGTH_SHORT).show()
-                    }
+                    },
+                    Context.BIND_IMPORTANT // todo: understand these values
+                )
+
+
+
+
 
             }
+
+
         }
 
         return root
