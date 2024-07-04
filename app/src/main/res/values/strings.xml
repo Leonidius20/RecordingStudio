@@ -5,4 +5,5 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="rec_pause_btn_desc">Record or Pause</string>
+    <string name="rec_service_desc">Records audio from the microphone</string>
 </resources>

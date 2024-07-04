@@ -1,6 +1,7 @@
 package io.github.leonidius20.recorder.ui.home
 
 import android.content.ContentValues
+import android.content.Intent
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
@@ -17,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.RecPermissionManager
+import io.github.leonidius20.recorder.RecorderService
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.common.setIcon
 import java.io.File
@@ -74,29 +76,37 @@ class HomeFragment : Fragment() {
             // if playing then
 
             if (recPauseButton.tag == BTN_IMG_TAG_PAUSE) {
-                recorder?.apply {
+                /*recorder?.apply {
                     stop()
                     release()
                 }
                 recorder = null
-                descriptor.close()
+                descriptor.close()*/
                 recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
+                requireActivity().stopService(
+                    Intent(requireActivity(), RecorderService::class.java)
+                )
             } else {
 
                     val permissionGranted = permissionManager
                         .obtainRecordingPermission(this@HomeFragment)
 
-                // if (!recordingsDirectory.exists()) mkdirs
 
-                // todo: formatted time YYYY-MM-DD-HH-MM-SS-SSS
-                    val fileName = "${System.currentTimeMillis()}"
-
-                    descriptor = getRecFileUri(fileName)
 
 
                     if (permissionGranted) {
+                        // if (!recordingsDirectory.exists()) mkdirs
 
-                        recorder = MediaRecorder().apply {
+                        // todo: formatted time YYYY-MM-DD-HH-MM-SS-SSS
+                        /*val fileName = "${System.currentTimeMillis()}"
+
+                        descriptor = getRecFileUri(fileName)*/
+
+                        requireActivity().startService(
+                            Intent(requireActivity(), RecorderService::class.java)
+                        )
+
+                        /*recorder = MediaRecorder().apply {
                             setAudioSource(MediaRecorder.AudioSource.MIC)
                             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
                             setOutputFile(descriptor.fileDescriptor)
@@ -110,7 +120,9 @@ class HomeFragment : Fragment() {
                             }
 
                             start()
-                        }
+                        }*/
+
+                        // todo: recorder.maxAmplitude visalize
 
                         recPauseButton.setIcon(R.drawable.ic_pause, BTN_IMG_TAG_PAUSE)
                     } else {
