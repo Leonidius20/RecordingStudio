@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:name=".RecorderApp"
@@ -30,6 +32,7 @@
             android:name=".RecorderService"
             android:exported="false"
             android:description="@string/rec_service_desc"
+            android:foregroundServiceType="microphone"
             />
     </application>
 

@@ -13,6 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
@@ -102,9 +104,12 @@ class HomeFragment : Fragment() {
 
                         descriptor = getRecFileUri(fileName)*/
 
-                        requireActivity().startService(
+                        ActivityCompat.startForegroundService(
+                            requireActivity(),
                             Intent(requireActivity(), RecorderService::class.java)
                         )
+
+
 
                         /*recorder = MediaRecorder().apply {
                             setAudioSource(MediaRecorder.AudioSource.MIC)

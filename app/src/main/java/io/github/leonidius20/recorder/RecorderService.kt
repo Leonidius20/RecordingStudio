@@ -1,13 +1,20 @@
 package io.github.leonidius20.recorder
 
+import android.app.ForegroundServiceStartNotAllowedException
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import java.io.IOException
 
 class RecorderService : Service() {
@@ -21,6 +28,58 @@ class RecorderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel.
+            val name = "Recording in progress"
+            val descriptionText = "Recording in progress"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val mChannel = NotificationChannel("io.github.leonidius20.recorder.inprogress", name, importance)
+            mChannel.description = descriptionText
+            // Register the channel with the system. You can't change the importance
+            // or other notification behaviors after this.
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(mChannel)
+        }
+
+        val notification = NotificationCompat.Builder(this, "io.github.leonidius20.recorder.inprogress")
+            // Create the notification to display while the service is running
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_microphone)
+            .setContentTitle("Recording in progress")
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+
+        val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
+
+
+        try {
+            /*startForeground(
+                100,
+                notification,
+                foregroundServiceType
+            )*/
+            ServiceCompat.startForeground(
+                this, 100,
+                notification, foregroundServiceType
+            )
+        } catch (e: Exception) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && e is ForegroundServiceStartNotAllowedException
+            ) {
+
+                // App not in a valid state to start foreground service
+                // (e.g. started from bg)
+            }
+            e.printStackTrace()
+            stopSelf()
+        }
+
+
+
         val fileName = "${System.currentTimeMillis()}"
 
         descriptor = getRecFileUri(fileName)
@@ -50,6 +109,7 @@ class RecorderService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         recorder.stop()
         recorder.release()
         descriptor.close()
