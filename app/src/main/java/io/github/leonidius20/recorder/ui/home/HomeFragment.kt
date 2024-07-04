@@ -9,11 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.RecPermissionManager
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.common.setIcon
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * a tag value used to mark that the record button shows "Record" icon (as
@@ -32,7 +33,8 @@ class HomeFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-
+    @Inject
+    lateinit var permissionManager: RecPermissionManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,8 +61,8 @@ class HomeFragment : Fragment() {
                 recPauseButton.setIcon(R.drawable.ic_record, BTN_IMG_TAG_RECORD)
             } else {
                 lifecycleScope.launch {
-                    val permissionGranted = (requireActivity() as MainActivity)
-                        .permissionManager.checkOrRequestRecordingPermission()
+                    val permissionGranted = permissionManager
+                        .checkOrRequestRecordingPermission(this@HomeFragment)
 
 
                     if (permissionGranted) {
@@ -75,6 +77,11 @@ class HomeFragment : Fragment() {
         }
 
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        permissionManager.registerForRecordingPermission(this)
     }
 
     override fun onDestroyView() {

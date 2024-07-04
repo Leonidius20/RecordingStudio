@@ -16,13 +16,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding // todo replace with databinding
 
-    @Inject
-    lateinit var permissionManager: RecPermissionManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        permissionManager.registerForRecordingPermission()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
