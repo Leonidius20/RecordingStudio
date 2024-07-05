@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.leonidius20.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder
+package io.github.leonidius20.recorder.data.recorder
 
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.NotificationChannel
@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

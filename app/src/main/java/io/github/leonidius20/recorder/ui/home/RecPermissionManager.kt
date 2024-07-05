@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder
+package io.github.leonidius20.recorder.ui.home
 
 import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResultLauncher

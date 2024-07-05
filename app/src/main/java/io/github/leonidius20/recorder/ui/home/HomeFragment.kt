@@ -10,7 +10,6 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.RecPermissionManager
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import javax.inject.Inject
 

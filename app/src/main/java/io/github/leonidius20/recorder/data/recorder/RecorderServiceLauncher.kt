@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder
+package io.github.leonidius20.recorder.data.recorder
 
 import android.content.ComponentName
 import android.content.Context
