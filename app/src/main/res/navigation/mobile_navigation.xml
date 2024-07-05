@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="io.github.leonidius20.recorder.ui.dashboard.DashboardFragment"
+        android:name="io.github.leonidius20.recorder.ui.recordings_list.RecordingsListFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_recordings_list" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="io.github.leonidius20.recorder.ui.notifications.NotificationsFragment"
+        android:name="io.github.leonidius20.recorder.ui.settings.SettingsFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_settings" />
 </navigation>

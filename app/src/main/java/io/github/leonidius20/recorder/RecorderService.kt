@@ -15,14 +15,20 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.io.IOException
 
 class RecorderService : Service() {
 
     enum class State {
+        PREPARING,
         RECORDING,
         PAUSED,
+        ERROR,
     }
 
     private lateinit var descriptor: ParcelFileDescriptor
@@ -31,11 +37,12 @@ class RecorderService : Service() {
 
     private val binder = Binder()
 
-    val state = MutableLiveData<State>()
+    private val _state = MutableStateFlow(State.PREPARING)
+    val state: StateFlow<State>
+        get() = _state
 
-    override fun onCreate() {
-        super.onCreate()
-    }
+    private val job = SupervisorJob()
+    val serviceScope = CoroutineScope(job + Dispatchers.Main)
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
@@ -85,6 +92,7 @@ class RecorderService : Service() {
                 // (e.g. started from bg)
             }
             e.printStackTrace()
+            _state.value = State.ERROR
             stopSelf()
         }
 
@@ -105,12 +113,14 @@ class RecorderService : Service() {
                 prepare()
             } catch (e: IOException) {
                 Log.e("Recorder", "prepare() failed")
+                _state.value = State.ERROR
+                stopSelf()
             }
 
             start()
         }
 
-        state.value = State.RECORDING
+        _state.value = State.RECORDING
 
         return START_NOT_STICKY
     }
@@ -123,21 +133,26 @@ class RecorderService : Service() {
         recorder.stop()
         recorder.release()
         descriptor.close()
+        job.cancel()
     }
 
+    /**
+     * @return the new state
+     */
     @RequiresApi(Build.VERSION_CODES.N)
-    fun toggleRecPause() {
+    fun toggleRecPause(): State {
         when(state.value) {
             State.RECORDING -> {
                 recorder.pause()
-                state.value = State.PAUSED
+                _state.value = State.PAUSED
             }
             State.PAUSED -> {
                 recorder.resume()
-                state.value = State.RECORDING
+                _state.value = State.RECORDING
             }
             else -> throw IllegalStateException()
         }
+        return state.value
     }
 
     fun stop() {
