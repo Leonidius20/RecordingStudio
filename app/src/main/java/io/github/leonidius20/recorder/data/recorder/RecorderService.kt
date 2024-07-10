@@ -22,6 +22,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class RecorderService : Service() {
 
@@ -97,9 +100,9 @@ class RecorderService : Service() {
             stopSelf()
         }
 
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
 
-
-        val fileName = "${System.currentTimeMillis()}"
+        val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
         descriptor = getRecFileUri(fileName)
 

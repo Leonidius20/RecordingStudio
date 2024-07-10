@@ -3,9 +3,11 @@ package io.github.leonidius20.recorder.ui.recordings_list
 import android.content.Context
 import android.text.format.Formatter
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -32,7 +34,13 @@ class RecordingsListViewModel @Inject constructor(
         // val dateTaken: String,
     )
 
+    fun loadRecordings() {
+        viewModelScope.launch {
+            // todo
+        }
+    }
 
+    // todo: only do the loading on fragment attach, not every time the view model is created
     val recordings = repository.getRecordings().map {
         RecordingUiModel(
             it.name,

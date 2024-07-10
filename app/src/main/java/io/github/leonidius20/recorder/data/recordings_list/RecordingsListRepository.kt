@@ -25,6 +25,7 @@ class RecordingsListRepository @Inject constructor(
     // todo Call the query() method in a worker thread. Cache the result?
 
     fun getRecordings(): List<Recording> {
+        // todo: withScope(Dispatchers.IO) { ... }
         val recordings = mutableListOf<Recording>()
 
         val projection = arrayOf(
