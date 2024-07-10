@@ -2,6 +2,8 @@ package io.github.leonidius20.recorder.ui.recordings_list
 
 import android.content.Context
 import android.text.format.Formatter
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,20 +38,22 @@ class RecordingsListViewModel @Inject constructor(
 
     fun loadRecordings() {
         viewModelScope.launch {
-            // todo
+            _recordings.value = repository.getRecordings().map {
+                RecordingUiModel(
+                    it.name,
+                    it.duration.toDuration(DurationUnit.MILLISECONDS).let {
+                        String.format(locale, "%d:%02d:%02d", it.inWholeHours, it.inWholeMinutes, it.inWholeSeconds)
+                    },
+                    Formatter.formatFileSize(context, it.size.toLong()),
+                    // dateFormat.format(Date(it.dateTaken)),
+                )
+            }.toTypedArray()
         }
     }
 
-    // todo: only do the loading on fragment attach, not every time the view model is created
-    val recordings = repository.getRecordings().map {
-        RecordingUiModel(
-            it.name,
-            it.duration.toDuration(DurationUnit.MILLISECONDS).let {
-                String.format(locale, "%d:%02d:%02d", it.inWholeHours, it.inWholeMinutes, it.inWholeSeconds)
-            },
-            Formatter.formatFileSize(context, it.size.toLong()),
-            // dateFormat.format(Date(it.dateTaken)),
-        )
-    }.toTypedArray()
+    private val _recordings = MutableLiveData<Array<RecordingUiModel>>()
+
+    val recordings: LiveData<Array<RecordingUiModel>>
+        get() = _recordings
 
 }

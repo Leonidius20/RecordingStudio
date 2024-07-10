@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,20 +19,26 @@ class RecordingsListFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var viewModel: RecordingsListViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val recordingsListViewModel =
-            ViewModelProvider(this).get(RecordingsListViewModel::class.java)
-
         _binding = FragmentRecordingsListBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        binding.recordingList.adapter =
-            RecordingsListAdapter(recordingsListViewModel.recordings)
+        viewModel =
+            ViewModelProvider(this).get(RecordingsListViewModel::class.java)
 
+        viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
+            // todo: DiffUtil here
+            binding.recordingList.adapter =
+                RecordingsListAdapter(recordings)
+        }
+
+        viewModel.loadRecordings()
 
         return root
     }
