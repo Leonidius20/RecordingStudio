@@ -22,7 +22,7 @@ class RecordingsListRepository @Inject constructor(
         val dateTaken: Long,
     )
 
-    // todo Call the query() method in a worker thread.
+    // todo Call the query() method in a worker thread. Cache the result?
 
     fun getRecordings(): List<Recording> {
         val recordings = mutableListOf<Recording>()
@@ -37,7 +37,7 @@ class RecordingsListRepository @Inject constructor(
 
         val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
         val selectionArgs = arrayOf(
-            "Recordings/RecordingStudio"
+            "Recordings/RecordingStudio/"
         )
 
         // sort by date descending
