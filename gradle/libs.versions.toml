@@ -16,6 +16,7 @@ navigationUiKtx = "2.7.7"
 robolectric = "4.12.2"
 hilt = "2.51"
 ksp = "2.0.0-1.0.22"
+materialLists = "0.5.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +34,7 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+material-lists = { group = "net.nicbell.material-lists", name = "listitem", version.ref = "materialLists"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

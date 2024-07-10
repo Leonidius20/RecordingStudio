@@ -18,20 +18,21 @@ class RecordingsListRepository @Inject constructor(
         val uri: Uri,
         val name: String,
         val duration: Int,
-        val size: Int
+        val size: Int,
+        val dateTaken: Long,
     )
 
     // todo Call the query() method in a worker thread.
 
-    val recordings = mutableListOf<Recording>()
-
-    init {
+    fun getRecordings(): List<Recording> {
+        val recordings = mutableListOf<Recording>()
 
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.SIZE
+            MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.DATE_TAKEN,
         )
 
         val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
@@ -39,12 +40,15 @@ class RecordingsListRepository @Inject constructor(
             "Recordings/RecordingStudio"
         )
 
+        // sort by date descending
+        val sortOrder = "${MediaStore.Audio.Media.DATE_TAKEN} DESC"
+
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
             selection,
             selectionArgs,
-            null
+            sortOrder
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn =
@@ -52,6 +56,7 @@ class RecordingsListRepository @Inject constructor(
             val durationColumn =
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            val dateTakenColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_TAKEN)
 
             while (cursor.moveToNext()) {
                 // Get values of columns for a given video.
@@ -59,6 +64,7 @@ class RecordingsListRepository @Inject constructor(
                 val name = cursor.getString(nameColumn)
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
+                val dateTaken = cursor.getLong(dateTakenColumn)
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
@@ -67,16 +73,15 @@ class RecordingsListRepository @Inject constructor(
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                recordings.add(Recording(contentUri, name, duration, size))
+                recordings.add(Recording(contentUri, name, duration, size, dateTaken))
+            }
+
+            recordings.forEach {
+                Log.d("RecordingsListRepo", it.toString())
             }
         }
 
-
-
-        recordings.forEach {
-            Log.d("RecordingsListRepo", it.toString())
-        }
-
+        return recordings
     }
 
 }

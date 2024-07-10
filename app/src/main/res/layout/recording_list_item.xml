@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="recording"
+            type="io.github.leonidius20.recorder.ui.recordings_list.RecordingsListViewModel.RecordingUiModel" />
+    </data>
+
+    <net.nicbell.materiallists.ListItem
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        app:headline="@{recording.name}"
+
+        app:sizeType="TWO_LINES"
+
+        app:supportText="@{recording.size}">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            style="@style/MaterialLists.LeadingIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_microphone" />
+
+        <com.google.android.material.textview.MaterialTextView
+            style="@style/MaterialLists.TrailingSupportingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{recording.duration}"/>
+    </net.nicbell.materiallists.ListItem>
+</layout>
