@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import io.github.leonidius20.recorder.databinding.RecordingListItem2Binding
 import io.github.leonidius20.recorder.databinding.RecordingListItemBinding
 import tech.okcredit.layout_inflator.OkLayoutInflater
 
@@ -25,11 +26,11 @@ class RecordingListItemWrapper(
     private var isInflated = false
     private var pendingActions: MutableList<RecordingListItemWrapper.() -> Unit> = ArrayList()
 
-    lateinit var binding: RecordingListItemBinding
+    lateinit var binding: RecordingListItem2Binding
 
     fun inflateAsync(layoutResId: Int) {
         OkLayoutInflater(context).inflate(layoutResId, this) { inflatedView ->
-            this.binding = RecordingListItemBinding.bind(inflatedView)
+            this.binding = RecordingListItem2Binding.bind(inflatedView)
             addView(inflatedView)
             isInflated = true
             pendingActions.forEach { action -> action() }

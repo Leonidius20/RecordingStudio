@@ -21,7 +21,7 @@ class RecordingsListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)
-        root.inflateAsync(R.layout.recording_list_item)
+        root.inflateAsync(R.layout.recording_list_item2)
         return ViewHolder(root)
     }
 
