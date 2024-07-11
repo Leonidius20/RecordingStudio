@@ -67,4 +67,6 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.material.lists)
+
+    implementation(libs.ok.layoutinflater)
 }

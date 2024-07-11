@@ -32,6 +32,8 @@ class RecordingsListFragment : Fragment() {
         viewModel =
             ViewModelProvider(this).get(RecordingsListViewModel::class.java)
 
+        binding.recordingList.setHasFixedSize(true) // supposedly improves performance
+
         viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
             // todo: DiffUtil here
             binding.recordingList.adapter =
