@@ -7,11 +7,15 @@ import android.provider.MediaStore
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 
 @ViewModelScoped
 class RecordingsListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    @Named("io") private val ioDispatcher: CoroutineDispatcher,
 ) {
 
     data class Recording(
@@ -22,10 +26,9 @@ class RecordingsListRepository @Inject constructor(
         val dateTaken: Long,
     )
 
-    // todo Call the query() method in a worker thread. Cache the result?
+    // todo Cache the result?
 
-    fun getRecordings(): List<Recording> {
-        // todo: withScope(Dispatchers.IO) { ... }
+    suspend fun getRecordings(): List<Recording> = withContext(ioDispatcher) {
         val recordings = mutableListOf<Recording>()
 
         val projection = arrayOf(
@@ -82,7 +85,7 @@ class RecordingsListRepository @Inject constructor(
             }
         }
 
-        return recordings
+        return@withContext recordings
     }
 
 }
