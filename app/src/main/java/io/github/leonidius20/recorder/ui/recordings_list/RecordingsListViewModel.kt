@@ -62,4 +62,9 @@ class RecordingsListViewModel @Inject constructor(
     val recordings: LiveData<Array<RecordingUiModel>>
         get() = _recordings
 
+
+    fun rename(datasetPosition: Int) {
+        val item = _recordings.value!![datasetPosition]
+    }
+
 }

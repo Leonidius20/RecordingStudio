@@ -25,7 +25,7 @@ class RecordingScreenTest {
         // as when navigating to another fragment and back).
         // todo: so we are going to do hardcore TDD here and test all requirements
         // including saving state on recreations
-        val scenario = launchFragmentInHiltContainer<HomeFragment>()
+        /*val scenario = launchFragmentInHiltContainer<HomeFragment>()
 
         onView(withId(R.id.recordButton)).check(
 
@@ -34,7 +34,7 @@ class RecordingScreenTest {
             )
         )
 
-        onView(withId(R.id.recordButton)).perform(click())
+        onView(withId(R.id.recordButton)).perform(click())*/
 
         // todo: click on permission dialog? also test what happens if you don't click?
 

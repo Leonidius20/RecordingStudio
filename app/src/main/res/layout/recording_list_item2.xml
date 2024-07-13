@@ -17,6 +17,7 @@
         android:backgroundTint="?colorSurface"
         android:clickable="true"
         android:focusable="true"
+        android:longClickable="true"
         android:minHeight="@dimen/list_item_min_height_two_line"
 
 

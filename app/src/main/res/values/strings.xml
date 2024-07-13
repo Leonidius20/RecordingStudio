@@ -6,4 +6,8 @@
     <string name="nav_title_settings">Settings</string>
     <string name="rec_pause_btn_desc">Record or Pause</string>
     <string name="rec_service_desc">Records audio from the microphone</string>
+    <string name="recordings_list_action_rename">Rename</string>
+    <string name="recordings_list_action_delete_forever">Delete forever</string>
+    <string name="recordings_list_action_trash">Move to trash</string>
+    <string name="recordings_list_title">Recordings</string>
 </resources>

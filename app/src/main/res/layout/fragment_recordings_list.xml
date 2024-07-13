@@ -9,6 +9,24 @@
         android:layout_height="match_parent"
         tools:context=".ui.recordings_list.RecordingsListFragment">
 
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/_appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="?attr/actionBarSize"
+                app:title="@string/recordings_list_title"/>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recording_list"
             android:layout_width="0dp"
@@ -17,7 +35,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/_appBarLayout"
             tools:listitem="@layout/recording_list_item" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
