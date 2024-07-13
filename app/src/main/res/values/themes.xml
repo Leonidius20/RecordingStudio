@@ -1,5 +1,7 @@
 <resources>
     <style name="Theme.RecordingStudio" parent="Theme.Material3.Light.NoActionBar">
+        <item name="windowActionModeOverlay">true</item>
+
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
