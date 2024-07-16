@@ -60,12 +60,6 @@ class RecordingsListAdapter(
             this.binding.recording = recordings[position]
             this.binding.root.isSelected = isSelected(position)
 
-            /*binding.root.backgroundTint (ContextCompat.getColor(context,
-                if (isSelected(position)) {
-                    R.color.md_theme_secondaryContainer
-                } else android.R.color.black,
-            )) // todo: proper highlighting*/
-
             if (isSelected(position)) {
                 binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_selected))
                // binding.leadingIcon.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_errorContainer_highContrast))
@@ -75,7 +69,7 @@ class RecordingsListAdapter(
         }
     }
 
-    fun isSelected(position: Int) = selectedItems.contains(position)
+    private fun isSelected(position: Int) = selectedItems.contains(position)
 
     fun toggleSelection(position: Int) {
         if (selectedItems.get(position, false)) {

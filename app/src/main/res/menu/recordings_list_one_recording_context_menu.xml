@@ -10,4 +10,9 @@
         android:icon="@drawable/ic_delete_forever"
         android:title="@string/recordings_list_action_delete_forever" />
 
+    <item
+        android:id="@+id/recordings_list_action_share"
+        android:icon="@drawable/ic_share"
+        android:title="@string/recordings_list_action_share"/>
+
 </menu>

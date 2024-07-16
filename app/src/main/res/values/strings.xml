@@ -10,4 +10,5 @@
     <string name="recordings_list_action_delete_forever">Delete forever</string>
     <string name="recordings_list_action_trash">Move to trash</string>
     <string name="recordings_list_title">Recordings</string>
+    <string name="recordings_list_action_share">Share</string>
 </resources>

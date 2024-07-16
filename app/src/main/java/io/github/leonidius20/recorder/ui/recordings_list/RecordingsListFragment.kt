@@ -165,9 +165,9 @@ class RecordingsListFragment : Fragment() {
                 R.id.recordings_list_action_delete_forever -> {
                     delete()
                 }
-                /*R.id.recordings_list_action_share -> {
+                R.id.recordings_list_action_share -> {
                     // todo
-                }*/
+                }
                 R.id.recordings_list_action_trash -> {
                     trash()
                 }
@@ -203,7 +203,7 @@ class RecordingsListFragment : Fragment() {
     fun rename() {
         val position = adapter.getSelectedItemsPositions().first()
         // if success
-        // todo
+        // todo: first stop actionmode, then show rename dialog, so that the need for payloads is evident
         actionMode!!.finish()
         val newData = viewModel.recordings.value!![position].copy(
             name = "new name"
