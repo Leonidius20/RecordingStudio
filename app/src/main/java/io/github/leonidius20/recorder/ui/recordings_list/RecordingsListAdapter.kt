@@ -1,11 +1,14 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
+import android.content.res.Resources
 import android.graphics.Color
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.util.contains
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
 
@@ -24,13 +27,11 @@ class RecordingsListAdapter(
     ): RecyclerView.ViewHolder(root), View.OnClickListener, View.OnLongClickListener {
 
         override fun onClick(v: View) {
-            Toast.makeText(v.context, "short click position ${position}", Toast.LENGTH_SHORT).show()
             onItemClicked(position)
         }
 
         override fun onLongClick(v: View): Boolean {
             onItemLongClicked(position)
-            Toast.makeText(v.context, "long click position ${position}", Toast.LENGTH_SHORT).show()
             return true
         }
 
@@ -58,9 +59,19 @@ class RecordingsListAdapter(
 
             this.binding.recording = recordings[position]
             this.binding.root.isSelected = isSelected(position)
+
+            /*binding.root.backgroundTint (ContextCompat.getColor(context,
+                if (isSelected(position)) {
+                    R.color.md_theme_secondaryContainer
+                } else android.R.color.black,
+            )) // todo: proper highlighting*/
+
             if (isSelected(position)) {
-                binding.txtHeadline.setTextColor(Color.RED)
-            } else binding.txtHeadline.setTextColor(Color.BLACK) // todo: proper highlighting
+                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_selected))
+               // binding.leadingIcon.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_errorContainer_highContrast))
+            } else {
+                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_microphone))
+            }
         }
     }
 

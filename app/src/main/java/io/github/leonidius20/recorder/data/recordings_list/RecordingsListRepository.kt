@@ -80,9 +80,6 @@ class RecordingsListRepository @Inject constructor(
                 recordings.add(Recording(contentUri, name, duration, size, dateTaken))
             }
 
-            recordings.forEach {
-                Log.d("RecordingsListRepo", it.toString())
-            }
         }
 
         return@withContext recordings

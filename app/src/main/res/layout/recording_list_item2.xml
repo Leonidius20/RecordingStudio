@@ -13,13 +13,13 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?selectableItemBackground"
-        android:backgroundTint="?colorSurface"
+        android:foreground="?selectableItemBackground"
+        android:background="@color/selectable_list_item_background_tint"
+        android:backgroundTintMode="multiply"
         android:clickable="true"
         android:focusable="true"
         android:longClickable="true"
         android:minHeight="@dimen/list_item_min_height_two_line"
-
 
 
 
