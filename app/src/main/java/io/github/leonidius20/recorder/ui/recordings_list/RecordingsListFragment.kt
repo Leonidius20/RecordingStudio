@@ -78,9 +78,10 @@ class RecordingsListFragment : Fragment() {
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
+            actionMode!!.finish()
             // todo: notify item removed? or maybe use diffutil
         }
-
+        
 
         // registerForContextMenu(binding.recordingList)
 
@@ -136,7 +137,9 @@ class RecordingsListFragment : Fragment() {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
 
-            return false
+
+
+            return true
         }
 
         @SuppressLint("NewApi") // the "trash" option requires api 30 but it isn't shown in the menu on lower apis
