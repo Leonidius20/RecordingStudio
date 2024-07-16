@@ -80,4 +80,10 @@ class RecordingsListViewModel @Inject constructor(
         )
     }
 
+    fun requestDeleting(positions: List<Int>): PendingIntent {
+        return repository.requestDeleting(
+            positions.map { position -> _recordings.value!![position].uri }
+        )
+    }
+
 }

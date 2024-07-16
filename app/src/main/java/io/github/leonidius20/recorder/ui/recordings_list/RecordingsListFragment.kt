@@ -36,6 +36,8 @@ class RecordingsListFragment : Fragment() {
 
     private lateinit var trashRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
 
+    private lateinit var deleteRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -81,7 +83,17 @@ class RecordingsListFragment : Fragment() {
             actionMode!!.finish()
             // todo: notify item removed? or maybe use diffutil
         }
-        
+
+        deleteRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
+            }
+            actionMode!!.finish()
+            // todo: notify item removed? or maybe use diffutil
+        }
+
 
         // registerForContextMenu(binding.recordingList)
 
@@ -151,6 +163,7 @@ class RecordingsListFragment : Fragment() {
                 }
                 R.id.recordings_list_action_delete_forever -> {
                     // todo
+                    delete()
                     // notifyitemremoved
                 }
                 /*R.id.recordings_list_action_share -> {
@@ -178,6 +191,14 @@ class RecordingsListFragment : Fragment() {
         val positions = adapter.getSelectedItemsPositions()
         val intent = viewModel.requestTrashing(positions)
         trashRecordingsIntentLauncher.launch(
+            IntentSenderRequest.Builder(intent).build()
+        )
+    }
+
+    fun delete() {
+        val positions = adapter.getSelectedItemsPositions()
+        val intent = viewModel.requestDeleting(positions)
+        deleteRecordingsIntentLauncher.launch(
             IntentSenderRequest.Builder(intent).build()
         )
     }

@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.data.recordings_list
 import android.app.PendingIntent
 import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -74,8 +75,10 @@ class RecordingsListRepository @Inject constructor(
                 val size = cursor.getInt(sizeColumn)
                 val dateTaken = cursor.getLong(dateTakenColumn)
 
+                // todo: it is the uri that are faulty probably, that's why we cannot delte jack shit
+                //Uri.withAppendedPath()
                 val contentUri: Uri = ContentUris.withAppendedId(
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
 
@@ -92,6 +95,15 @@ class RecordingsListRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.R)
     fun requestTrashing(uris: List<Uri>): PendingIntent {
         return MediaStore.createTrashRequest(context.contentResolver, uris, true)
+    }
+
+    fun requestDeleting(uris: List<Uri>): PendingIntent {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            MediaStore.createDeleteRequest(context.contentResolver, uris)
+        } else {
+            // todo: create pending intent to show a custom confirmation dialog
+            TODO("VERSION.SDK_INT < R")
+        }
     }
 
 }
