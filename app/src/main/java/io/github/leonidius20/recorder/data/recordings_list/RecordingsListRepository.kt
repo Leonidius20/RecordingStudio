@@ -1,10 +1,13 @@
 package io.github.leonidius20.recorder.data.recordings_list
 
+import android.app.PendingIntent
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -37,11 +40,12 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.SIZE,
             MediaStore.Audio.Media.DATE_TAKEN,
+            MediaStore.Audio.Media.IS_TRASHED,
         )
 
         val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
         val selectionArgs = arrayOf(
-            "Recordings/RecordingStudio/"
+            "Recordings/RecordingStudio/",
         )
 
         // sort by date descending
@@ -83,6 +87,11 @@ class RecordingsListRepository @Inject constructor(
         }
 
         return@withContext recordings
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun requestTrashing(uris: List<Uri>): PendingIntent {
+        return MediaStore.createTrashRequest(context.contentResolver, uris, true)
     }
 
 }

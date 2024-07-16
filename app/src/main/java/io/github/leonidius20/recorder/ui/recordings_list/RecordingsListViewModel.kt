@@ -1,7 +1,11 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
+import android.app.PendingIntent
 import android.content.Context
+import android.net.Uri
+import android.os.Build
 import android.text.format.Formatter
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -35,6 +39,7 @@ class RecordingsListViewModel @Inject constructor(
         val name: String,
         val duration: String,
         val size: String,
+        val uri: Uri,
         // val dateTaken: String,
     )
 
@@ -49,6 +54,7 @@ class RecordingsListViewModel @Inject constructor(
                         },
                         Formatter.formatFileSize(context, it.size.toLong()),
                         // dateFormat.format(Date(it.dateTaken)),
+                        it.uri,
                     )
                 }.toTypedArray()
             }
@@ -65,6 +71,13 @@ class RecordingsListViewModel @Inject constructor(
 
     fun rename(datasetPosition: Int) {
         val item = _recordings.value!![datasetPosition]
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun requestTrashing(positions: List<Int>): PendingIntent {
+        return repository.requestTrashing(
+            positions.map { position -> _recordings.value!![position].uri }
+        )
     }
 
 }

@@ -1,17 +1,20 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
-import android.content.Context
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.view.ActionMode
-import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +33,8 @@ class RecordingsListFragment : Fragment() {
     private lateinit var viewModel: RecordingsListViewModel
 
     private lateinit var adapter: RecordingsListAdapter
+
+    private lateinit var trashRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,9 +67,20 @@ class RecordingsListFragment : Fragment() {
             adapter = RecordingsListAdapter(recordings, onItemClick, onItemLongClick)
             binding.recordingList.adapter = adapter
 
+
         }
 
         viewModel.loadRecordings()
+
+        trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
+            }
+            // todo: notify item removed? or maybe use diffutil
+        }
+
 
         // registerForContextMenu(binding.recordingList)
 
@@ -99,30 +115,48 @@ class RecordingsListFragment : Fragment() {
 
     val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu?): Boolean {
-            mode.menuInflater.inflate(R.menu.recordings_list_context_menu, menu)
+
+            if (adapter.getSelectedItemsCount() > 1) {
+                mode.menuInflater.inflate(R.menu.recordings_list_multiple_recordings_context_menu, menu)
+            } else {
+                mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
+            }
+
             return true
         }
 
-        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             // todo: invalidation happends on each toggling of selection
             // so we can add or remove menu elements here based on if it is
             // 1 element selected or multiple
+            menu.clear()
+            if (adapter.getSelectedItemsCount() > 1) {
+                mode.menuInflater.inflate(R.menu.recordings_list_multiple_recordings_context_menu, menu)
+            } else {
+                mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
+            }
+
             return false
         }
 
+        @SuppressLint("NewApi") // the "trash" option requires api 30 but it isn't shown in the menu on lower apis
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
             when(item.itemId) {
                 R.id.recordings_list_action_rename -> {
                     // rename(position)
+                    // adapter.notifyItemChanged(position)
                 }
                 R.id.recordings_list_action_delete_forever -> {
                     // todo
+                    // notifyitemremoved
                 }
                 /*R.id.recordings_list_action_share -> {
                     // todo
                 }*/
                 R.id.recordings_list_action_trash -> {
                     // todo
+                    trash()
+                    // notifyitemremoved
                 }
             }
             return true
@@ -134,6 +168,15 @@ class RecordingsListFragment : Fragment() {
         }
 
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun trash() {
+        val positions = adapter.getSelectedItemsPositions()
+        val intent = viewModel.requestTrashing(positions)
+        trashRecordingsIntentLauncher.launch(
+            IntentSenderRequest.Builder(intent).build()
+        )
     }
 
 }
