@@ -1,19 +1,16 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
-import android.content.res.Resources
-import android.graphics.Color
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.util.contains
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.ui.common.breakIntoRangesDescending
 
 class RecordingsListAdapter(
-    private val recordings: Array<RecordingsListViewModel.RecordingUiModel>,
+    private val recordings: ArrayList<RecordingsListViewModel.RecordingUiModel>,
     private val onItemClicked: (Int) -> Unit,
     private val onItemLongClicked: (Int) -> Unit,
 ): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
@@ -99,5 +96,40 @@ class RecordingsListAdapter(
     }
 
     fun getSelectedItemsCount() = selectedItems.size()
+
+    private fun removeItem(position: Int) {
+        recordings.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
+    /**
+     * this of course breaks the single source of truth (it should
+     * be MediaStore but re-querying it after every deletion is potentially
+     * too slow. todo however we can make an in-mem cache a SSOT. Start by populating it from mediastore, then after making recording add it to cached version. We can also ssve this data to disk and only rescan Mediastore of needed as per https://developer.android.com/training/data-storage/shared/media#check-for-updates. there we can use diffutil
+     */
+    fun removeItems(positions: List<Int>) {
+        val ranges = breakIntoRangesDescending(positions)
+
+        ranges.forEach { range ->
+            if (range.size == 1) {
+                removeItem(position = range.first())
+            } else {
+                removeRange(fromPosition = range.first(), count = range.size)
+            }
+        }
+    }
+
+    private fun removeRange(fromPosition: Int, count: Int) {
+        // cut range out of list
+        recordings.removeAtRange(fromPosition, count)
+
+        notifyItemRangeRemoved(fromPosition, count)
+    }
+
+    private fun <T> MutableList<T>.removeAtRange(fromIndex: Int, count: Int) {
+        this.removeAll(
+            this.slice(fromIndex until fromIndex + count).toSet()
+        )
+    }
 
 }

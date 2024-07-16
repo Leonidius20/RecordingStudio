@@ -66,7 +66,7 @@ class RecordingsListFragment : Fragment() {
 
         viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
             // todo: DiffUtil here
-            adapter = RecordingsListAdapter(recordings, onItemClick, onItemLongClick)
+            adapter = RecordingsListAdapter(ArrayList(recordings.toMutableList()), onItemClick, onItemLongClick)
             binding.recordingList.adapter = adapter
 
 
@@ -77,6 +77,7 @@ class RecordingsListFragment : Fragment() {
         trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
+                adapter.removeItems(adapter.getSelectedItemsPositions())
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
@@ -87,6 +88,7 @@ class RecordingsListFragment : Fragment() {
         deleteRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
+                adapter.removeItems(adapter.getSelectedItemsPositions())
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
