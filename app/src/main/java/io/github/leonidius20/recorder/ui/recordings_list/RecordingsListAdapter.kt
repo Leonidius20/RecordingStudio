@@ -9,13 +9,16 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.ui.common.breakIntoRangesDescending
 
+/**
+ * this adapter supports selecting multiple items, removing and (in future) changing their titles
+ */
 class RecordingsListAdapter(
     private val recordings: ArrayList<RecordingsListViewModel.RecordingUiModel>,
     private val onItemClicked: (Int) -> Unit,
     private val onItemLongClicked: (Int) -> Unit,
 ): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
 
-    val selectedItems = SparseBooleanArray(recordings.size)
+    private val selectedItems = SparseBooleanArray(recordings.size)
 
     class ViewHolder(
         val root: RecordingListItemWrapper,
@@ -130,6 +133,11 @@ class RecordingsListAdapter(
         this.removeAll(
             this.slice(fromIndex until fromIndex + count).toSet()
         )
+    }
+
+    fun replaceItemAt(position: Int, with: RecordingsListViewModel.RecordingUiModel) {
+        recordings[position] = with
+        notifyItemChanged(position)
     }
 
 }

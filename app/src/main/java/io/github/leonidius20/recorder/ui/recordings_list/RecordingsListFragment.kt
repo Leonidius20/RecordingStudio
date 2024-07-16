@@ -160,21 +160,16 @@ class RecordingsListFragment : Fragment() {
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
             when(item.itemId) {
                 R.id.recordings_list_action_rename -> {
-                    // rename(position)
-                    // adapter.notifyItemChanged(position)
+                    rename()
                 }
                 R.id.recordings_list_action_delete_forever -> {
-                    // todo
                     delete()
-                    // notifyitemremoved
                 }
                 /*R.id.recordings_list_action_share -> {
                     // todo
                 }*/
                 R.id.recordings_list_action_trash -> {
-                    // todo
                     trash()
-                    // notifyitemremoved
                 }
             }
             return true
@@ -203,6 +198,17 @@ class RecordingsListFragment : Fragment() {
         deleteRecordingsIntentLauncher.launch(
             IntentSenderRequest.Builder(intent).build()
         )
+    }
+
+    fun rename() {
+        val position = adapter.getSelectedItemsPositions().first()
+        // if success
+        // todo
+        actionMode!!.finish()
+        val newData = viewModel.recordings.value!![position].copy(
+            name = "new name"
+        )
+        adapter.replaceItemAt(position, newData)
     }
 
 }
