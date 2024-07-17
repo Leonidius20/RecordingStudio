@@ -11,4 +11,6 @@
     <string name="recordings_list_action_trash">Move to trash</string>
     <string name="recordings_list_title">Recordings</string>
     <string name="recordings_list_action_share">Share</string>
+    <string name="recordings_list_choose_new_name">Type new name</string>
+    <string name="new_name">New name</string>
 </resources>

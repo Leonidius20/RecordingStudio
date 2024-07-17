@@ -43,6 +43,11 @@ class RecordingsListViewModel @Inject constructor(
         // val dateTaken: String,
     )
 
+    /**
+     * used in a dialog that is shown when user tries to rename a file
+     */
+    val renameFileNewName = MutableLiveData<String>()
+
     fun loadRecordings() {
         viewModelScope.launch {
             val result = withContext(ioDispatcher) {

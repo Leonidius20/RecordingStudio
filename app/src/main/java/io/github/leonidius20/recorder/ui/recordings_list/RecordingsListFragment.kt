@@ -15,11 +15,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
+import io.github.leonidius20.recorder.databinding.RenameDialogBinding
 
 @AndroidEntryPoint
 class RecordingsListFragment : Fragment() {
@@ -204,11 +206,33 @@ class RecordingsListFragment : Fragment() {
         val position = adapter.getSelectedItemsPositions().first()
         // if success
         // todo: first stop actionmode, then show rename dialog, so that the need for payloads is evident
+
+        // todo: it is lost when screen rotates
+        val dialogView = RenameDialogBinding.inflate(layoutInflater)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.recordings_list_choose_new_name)
+            .setView(dialogView.root)
+            .setPositiveButton(android.R.string.ok) { d, i ->
+
+            }
+            .show()
+
         actionMode!!.finish()
         val newData = viewModel.recordings.value!![position].copy(
             name = "new name"
         )
         adapter.replaceItemAt(position, newData)
     }
+
+    /**
+     * shows rename dialog for the first time or after activity recreation
+     */
+    fun showRenameDialog() {}
+
+    fun onRenameDialogSubmitted() {
+
+    }
+
 
 }
