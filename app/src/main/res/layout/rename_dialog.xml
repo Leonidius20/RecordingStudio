@@ -18,7 +18,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{viewmodel.renameFileNewName}" />
+            android:text="@={viewmodel.renameFileNewName}" />
 
     </com.google.android.material.textfield.TextInputLayout>
 </layout>

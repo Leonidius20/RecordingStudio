@@ -207,31 +207,53 @@ class RecordingsListFragment : Fragment() {
         // if success
         // todo: first stop actionmode, then show rename dialog, so that the need for payloads is evident
 
-        // todo: it is lost when screen rotates
-        val dialogView = RenameDialogBinding.inflate(layoutInflater)
 
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.recordings_list_choose_new_name)
-            .setView(dialogView.root)
-            .setPositiveButton(android.R.string.ok) { d, i ->
 
-            }
-            .show()
+
+
 
         actionMode!!.finish()
-        val newData = viewModel.recordings.value!![position].copy(
-            name = "new name"
-        )
-        adapter.replaceItemAt(position, newData)
+
+        showRenameDialog(position) // probably not very sustainable when we will implement
+        // restoring the dialog after screen rotation. Maybe it is better to restore selected
+        // items and then take position from there
+
+
     }
 
     /**
      * shows rename dialog for the first time or after activity recreation
      */
-    fun showRenameDialog() {}
+    fun showRenameDialog(position: Int) {
+        // todo: dialog being shown is a part of UI state. It should be stored in viewmodel
+        // and there should be a "render" function that simply renders out the state that is
+        // saved in viewmodel
 
-    fun onRenameDialogSubmitted() {
+        // todo: it is lost when screen rotates
 
+
+        // todo: this right here is a "feature envy" code smell. Need to refactor
+        // and reachitect the ui state logic
+
+        //todo: dialog fragment with callback?
+        viewModel.renameFileNewName.value = viewModel.recordings.value!![position].name
+
+        val dialogView = RenameDialogBinding.inflate(layoutInflater)
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.recordings_list_choose_new_name)
+            .setView(dialogView.root)
+            .setPositiveButton(android.R.string.ok) { d, i ->
+                onRenameDialogSubmitted(position)
+            }
+            .show()
+    }
+
+    private fun onRenameDialogSubmitted(position: Int) {
+        val newData = viewModel.recordings.value!![position].copy(
+            name = viewModel.renameFileNewName.value!!
+        )
+        // todo: actually rename in Repository
+        adapter.replaceItemAt(position, newData)
     }
 
 
