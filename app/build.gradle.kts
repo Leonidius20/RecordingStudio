@@ -72,4 +72,5 @@ dependencies {
     implementation(libs.ok.layoutinflater)
 
     implementation(libs.timeit) // for rec duration timer
+    implementation(libs.audioRecordView) // audio visualizer
 }

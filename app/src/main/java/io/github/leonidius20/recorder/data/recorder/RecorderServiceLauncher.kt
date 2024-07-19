@@ -9,7 +9,9 @@ import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -21,6 +23,11 @@ import javax.inject.Singleton
  * this class is responsible for launching and stopping the RecorderService,
  * as well as communicating with it through the binder. The service is bound to
  * app context, so fragment/activity doesn't have to rebind on recreation.
+ *
+ * There is only one instance of this class, whereas there can be multiple instances
+ * of the service class as the service is created and destroyed with each new recording.
+ * Therefore, the timer and amplitude flows in this class cannot be just forwarded from
+ * the service. They have to account for the service recreation.
  */
 @Singleton
 class RecorderServiceLauncher @Inject constructor(
@@ -45,6 +52,15 @@ class RecorderServiceLauncher @Inject constructor(
 
     val timer: StateFlow<Long>
         get() = _timer
+
+    private val _amplitudes = MutableSharedFlow<Int>()
+
+    /**
+     * emits max amplitude every 100ms. Used for audio visualization
+     */
+    val amplitudes: SharedFlow<Int>
+        get() = _amplitudes
+
 
     /**
      * @return LiveData with the state of the RecorderService
@@ -104,9 +120,13 @@ class RecorderServiceLauncher @Inject constructor(
                 }
             }.launchIn(this)
 
-            service.service.timer.collect {
+            service.service.timer.onEach {
                 _timer.value = it
-            }
+            }.launchIn(this)
+
+            service.service.amplitudes.onEach {
+                _amplitudes.emit(it)
+            }.launchIn(this)
         }
     }
 

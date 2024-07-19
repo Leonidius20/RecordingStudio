@@ -18,6 +18,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment">
+
+        <com.visualizer.amplitude.AudioRecordView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/rec_timer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            android:id="@+id/audioVisualizer"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            app:chunkAlignTo="center"
+            app:chunkRoundedCorners="true"
+            app:chunkSoftTransition="true"
+            app:chunkColor="?colorSecondary"
+            app:chunkSpace="1dp"
+            app:chunkWidth="2dp"
+            app:chunkMaxHeight="48dp"
+            app:chunkMinHeight="2dp"
+            app:direction="rightToLeft"/>
         
         <TextView
             android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"

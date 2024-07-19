@@ -20,8 +20,12 @@ import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -49,13 +53,21 @@ class RecorderService : Service() {
     private val job = SupervisorJob()
     val serviceScope = CoroutineScope(job + Dispatchers.Main)
 
-    val _timer = MutableStateFlow(0L)
+    private val _timer = MutableStateFlow(0L)
 
     /**
      * length of the recording so far in milliseconds
      */
     val timer: StateFlow<Long>
         get() = _timer
+
+    private val _amplitudes = MutableSharedFlow<Int>()
+
+    /**
+     * emits max amplitude every 100ms. Used for audio visualization
+     */
+    val amplitudes: SharedFlow<Int>
+        get() = _amplitudes
 
 
     private lateinit var stopwatch: Stopwatch
@@ -143,6 +155,16 @@ class RecorderService : Service() {
             _timer.value = stopwatch.elapsedTime
         }
         stopwatch.start()
+
+        serviceScope.launch {
+            // every 100ms, emit maxAmplitude
+            while(true) {
+                if (state.value == State.RECORDING) {
+                    _amplitudes.emit(recorder.maxAmplitude)
+                }
+                delay(100)
+            }
+        }
 
         return START_NOT_STICKY
     }

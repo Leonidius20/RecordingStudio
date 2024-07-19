@@ -19,6 +19,7 @@ ksp = "2.0.0-1.0.22"
 materialLists = "0.5.3"
 okLayoutInflater = "1.0.2"
 timeit = "1.2.0"
+audioRecordView = "1.0.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 material-lists = { group = "net.nicbell.material-lists", name = "listitem", version.ref = "materialLists"}
 ok-layoutinflater = { group = "com.github.okcredit", name = "OkLayoutInflater", version.ref = "okLayoutInflater" }
 timeit = { group = "com.yashovardhan99.timeit", name = "timeit", version.ref="timeit" }
+audioRecordView = { group = "com.github.Armen101", name = "AudioRecordView", version.ref = "audioRecordView" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

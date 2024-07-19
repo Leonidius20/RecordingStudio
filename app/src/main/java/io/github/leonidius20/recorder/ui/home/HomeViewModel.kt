@@ -5,7 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
 import kotlinx.coroutines.flow.map
@@ -65,11 +64,6 @@ class HomeViewModel @Inject constructor(
     }.asLiveData()
 
     /**
-     * workaround for data-binding
-     */
-    // val isRecording = uiState.map { state -> state is UiState.Recording  }
-
-    /**
      * time elapsed since the start of the recording
      */
     val timerText = recorderServiceLauncher.timer.map { milliseconds ->
@@ -81,6 +75,11 @@ class HomeViewModel @Inject constructor(
             }
         }
     }.asLiveData()
+
+    /**
+     * for audio visualization
+     */
+    val amplitudes = recorderServiceLauncher.amplitudes
 
     fun onStartRecording() {
         recorderServiceLauncher.launchRecording()
