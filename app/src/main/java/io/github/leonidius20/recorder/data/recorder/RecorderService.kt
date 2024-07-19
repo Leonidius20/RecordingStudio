@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import com.yashovardhan99.timeit.Stopwatch
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +48,17 @@ class RecorderService : Service() {
 
     private val job = SupervisorJob()
     val serviceScope = CoroutineScope(job + Dispatchers.Main)
+
+    val _timer = MutableStateFlow(0L)
+
+    /**
+     * length of the recording so far in milliseconds
+     */
+    val timer: StateFlow<Long>
+        get() = _timer
+
+
+    private lateinit var stopwatch: Stopwatch
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
@@ -126,6 +138,12 @@ class RecorderService : Service() {
 
         _state.value = State.RECORDING
 
+        stopwatch = Stopwatch()
+        stopwatch.setOnTickListener {
+            _timer.value = stopwatch.elapsedTime
+        }
+        stopwatch.start()
+
         return START_NOT_STICKY
     }
 
@@ -147,12 +165,10 @@ class RecorderService : Service() {
     fun toggleRecPause(): State {
         when(state.value) {
             State.RECORDING -> {
-                recorder.pause()
-                _state.value = State.PAUSED
+                pause()
             }
             State.PAUSED -> {
-                recorder.resume()
-                _state.value = State.RECORDING
+                resume()
             }
             else -> throw IllegalStateException()
         }
@@ -181,6 +197,20 @@ class RecorderService : Service() {
 
         val service = this@RecorderService
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun pause() {
+        recorder.pause()
+        stopwatch.pause()
+        _state.value = State.PAUSED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun resume() {
+        recorder.resume()
+        stopwatch.resume()
+        _state.value = State.RECORDING
     }
 
 

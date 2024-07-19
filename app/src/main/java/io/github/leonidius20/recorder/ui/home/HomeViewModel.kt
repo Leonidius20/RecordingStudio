@@ -5,10 +5,13 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -19,6 +22,7 @@ class HomeViewModel @Inject constructor(
         val isRecPauseBtnVisible: Boolean,
         val recPauseBtnIcon: RecPauseBtnIcon,
         val isStopButtonVisible: Boolean,
+        val isTimerVisible: Boolean,
     ) {
 
         enum class RecPauseBtnIcon {
@@ -30,6 +34,7 @@ class HomeViewModel @Inject constructor(
             isRecPauseBtnVisible = true,
             recPauseBtnIcon = RecPauseBtnIcon.RECORD,
             isStopButtonVisible = false,
+            isTimerVisible = false,
         )
 
         data object Recording: UiState(
@@ -38,12 +43,14 @@ class HomeViewModel @Inject constructor(
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
             recPauseBtnIcon = RecPauseBtnIcon.PAUSE,
             isStopButtonVisible = true,
+            isTimerVisible = true,
         )
 
         data object Paused: UiState(
             isRecPauseBtnVisible = true,
             recPauseBtnIcon = RecPauseBtnIcon.RECORD,
             isStopButtonVisible = true,
+            isTimerVisible = true,
         )
 
     }
@@ -57,7 +64,23 @@ class HomeViewModel @Inject constructor(
         }
     }.asLiveData()
 
+    /**
+     * workaround for data-binding
+     */
+    // val isRecording = uiState.map { state -> state is UiState.Recording  }
 
+    /**
+     * time elapsed since the start of the recording
+     */
+    val timerText = recorderServiceLauncher.timer.map { milliseconds ->
+        milliseconds.toDuration(DurationUnit.MILLISECONDS).toComponents { hours, minutes, seconds, _ ->
+            if (hours == 0L) {
+                "%02d:%02d".format(minutes, seconds)
+            } else {
+                "%d:%02d:%02d".format(hours, minutes, seconds)
+            }
+        }
+    }.asLiveData()
 
     fun onStartRecording() {
         recorderServiceLauncher.launchRecording()

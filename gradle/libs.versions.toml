@@ -18,6 +18,7 @@ hilt = "2.51"
 ksp = "2.0.0-1.0.22"
 materialLists = "0.5.3"
 okLayoutInflater = "1.0.2"
+timeit = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +38,7 @@ hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 material-lists = { group = "net.nicbell.material-lists", name = "listitem", version.ref = "materialLists"}
 ok-layoutinflater = { group = "com.github.okcredit", name = "OkLayoutInflater", version.ref = "okLayoutInflater" }
+timeit = { group = "com.yashovardhan99.timeit", name = "timeit", version.ref="timeit" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

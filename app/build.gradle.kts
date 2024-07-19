@@ -70,4 +70,6 @@ dependencies {
     implementation(libs.material.lists)
 
     implementation(libs.ok.layoutinflater)
+
+    implementation(libs.timeit) // for rec duration timer
 }

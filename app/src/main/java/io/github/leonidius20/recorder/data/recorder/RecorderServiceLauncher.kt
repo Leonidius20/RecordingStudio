@@ -11,6 +11,8 @@ import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,6 +39,12 @@ class RecorderServiceLauncher @Inject constructor(
     private val _state = MutableStateFlow(State.IDLE)
     val state: StateFlow<State>
         get() = _state
+
+
+    private val _timer =  MutableStateFlow(0L)
+
+    val timer: StateFlow<Long>
+        get() = _timer
 
     /**
      * @return LiveData with the state of the RecorderService
@@ -82,7 +90,7 @@ class RecorderServiceLauncher @Inject constructor(
 
         // serviceScope is cancelled when the service is destroyed
         service.service.serviceScope.launch {
-            service.service.state.collect {
+            service.service.state.onEach {
                 when(it) {
                     RecorderService.State.RECORDING -> _state.value = State.RECORDING
                     RecorderService.State.PAUSED -> _state.value = State.PAUSED
@@ -94,6 +102,10 @@ class RecorderServiceLauncher @Inject constructor(
                         _state.value = State.IDLE
                     }
                 }
+            }.launchIn(this)
+
+            service.service.timer.collect {
+                _timer.value = it
             }
         }
     }

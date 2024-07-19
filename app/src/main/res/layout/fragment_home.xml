@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
         <import type="android.view.View"/>
+        <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.Recording"/>
         <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.RecPauseBtnIcon"/>
         <variable
             name="viewModel"
@@ -18,7 +19,9 @@
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment">
         
-        <Chronometer
+        <TextView
+            android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"
+            android:text="@{viewModel.timerText}"
             android:id="@+id/rec_timer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
