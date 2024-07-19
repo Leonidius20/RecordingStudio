@@ -27,16 +27,17 @@
 
             android:id="@+id/audioVisualizer"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            app:layout_constraintHeight_max="300dp"
+            android:layout_height="0dp"
             app:chunkAlignTo="center"
             app:chunkRoundedCorners="true"
             app:chunkSoftTransition="true"
             app:chunkColor="?colorSecondary"
-            app:chunkSpace="1dp"
-            app:chunkWidth="2dp"
-            app:chunkMaxHeight="48dp"
-            app:chunkMinHeight="2dp"
-            app:direction="rightToLeft"/>
+            app:chunkSpace="5dp"
+            app:chunkWidth="10dp"
+            app:chunkMaxHeight="300dp"
+            app:chunkMinHeight="5dp"
+            app:direction="leftToRight"/>
         
         <TextView
             android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"
