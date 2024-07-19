@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import kotlin.time.DurationUnit
@@ -67,13 +68,7 @@ class HomeViewModel @Inject constructor(
      * time elapsed since the start of the recording
      */
     val timerText = recorderServiceLauncher.timer.map { milliseconds ->
-        milliseconds.toDuration(DurationUnit.MILLISECONDS).toComponents { hours, minutes, seconds, _ ->
-            if (hours == 0L) {
-                "%02d:%02d".format(minutes, seconds)
-            } else {
-                "%d:%02d:%02d".format(hours, minutes, seconds)
-            }
-        }
+        millisecondsToStopwatchString(milliseconds)
     }.asLiveData()
 
     /**

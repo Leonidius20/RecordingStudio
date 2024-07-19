@@ -65,6 +65,8 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
+                // todo bug - visualizer doesn't get updated when the app is in background
+                // and then starts writing to un-updated view
                 viewModel.amplitudes.onEach { amplitude ->
                     binding.audioVisualizer.update(amplitude)
                 }.launchIn(this)

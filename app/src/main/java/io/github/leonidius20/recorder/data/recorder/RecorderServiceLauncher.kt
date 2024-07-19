@@ -53,10 +53,13 @@ class RecorderServiceLauncher @Inject constructor(
     val timer: StateFlow<Long>
         get() = _timer
 
-    private val _amplitudes = MutableSharedFlow<Int>()
+    private val _amplitudes = MutableSharedFlow<Int>(replay = 60)
 
     /**
-     * emits max amplitude every 100ms. Used for audio visualization
+     * emits max amplitude every 100ms. Used for audio visualization.
+     * There is replay so that when the app goes into background and the fragment
+     * displaying it unsubscribes, and then the app goes into foreground again and the
+     * fragment resubscribes, the visualization reflects the newest samples.
      */
     val amplitudes: SharedFlow<Int>
         get() = _amplitudes

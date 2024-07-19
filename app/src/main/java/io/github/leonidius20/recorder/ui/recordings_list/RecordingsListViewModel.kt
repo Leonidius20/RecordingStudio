@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,9 +55,7 @@ class RecordingsListViewModel @Inject constructor(
                 return@withContext repository.getRecordings().map {
                     RecordingUiModel(
                         it.name,
-                        it.duration.toDuration(DurationUnit.MILLISECONDS).let {
-                            String.format(locale, "%d:%02d:%02d", it.inWholeHours, it.inWholeMinutes, it.inWholeSeconds)
-                        },
+                        millisecondsToStopwatchString(it.duration),
                         Formatter.formatFileSize(context, it.size.toLong()),
                         // dateFormat.format(Date(it.dateTaken)),
                         it.uri,
