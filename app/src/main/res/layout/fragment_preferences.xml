@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    style="@style/Theme.RecordingStudio.MaterialPreferencesFragment.Style"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/settingsScrollView">
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:orientation="vertical">
+            <!-- <TextView
+                android:id="@+id/textViewTitle"
+                style="@style/Theme.RecordingStudio.MaterialPreferencesFragment.Title"
+                android:layout_height="wrap_content"
+                android:layout_width="240dp"
+                android:text="Default page title" /> -->
+
+            <FrameLayout
+                android:id="@android:id/list_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></FrameLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

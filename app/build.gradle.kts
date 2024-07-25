@@ -73,4 +73,6 @@ dependencies {
 
     implementation(libs.timeit) // for rec duration timer
     implementation(libs.audioRecordView) // audio visualizer
+
+    implementation(libs.androidx.preference)
 }

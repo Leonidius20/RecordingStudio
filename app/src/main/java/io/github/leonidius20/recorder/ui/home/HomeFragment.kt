@@ -55,6 +55,8 @@ class HomeFragment : Fragment() {
         binding.viewModel = viewModel
         binding.fragment = this
 
+        // todo: restoring the visualizer on screen rotation
+
         return root
     }
 
@@ -63,10 +65,10 @@ class HomeFragment : Fragment() {
         permissionManager.registerForRecordingPermission(this)
 
         viewLifecycleOwner.lifecycleScope.launch {
+
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-                // todo bug - visualizer doesn't get updated when the app is in background
-                // and then starts writing to un-updated view
+                // todo bug - visualizer doesn't get updated on screen rotate
                 viewModel.amplitudes.onEach { amplitude ->
                     binding.audioVisualizer.update(amplitude)
                 }.launchIn(this)

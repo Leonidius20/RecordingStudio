@@ -7,6 +7,12 @@
         <item name="windowNoTitle">true</item>
         <item name="actionBarPopupTheme">@style/Widget.Material3.PopupMenu</item>
 
+        <item name="preferenceTheme">@style/ThemeOverlay.App.Preference</item>
+        <!-- <item name="preferenceFragmentCompatStyle">@style/Theme.RecordingStudio.MaterialPreferencesFragment</item>
+        <item name="preferenceCategoryStyle">@style/Theme.RecordingStudio.MaterialPreferenceCategory</item>
+        <item name="preferenceStyle">@style/Theme.RecordingStudio.PreferenceStyle</item>
+        <item name="switchPreferenceCompatStyle">@style/Theme.RecordingStudio.SwitchPreferenceStyle</item> -->
+
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
@@ -54,4 +60,67 @@
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
+    
+    <style name="ThemeOverlay.App.Preference" parent="PreferenceThemeOverlay">
+        <item name="switchPreferenceCompatStyle">@style/PreferenceMaterialSwitch</item>
+
+    </style>
+
+    <style name="Theme.RecordingStudio.PreferenceStyle">
+        <item name="android:layout">@layout/material_preference</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.SwitchPreferenceStyle">
+        <item name="android:layout">@layout/material_preference_switch</item>
+    </style>
+    
+    <style name="PreferenceMaterialSwitch" parent="@style/Preference.SwitchPreferenceCompat.Material">
+        <item name="widgetLayout">@layout/preference_switch</item>
+    </style>
+
+    <!-- todo: https://github.com/tstewart/Material-You-Preferences/blob/main/library/src/main/res/values/themes.xml -->
+
+    <style name="Theme.RecordingStudio.MaterialPreferencesFragment">
+        <item name="android:layout">@layout/fragment_preferences</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.MaterialPreferencesFragment.Style">
+        <item name="android:background">?colorSurface</item>
+        <item name="android:layout_marginBottom">24dp</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.MaterialPreferenceCategory">
+        <item name="android:layout">@layout/material_preference_category</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.MaterialPreferencesFragment.Title" parent="@style/TextAppearance.Material3.HeadlineLarge">
+        <item name="android:paddingTop">48dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingBottom">20dp</item>
+        <item name="android:textColor">?colorOnSurface</item>
+        <item name="android:textSize">36sp</item>
+    </style>
+
+
+    <style name="Theme.RecordingStudio.MaterialPreferenceCategory.Text" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">?colorPrimary</item>
+        <item name="android:padding">24dp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.MaterialPreference">
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="Theme.RecordingStudio.MaterialPreference.Icon">
+        <item name="android:tint">?colorOnSurface</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:layout_marginEnd">24dp</item>
+    </style>
+
 </resources>

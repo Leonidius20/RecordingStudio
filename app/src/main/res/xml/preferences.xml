@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="recording_control_category"
+        app:title="Recording control">
+
+        <SwitchPreferenceCompat
+            app:key="pause_on_low_battery"
+            app:title="Pause recording on low battery"
+            app:defaultValue="true"/>
+
+        <SwitchPreferenceCompat
+            app:key="pause_on_storage"
+            app:title="Pause recording on low storage"
+            app:defaultValue="true"/>
+
+        <SwitchPreferenceCompat
+            app:key="pause_on_call"
+            app:title="Pause recording on incoming call"
+            app:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="about_app"
+        app:title="About app &amp; legal documents">
+
+        <Preference
+            app:key="github_repo"
+            app:title="Github Repository"
+            app:summary="Report bugs, suggest improvements &amp; view source code">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/Leonidius20/RecordingStudio" />
+
+        </Preference>
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>
