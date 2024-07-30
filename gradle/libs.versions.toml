@@ -21,6 +21,7 @@ okLayoutInflater = "1.0.2"
 timeit = "1.2.0"
 audioRecordView = "1.0.5"
 preference = "1.2.1"
+permissionx = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,7 @@ ok-layoutinflater = { group = "com.github.okcredit", name = "OkLayoutInflater", 
 timeit = { group = "com.yashovardhan99.timeit", name = "timeit", version.ref="timeit" }
 audioRecordView = { group = "com.github.Armen101", name = "AudioRecordView", version.ref = "audioRecordView" }
 androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
+permissionx = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

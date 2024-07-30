@@ -2,7 +2,6 @@ package io.github.leonidius20.recorder.ui.home
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,7 +61,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        permissionManager.registerForRecordingPermission(this)
 
         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -98,15 +96,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun startRecording() {
-        val permissionGranted = permissionManager
-            .obtainRecordingPermission(this@HomeFragment)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val permissionGranted = permissionManager
+                .checkOrRequestRecordingPermission(this@HomeFragment)
 
-        if (!permissionGranted) {
-            Toast.makeText(context, "Denied", Toast.LENGTH_SHORT).show()
-            return
+            if (!permissionGranted) {
+                Toast.makeText(context, "Denied", Toast.LENGTH_SHORT).show()
+            } else {
+                viewModel.onStartRecording()
+            }
+
+
         }
-
-        viewModel.onStartRecording()
     }
 
     fun onRecButtonClick() {

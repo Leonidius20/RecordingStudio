@@ -75,4 +75,6 @@ dependencies {
     implementation(libs.audioRecordView) // audio visualizer
 
     implementation(libs.androidx.preference)
+
+    implementation(libs.permissionx)
 }

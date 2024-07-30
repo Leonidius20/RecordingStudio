@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.ContentValues
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
 import android.os.Build
@@ -15,6 +16,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import com.yashovardhan99.timeit.Stopwatch
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +33,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// todo: refactor maybe, place audio-related stuff in separate class to separate from
+// service-related stuff
 class RecorderService : Service() {
 
     enum class State {
@@ -71,6 +75,8 @@ class RecorderService : Service() {
 
 
     private lateinit var stopwatch: Stopwatch
+
+    private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
@@ -122,6 +128,17 @@ class RecorderService : Service() {
             e.printStackTrace()
             _state.value = State.ERROR
             stopSelf()
+        }
+
+        lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
+            callback = {
+                Log.d("REC SERVICE", "low battery")
+            }
+        ).apply {
+            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
+            ContextCompat.registerReceiver(
+                this@RecorderService, this,
+                intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
