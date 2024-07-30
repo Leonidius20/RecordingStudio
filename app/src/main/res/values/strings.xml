@@ -13,4 +13,15 @@
     <string name="recordings_list_action_share">Share</string>
     <string name="recordings_list_choose_new_name">Type new name</string>
     <string name="new_name">New name</string>
+    <string name="prefs_stop_recording_on_low_battery">Stop recording on low battery</string>
+    <string name="prefs_stop_recording_on_low_storage">Stop recording on low storage</string>
+    <string name="prefs_pause_recording_on_incoming_call">Pause recording on incoming call</string>
+    <string name="prefs_recording_control">Recording control</string>
+    <string name="prefs_about_app_legal_documents"><![CDATA[About app & legal documents]]></string>
+    <string name="prefs_github_repository">Github Repository</string>
+    <string name="prefs_github_repo_summary"><![CDATA[Report bugs, suggest improvements & view source code]]></string>
+
+    <string name="stop_on_low_battery_pref_key" translatable="false">pause_on_low_battery</string>
+    <string name="stop_on_low_storage_pref_key" translatable="false">pause_on_storage</string>
+    <string name="pause_on_call_pref_key" translatable="false">pause_on_call</string>
 </resources>

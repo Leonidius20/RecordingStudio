@@ -4,33 +4,33 @@
 
     <PreferenceCategory
         app:key="recording_control_category"
-        app:title="Recording control">
+        app:title="@string/prefs_recording_control">
 
         <SwitchPreferenceCompat
-            app:key="pause_on_low_battery"
-            app:title="Pause recording on low battery"
-            app:defaultValue="true"/>
+            app:key="@string/stop_on_low_battery_pref_key"
+            app:title="@string/prefs_stop_recording_on_low_battery"
+            app:defaultValue="@bool/stop_on_low_battery_default"/>
 
         <SwitchPreferenceCompat
-            app:key="pause_on_storage"
-            app:title="Pause recording on low storage"
-            app:defaultValue="true"/>
+            app:key="@string/stop_on_low_storage_pref_key"
+            app:title="@string/prefs_stop_recording_on_low_storage"
+            app:defaultValue="@bool/stop_on_storage_default"/>
 
         <SwitchPreferenceCompat
-            app:key="pause_on_call"
-            app:title="Pause recording on incoming call"
-            app:defaultValue="false"/>
+            app:key="@string/pause_on_call_pref_key"
+            app:title="@string/prefs_pause_recording_on_incoming_call"
+            app:defaultValue="@bool/pause_on_call_default"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
         app:key="about_app"
-        app:title="About app &amp; legal documents">
+        app:title="@string/prefs_about_app_legal_documents">
 
         <Preference
             app:key="github_repo"
-            app:title="Github Repository"
-            app:summary="Report bugs, suggest improvements &amp; view source code">
+            app:title="@string/prefs_github_repository"
+            app:summary="@string/prefs_github_repo_summary">
 
             <intent
                 android:action="android.intent.action.VIEW"

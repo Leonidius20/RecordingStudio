@@ -11,8 +11,8 @@ import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -61,8 +61,7 @@ class RecorderServiceLauncher @Inject constructor(
      * displaying it unsubscribes, and then the app goes into foreground again and the
      * fragment resubscribes, the visualization reflects the newest samples.
      */
-    val amplitudes: SharedFlow<Int>
-        get() = _amplitudes
+    val amplitudes = _amplitudes.asSharedFlow()
 
 
     /**
@@ -107,6 +106,8 @@ class RecorderServiceLauncher @Inject constructor(
     ) {
         binder = service as RecorderService.Binder
 
+        binder!!.service.launcher = this
+
         // serviceScope is cancelled when the service is destroyed
         service.service.serviceScope.launch {
             service.service.state.onEach {
@@ -135,6 +136,13 @@ class RecorderServiceLauncher @Inject constructor(
 
     override fun onServiceDisconnected(name: ComponentName?) {
         binder = null
+    }
+
+    /**
+     * called by service itself when it is stopped
+     */
+    fun onServiceStopped() {
+        _state.value = State.IDLE
     }
 
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="stop_on_low_battery_default">true</bool>
+    <bool name="stop_on_storage_default">true</bool>
+    <bool name="pause_on_call_default">false</bool>
+</resources>

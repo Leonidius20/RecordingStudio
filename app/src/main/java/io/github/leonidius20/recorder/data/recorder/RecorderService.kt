@@ -18,23 +18,27 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.yashovardhan99.timeit.Stopwatch
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
 // service-related stuff
+@AndroidEntryPoint
 class RecorderService : Service() {
 
     enum class State {
@@ -70,13 +74,22 @@ class RecorderService : Service() {
     /**
      * emits max amplitude every 100ms. Used for audio visualization
      */
-    val amplitudes: SharedFlow<Int>
-        get() = _amplitudes
-
+    val amplitudes = _amplitudes.asSharedFlow()
 
     private lateinit var stopwatch: Stopwatch
 
-    private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
+    //private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
+
+    @Inject
+    lateinit var settings: Settings
+
+    /**
+     * the launcher class responsible for starting this service.
+     * injected by RecorderServiceLauncher itself when starting.
+     * Needed so that we can notify the UI when the service is stopped
+     * by a broadcast receiver bc of low battery or storage
+     */
+    var launcher: RecorderServiceLauncher? = null
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
@@ -130,15 +143,23 @@ class RecorderService : Service() {
             stopSelf()
         }
 
-        lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
-            callback = {
-                Log.d("REC SERVICE", "low battery")
+        if (settings.state.value.stopOnLowBattery) {
+            val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
+                callback = {
+
+
+                    // todo: make notification with sound about the fact that the recording was auto-stopped
+
+
+                    launcher!!.onServiceStopped() // update ui state
+                    stop()
+                }
+            ).apply {
+                val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
+                ContextCompat.registerReceiver(
+                    this@RecorderService, this,
+                    intentFilter, ContextCompat.RECEIVER_EXPORTED)
             }
-        ).apply {
-            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
-            ContextCompat.registerReceiver(
-                this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
