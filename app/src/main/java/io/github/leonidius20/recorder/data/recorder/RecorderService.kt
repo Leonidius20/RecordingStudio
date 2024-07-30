@@ -1,8 +1,10 @@
 package io.github.leonidius20.recorder.data.recorder
 
+import android.Manifest
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.ContentValues
 import android.content.Intent
@@ -14,11 +16,15 @@ import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import com.permissionx.guolindev.PermissionX
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.Settings
 import kotlinx.coroutines.CoroutineScope
@@ -95,10 +101,24 @@ class RecorderService : Service() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel.
-            val name = "Recording in progress"
-            val descriptionText = "Recording in progress"
-            val importance = NotificationManager.IMPORTANCE_LOW
+            val name = "Recording status"
+            val descriptionText = "Shown while a recording is in progress or paused"
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val mChannel = NotificationChannel("io.github.leonidius20.recorder.inprogress", name, importance)
+            mChannel.description = descriptionText
+            // Register the channel with the system. You can't change the importance
+            // or other notification behaviors after this.
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(mChannel)
+        }
+
+        val recStopNotificationId = "io.github.leonidius20.recorder.stopped"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel.
+            val name = "Recording stopped abruptly"
+            val descriptionText = "Sent if a recording was stopped because the device was running out of battery or storage"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val mChannel = NotificationChannel(recStopNotificationId, name, importance)
             mChannel.description = descriptionText
             // Register the channel with the system. You can't change the importance
             // or other notification behaviors after this.
@@ -147,9 +167,18 @@ class RecorderService : Service() {
             val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
                 callback = {
 
-
-                    // todo: make notification with sound about the fact that the recording was auto-stopped
-
+                    if (PermissionX.isGranted(this, PermissionX.permission.POST_NOTIFICATIONS)) {
+                        NotificationCompat.Builder(this, recStopNotificationId)
+                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setContentTitle("Recording stopped")
+                            .setContentText("The device is running out of battery. Charge it or disable auto-stopping recording in settings.")
+                            .setPriority(NotificationCompat.PRIORITY_MAX)
+                            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+                            .setAutoCancel(true)
+                            .build().also { notification ->
+                                NotificationManagerCompat.from(this).notify(1, notification)
+                            }
+                    }
 
                     launcher!!.onServiceStopped() // update ui state
                     stop()
