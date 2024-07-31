@@ -6,13 +6,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
+    <!-- needed for older devices to read the list of recordings and write recording files  -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
 
+    <!-- to show notification while recording & if recording stopped on low battery/storage -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- to stop recording when there is an incoming call -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".RecorderApp"

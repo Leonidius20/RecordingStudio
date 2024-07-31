@@ -25,5 +25,6 @@
     <string name="stop_on_low_storage_pref_key" translatable="false">pause_on_storage</string>
     <string name="pause_on_call_pref_key" translatable="false">pause_on_call</string>
     <string name="permissions_rationale">The app needs audio recording permission to work. In addition, the notification permission is needed to notify you if a recording is continuing in background after you left the app, or if an ongoing recording was stopped due to running out of battery or storage.</string>
-    <string name="permissions_rationale_grant_in_settings">%1$s\\n\\nYou need to grant the permissions manually in the Settings.</string>
+    <string name="permissions_rationale_grant_in_settings">%1$s\n\nYou need to grant the permissions manually in the Settings.</string>
+    <string name="phone_state_permission_rationale">In order to pause recording on incoming phone call, the app needs the permission to read phone state.</string>
 </resources>
