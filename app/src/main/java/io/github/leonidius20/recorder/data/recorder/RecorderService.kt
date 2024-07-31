@@ -1,6 +1,5 @@
 package io.github.leonidius20.recorder.data.recorder
 
-import android.Manifest
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -16,7 +15,6 @@ import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -41,6 +39,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+
+private const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.inprogress"
+private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.stopped"
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
 // service-related stuff
@@ -99,34 +100,11 @@ class RecorderService : Service() {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel.
-            val name = "Recording status"
-            val descriptionText = "Shown while a recording is in progress or paused"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val mChannel = NotificationChannel("io.github.leonidius20.recorder.inprogress", name, importance)
-            mChannel.description = descriptionText
-            // Register the channel with the system. You can't change the importance
-            // or other notification behaviors after this.
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(mChannel)
-        }
+        createRecInProgressNotificationChannel()
 
-        val recStopNotificationId = "io.github.leonidius20.recorder.stopped"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel.
-            val name = "Recording stopped abruptly"
-            val descriptionText = "Sent if a recording was stopped because the device was running out of battery or storage"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val mChannel = NotificationChannel(recStopNotificationId, name, importance)
-            mChannel.description = descriptionText
-            // Register the channel with the system. You can't change the importance
-            // or other notification behaviors after this.
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(mChannel)
-        }
+        createPrematureStopNotificationChannel()
 
-        val notification = NotificationCompat.Builder(this, "io.github.leonidius20.recorder.inprogress")
+        val notification = NotificationCompat.Builder(this, REC_IN_PROGRESS_CHANNEL_ID)
             // Create the notification to display while the service is running
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_microphone)
@@ -141,11 +119,6 @@ class RecorderService : Service() {
 
 
         try {
-            /*startForeground(
-                100,
-                notification,
-                foregroundServiceType
-            )*/
             ServiceCompat.startForeground(
                 this, 100,
                 notification, foregroundServiceType
@@ -163,33 +136,30 @@ class RecorderService : Service() {
             stopSelf()
         }
 
-        if (settings.state.value.stopOnLowBattery) {
-            val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
-                callback = {
-
-                    if (PermissionX.isGranted(this, PermissionX.permission.POST_NOTIFICATIONS)) {
-                        NotificationCompat.Builder(this, recStopNotificationId)
-                            .setSmallIcon(R.mipmap.ic_launcher)
-                            .setContentTitle("Recording stopped")
-                            .setContentText("The device is running out of battery. Charge it or disable auto-stopping recording in settings.")
-                            .setPriority(NotificationCompat.PRIORITY_MAX)
-                            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
-                            .setAutoCancel(true)
-                            .build().also { notification ->
-                                NotificationManagerCompat.from(this).notify(1, notification)
-                            }
-                    }
-
-                    launcher!!.onServiceStopped() // update ui state
-                    stop()
+        val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
+            callback = {
+                if (settings.state.value.stopOnLowBattery) {
+                    stopAbruptly(explanation = "The device is running out of battery.")
                 }
-            ).apply {
-                val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
-                ContextCompat.registerReceiver(
-                    this@RecorderService, this,
-                    intentFilter, ContextCompat.RECEIVER_EXPORTED)
             }
+        ).apply {
+            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
+            ContextCompat.registerReceiver(
+                this@RecorderService, this,
+                intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
+
+        val lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
+            if (settings.state.value.stopOnLowStorage) {
+                stopAbruptly("The device is running out of storage.")
+            }
+        }.apply {
+            val intentFilter = IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW)
+            ContextCompat.registerReceiver(
+                this@RecorderService, this,
+                intentFilter, ContextCompat.RECEIVER_EXPORTED)
+        }
+
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
 
@@ -302,6 +272,66 @@ class RecorderService : Service() {
         _state.value = State.RECORDING
     }
 
+    /**
+     * called if battery is low or storage is low and we need to stop recording
+     * and notify UI
+     */
+    private fun stopAbruptly(explanation: String) {
+        if (PermissionX.isGranted(this, PermissionX.permission.POST_NOTIFICATIONS)) {
+            NotificationCompat.Builder(this, REC_ABRUPT_STOP_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Recording stopped")
+                .setContentText(explanation)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+                .setAutoCancel(true)
+                .build().also { notification ->
+                    NotificationManagerCompat.from(this).notify(1, notification)
+                }
+        }
+
+        launcher!!.onServiceStopped() // update ui state
+        stop()
+    }
+
+    /**
+     * create a notification channel for the persistent notification that is
+     * shown while the recording is in progress or paused
+     */
+    private fun createRecInProgressNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel.
+            val name = "Recording status"
+            val descriptionText = "Shown while a recording is in progress or paused"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val mChannel = NotificationChannel(REC_IN_PROGRESS_CHANNEL_ID, name, importance)
+            mChannel.description = descriptionText
+            // Register the channel with the system. You can't change the importance
+            // or other notification behaviors after this.
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(mChannel)
+        }
+    }
+
+    /**
+     * create a notification channel for the notification that is
+     * shown when the recording in prematurely stopped bc of low
+     * battery or storage
+     */
+    private fun createPrematureStopNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel.
+            val name = "Recording stopped abruptly"
+            val descriptionText = "Sent if a recording was stopped because the device was running out of battery or storage"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val mChannel = NotificationChannel(REC_ABRUPT_STOP_CHANNEL_ID, name, importance)
+            mChannel.description = descriptionText
+            // Register the channel with the system. You can't change the importance
+            // or other notification behaviors after this.
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(mChannel)
+        }
+    }
 
 
 }
