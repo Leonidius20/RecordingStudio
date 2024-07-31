@@ -30,7 +30,6 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         super.onPause()
     }
 
-    // todo: listen and intercept phone call setting to request permission
     override fun onSharedPreferenceChanged(
         sharedPreferences: SharedPreferences?,
         key: String?

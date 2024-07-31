@@ -13,6 +13,7 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -160,6 +161,15 @@ class RecorderService : Service() {
                 intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
 
+        val callBroadcastReceiver = IncomingCallBroadcastReceiver {
+            if (settings.state.value.pauseOnCall) {
+                pause()
+                sendNotificationAboutPausingOnCall()
+            }
+        }.apply {
+            registerInContext(this@RecorderService)
+        }
+
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
 
@@ -215,6 +225,8 @@ class RecorderService : Service() {
         recorder.release()
         descriptor.close()
         job.cancel()
+
+        NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
     }
 
     /**
@@ -270,6 +282,8 @@ class RecorderService : Service() {
         recorder.resume()
         stopwatch.resume()
         _state.value = State.RECORDING
+
+        NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
     }
 
     /**
@@ -286,7 +300,7 @@ class RecorderService : Service() {
                 .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
                 .setAutoCancel(true)
                 .build().also { notification ->
-                    NotificationManagerCompat.from(this).notify(1, notification)
+                    NotificationManagerCompat.from(this).notify(REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID, notification)
                 }
         }
 
@@ -333,5 +347,23 @@ class RecorderService : Service() {
         }
     }
 
+    private fun sendNotificationAboutPausingOnCall() {
+        if (PermissionX.isGranted(this, PermissionX.permission.POST_NOTIFICATIONS)) {
+            NotificationCompat.Builder(this, REC_ABRUPT_STOP_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Recording paused")
+                .setContentText("Incoming phone call")
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+                .setAutoCancel(true)
+                .build().also { notification ->
+                    NotificationManagerCompat.from(this).notify(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID, notification)
+                }
+        }
+    }
+
 
 }
+
+private const val REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID = 1
+private const val REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID = 2
