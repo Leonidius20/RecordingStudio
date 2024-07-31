@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.telephony.TelephonyManager
@@ -20,6 +21,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,9 +48,10 @@ private const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.i
 private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.stopped"
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
+// todo: for this, use lifecycle-aware components
 // service-related stuff
 @AndroidEntryPoint
-class RecorderService : Service() {
+class RecorderService : LifecycleService() {
 
     enum class State {
         PREPARING,
@@ -66,8 +70,8 @@ class RecorderService : Service() {
     val state: StateFlow<State>
         get() = _state
 
-    private val job = SupervisorJob()
-    val serviceScope = CoroutineScope(job + Dispatchers.Main)
+    //private val job = SupervisorJob()
+    //val serviceScope = CoroutineScope(job + Dispatchers.Main)
 
     private val _timer = MutableStateFlow(0L)
 
@@ -99,7 +103,8 @@ class RecorderService : Service() {
      */
     var launcher: RecorderServiceLauncher? = null
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
 
         createRecInProgressNotificationChannel()
 
@@ -203,7 +208,8 @@ class RecorderService : Service() {
         }
         stopwatch.start()
 
-        serviceScope.launch {
+
+        lifecycleScope.launch {
             // every 100ms, emit maxAmplitude
             while(true) {
                 if (state.value == State.RECORDING) {
@@ -216,7 +222,10 @@ class RecorderService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onBind(intent: Intent?) = binder
+    override fun onBind(intent: Intent): IBinder {
+        super.onBind(intent)
+        return binder
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -224,7 +233,7 @@ class RecorderService : Service() {
         recorder.stop()
         recorder.release()
         descriptor.close()
-        job.cancel()
+        // job.cancel()
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
     }

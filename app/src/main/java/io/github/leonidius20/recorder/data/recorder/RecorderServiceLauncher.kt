@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -109,7 +110,7 @@ class RecorderServiceLauncher @Inject constructor(
         binder!!.service.launcher = this
 
         // serviceScope is cancelled when the service is destroyed
-        service.service.serviceScope.launch {
+        service.service.lifecycleScope.launch {
             service.service.state.onEach {
                 when(it) {
                     RecorderService.State.RECORDING -> _state.value = State.RECORDING
