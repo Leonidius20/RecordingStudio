@@ -49,7 +49,10 @@ private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.s
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
 // todo: for this, use lifecycle-aware components
-// service-related stuff
+
+// todo: lifecycle aware component that sets ui state to IDLE when the service is destroyed
+// and remove reference to "launcher" here
+
 @AndroidEntryPoint
 class RecorderService : LifecycleService() {
 
@@ -101,7 +104,7 @@ class RecorderService : LifecycleService() {
      * Needed so that we can notify the UI when the service is stopped
      * by a broadcast receiver bc of low battery or storage
      */
-    var launcher: RecorderServiceLauncher? = null
+    // var launcher: RecorderServiceLauncher? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -313,7 +316,7 @@ class RecorderService : LifecycleService() {
                 }
         }
 
-        launcher!!.onServiceStopped() // update ui state
+        //launcher!!.onServiceStopped() // update ui state
         stop()
     }
 

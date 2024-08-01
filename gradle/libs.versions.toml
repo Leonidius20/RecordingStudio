@@ -22,6 +22,7 @@ timeit = "1.2.0"
 audioRecordView = "1.0.5"
 preference = "1.2.1"
 permissionx = "1.8.0"
+androidx-media3 = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,10 @@ timeit = { group = "com.yashovardhan99.timeit", name = "timeit", version.ref="ti
 audioRecordView = { group = "com.github.Armen101", name = "AudioRecordView", version.ref = "audioRecordView" }
 androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
 permissionx = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionx" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "androidx-media3" }
+androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidx-media3" }
+androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "androidx-media3" }
+androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

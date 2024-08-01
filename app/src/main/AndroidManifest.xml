@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <!-- needed for older devices to read the list of recordings and write recording files  -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
@@ -46,6 +47,17 @@
             android:description="@string/rec_service_desc"
             android:foregroundServiceType="microphone"
             />
+
+        <service
+            android:name=".data.playback.PlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService"/>
+            </intent-filter>
+        </service>
+
+
     </application>
 
 </manifest>

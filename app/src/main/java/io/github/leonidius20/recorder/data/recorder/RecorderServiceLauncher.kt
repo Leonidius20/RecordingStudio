@@ -101,13 +101,23 @@ class RecorderServiceLauncher @Inject constructor(
         binder!!.service.toggleRecPause()
     }
 
+    // for ERROR or IDLE state on destruction
+    private val serviceLifecycleObserver = UiStateUpdater { state ->
+        _state.value = state
+    }
+
     override fun onServiceConnected(
         name: ComponentName?,
-        service: IBinder?
+        service: IBinder
     ) {
         binder = service as RecorderService.Binder
 
-        binder!!.service.launcher = this
+
+        binder!!.service.lifecycle.addObserver(
+            serviceLifecycleObserver
+        )
+
+        // binder!!.service.launcher = this
 
         // serviceScope is cancelled when the service is destroyed
         service.service.lifecycleScope.launch {
