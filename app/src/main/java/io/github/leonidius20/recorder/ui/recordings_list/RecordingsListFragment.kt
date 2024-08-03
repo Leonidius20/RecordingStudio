@@ -55,7 +55,11 @@ class RecordingsListFragment : Fragment() {
 
 
         val onItemClick = { position: Int ->
-            if (actionMode != null) toggleSelection(position)
+            if (actionMode != null) {
+                toggleSelection(position)
+            } else {
+                // start playback
+            }
         }
 
         val onItemLongClick = { position: Int ->
