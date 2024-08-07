@@ -2,6 +2,8 @@ package io.github.leonidius20.recorder.ui.recordings_list
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ActionMode
@@ -18,8 +20,15 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.databinding.RenameDialogBinding
 
@@ -54,11 +63,14 @@ class RecordingsListFragment : Fragment() {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
 
 
-        val onItemClick = { position: Int ->
+        val onItemClick: (Int)->Unit = { position: Int ->
             if (actionMode != null) {
                 toggleSelection(position)
             } else {
                 // start playback
+                viewModel.recordings.value!![position].also {
+                    setFile(it.uri, it.name)
+                }
             }
         }
 
@@ -260,5 +272,51 @@ class RecordingsListFragment : Fragment() {
         adapter.replaceItemAt(position, newData)
     }
 
+    private var mediaController: MediaController? = null
+    private var controllerFuture: ListenableFuture<MediaController>? = null
+
+
+    override fun onStart() {
+        super.onStart()
+        val context = requireContext()
+        val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        val factory = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture = factory
+        factory.addListener( {
+            mediaController = factory?.let {
+                if (it.isDone)
+                    it.get()
+                else
+                    null
+            }
+
+            binding.playerView.player = mediaController
+
+
+        }, MoreExecutors.directExecutor())
+    }
+    //todo: replace with lifecycle aware component
+
+    override fun onStop() {
+        super.onStop()
+        MediaController.releaseFuture(controllerFuture!!)
+        controllerFuture = null
+        mediaController = null
+    }
+
+    /**
+     * this is temporary and should be replaced with a way to open the whole Recordings
+     * folder at once and jump to appropriate file there (maybe taking position from
+     * list adapter)
+     */
+    fun setFile(uri: Uri, title: String) {
+        mediaController!!.setMediaItem(
+            MediaItem.Builder().setUri(uri).setMediaMetadata(
+                MediaMetadata.Builder().setDisplayTitle(title).build()
+            ).build()
+        )
+
+        mediaController!!.prepare()
+    }
 
 }
