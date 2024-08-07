@@ -68,9 +68,7 @@ class RecordingsListFragment : Fragment() {
                 toggleSelection(position)
             } else {
                 // start playback
-                viewModel.recordings.value!![position].also {
-                    setFile(it.uri, it.name)
-                }
+                setFile(position)
             }
         }
 
@@ -292,6 +290,16 @@ class RecordingsListFragment : Fragment() {
 
             binding.playerView.player = mediaController
 
+            viewModel.recordings.value!!.forEach { recording ->
+                mediaController?.addMediaItem(
+                    MediaItem.Builder().setUri(recording.uri).setMediaMetadata(
+                        MediaMetadata.Builder().setDisplayTitle(recording.name).build()
+                    ).build()
+                )
+            }
+
+            mediaController?.prepare()
+
 
         }, MoreExecutors.directExecutor())
     }
@@ -309,14 +317,10 @@ class RecordingsListFragment : Fragment() {
      * folder at once and jump to appropriate file there (maybe taking position from
      * list adapter)
      */
-    fun setFile(uri: Uri, title: String) {
-        mediaController!!.setMediaItem(
-            MediaItem.Builder().setUri(uri).setMediaMetadata(
-                MediaMetadata.Builder().setDisplayTitle(title).build()
-            ).build()
-        )
-
-        mediaController!!.prepare()
+    private fun setFile(position: Int) {
+        with(mediaController!!) {
+            seekTo(position, 0L)
+        }
     }
 
 }
