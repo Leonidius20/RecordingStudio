@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
@@ -21,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
@@ -98,13 +100,9 @@ class RecorderService : LifecycleService() {
     @Inject
     lateinit var settings: Settings
 
-    /**
-     * the launcher class responsible for starting this service.
-     * injected by RecorderServiceLauncher itself when starting.
-     * Needed so that we can notify the UI when the service is stopped
-     * by a broadcast receiver bc of low battery or storage
-     */
-    // var launcher: RecorderServiceLauncher? = null
+    // needed here so that we can return it from activity started for result (action record audio)
+    lateinit var fileUri: Uri
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -183,7 +181,8 @@ class RecorderService : LifecycleService() {
 
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
-        descriptor = getRecFileUri(fileName)
+        fileUri = getRecFileUri(fileName)
+        descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri!!, "w")!!
 
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -263,7 +262,7 @@ class RecorderService : LifecycleService() {
     }
 
 
-    private fun getRecFileUri(name: String): ParcelFileDescriptor {
+    private fun getRecFileUri(name: String): Uri {
         val resolver = applicationContext.contentResolver
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -273,7 +272,7 @@ class RecorderService : LifecycleService() {
 
         val uri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
 
-        return resolver.openFileDescriptor(uri!!, "w")!!
+        return uri!!
     }
 
     inner class Binder: android.os.Binder() {

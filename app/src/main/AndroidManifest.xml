@@ -41,6 +41,22 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.RecordDialogActivity"
+            android:exported="true"
+            android:label="Record">
+
+            <intent-filter>
+
+               <action android:name="android.provider.MediaStore.RECORD_SOUND"/>
+
+                <!-- needed to receive implicit intents -->
+                <category android:name="android.intent.category.DEFAULT"/>
+
+
+            </intent-filter>
+
+        </activity>
+
         <service
             android:name=".data.recorder.RecorderService"
             android:exported="false"

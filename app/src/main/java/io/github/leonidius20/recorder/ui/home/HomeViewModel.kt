@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.home
 
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
@@ -89,5 +90,6 @@ class HomeViewModel @Inject constructor(
         recorderServiceLauncher.stopRecording()
     }
 
+    fun getUri() = recorderServiceLauncher.getUri()
 
 }

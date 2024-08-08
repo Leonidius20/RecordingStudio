@@ -1,11 +1,15 @@
 package io.github.leonidius20.recorder.data.recorder
 
 import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +21,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -112,7 +119,6 @@ class RecorderServiceLauncher @Inject constructor(
     ) {
         binder = service as RecorderService.Binder
 
-
         binder!!.service.lifecycle.addObserver(
             serviceLifecycleObserver
         )
@@ -155,5 +161,7 @@ class RecorderServiceLauncher @Inject constructor(
     fun onServiceStopped() {
         _state.value = State.IDLE
     }
+
+    fun getUri() = binder!!.service.fileUri
 
 }
