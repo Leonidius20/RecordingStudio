@@ -28,6 +28,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // todo: replace with real
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

@@ -88,6 +88,12 @@ class RecordingsListFragment : Fragment() {
 
         }
 
+        // this has to happen every time that we go to this fragment. However
+        // what if we cache data on disk, get that data in viewmodel.init(), and
+        // then here we just run some viewModel.checkNewRecordings(), that will compare
+        // the MediaStore version, if it's changed, it will compare some other thing,
+        // then use DiffUtil to change the list (some stuff may have been deleted or renamed
+        // between
         viewModel.loadRecordings()
 
         trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -312,11 +318,7 @@ class RecordingsListFragment : Fragment() {
         mediaController = null
     }
 
-    /**
-     * this is temporary and should be replaced with a way to open the whole Recordings
-     * folder at once and jump to appropriate file there (maybe taking position from
-     * list adapter)
-     */
+
     private fun setFile(position: Int) {
         with(mediaController!!) {
             seekTo(position, 0L)

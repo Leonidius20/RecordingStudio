@@ -12,6 +12,8 @@ import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Named
@@ -30,7 +32,17 @@ class RecordingsListRepository @Inject constructor(
         val dateTaken: Long,
     )
 
+    private val _recordings = MutableStateFlow<List<Recording>>(emptyList())
+    val recordings = _recordings.asStateFlow()
+
     // todo Cache the result?
+
+    suspend fun loadOrUpdateRecordingsIfNeeded() {
+
+        // todo: check MediaStore generation and whatnot
+
+        _recordings.value = getRecordings()
+    }
 
     suspend fun getRecordings(): List<Recording> = withContext(ioDispatcher) {
         val recordings = mutableListOf<Recording>()
@@ -59,6 +71,7 @@ class RecordingsListRepository @Inject constructor(
             selectionArgs,
             sortOrder
         )?.use { cursor ->
+
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn =
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)

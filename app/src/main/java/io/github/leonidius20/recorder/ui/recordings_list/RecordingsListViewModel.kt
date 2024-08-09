@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -20,6 +21,9 @@ import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DateFormat
@@ -54,44 +58,48 @@ class RecordingsListViewModel @Inject constructor(
      */
     val renameFileNewName = MutableLiveData<String>()
 
+    //init {
+    //    loadRecordings()
+    //}
+
     fun loadRecordings() {
         viewModelScope.launch {
-            val result = withContext(ioDispatcher) {
-                return@withContext repository.getRecordings().map {
-                    RecordingUiModel(
-                        it.name,
-                        millisecondsToStopwatchString(it.duration),
-                        Formatter.formatFileSize(context, it.size.toLong()),
-                        // dateFormat.format(Date(it.dateTaken)),
-                        it.uri,
-                    )
-                }.toTypedArray()
-            }
+            repository.loadOrUpdateRecordingsIfNeeded()
 
-            _recordings.value = result
         }
     }
 
-    private val _recordings = MutableLiveData<Array<RecordingUiModel>>()
+    val recordings = repository.recordings
+        .map { list ->
 
-    val recordings: LiveData<Array<RecordingUiModel>>
-        get() = _recordings
+            list.map {
+                RecordingUiModel(
+                    it.name,
+                    millisecondsToStopwatchString(it.duration),
+                    Formatter.formatFileSize(context, it.size.toLong()),
+                    // dateFormat.format(Date(it.dateTaken)),
+                    it.uri,
+                )
+            }.toTypedArray()
+
+        }.flowOn(ioDispatcher)
+        .asLiveData()
 
 
     fun rename(datasetPosition: Int) {
-        val item = _recordings.value!![datasetPosition]
+        val item = recordings.value!![datasetPosition]
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun requestTrashing(positions: List<Int>): PendingIntent {
         return repository.requestTrashing(
-            positions.map { position -> _recordings.value!![position].uri }
+            positions.map { position -> recordings.value!![position].uri }
         )
     }
 
     fun requestDeleting(positions: List<Int>): PendingIntent {
         return repository.requestDeleting(
-            positions.map { position -> _recordings.value!![position].uri }
+            positions.map { position -> recordings.value!![position].uri }
         )
     }
 

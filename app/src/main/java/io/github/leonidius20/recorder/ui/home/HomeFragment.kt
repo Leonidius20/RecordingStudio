@@ -22,14 +22,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * a tag value used to mark that the record button shows "Record" icon (as
- * opposed to "Pause"). Used for testing purposes because it is impossible
- * to compare drawables in a test case.
- */
-const val BTN_IMG_TAG_RECORD = "record"
-const val BTN_IMG_TAG_PAUSE = "pause"
-
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
