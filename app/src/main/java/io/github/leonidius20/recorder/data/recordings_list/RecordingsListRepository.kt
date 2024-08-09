@@ -3,22 +3,20 @@ package io.github.leonidius20.recorder.data.recordings_list
 import android.app.PendingIntent
 import android.content.ContentUris
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
-@ViewModelScoped
+@Singleton
 class RecordingsListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @Named("io") private val ioDispatcher: CoroutineDispatcher,
@@ -35,9 +33,24 @@ class RecordingsListRepository @Inject constructor(
     private val _recordings = MutableStateFlow<List<Recording>>(emptyList())
     val recordings = _recordings.asStateFlow()
 
+    //private var latestMediaStoreVersion: String? = null
+    //private var latestMediaStoreGeneration: Long? = null
+
     // todo Cache the result?
 
     suspend fun loadOrUpdateRecordingsIfNeeded() {
+       // val newMediaStoreVersion = MediaStore.getVersion(context)
+       // val newMediaStoreGeneration = MediaStore.getGeneration(context, MediaStore.VOLUME_EXTERNAL)
+//
+     //   if (newMediaStoreVersion != latestMediaStoreVersion) {
+      //      latestMediaStoreVersion = newMediaStoreVersion
+
+     //      _recordings.value = getRecordings()
+     //   } else  {
+            // mediastore version same, but something was added or modified
+      //      MediaStore.getG
+      //  }
+
 
         // todo: check MediaStore generation and whatnot
 

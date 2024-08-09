@@ -24,6 +24,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.recyclerview.widget.DiffUtil
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
@@ -80,11 +81,16 @@ class RecordingsListFragment : Fragment() {
             toggleSelection(position)
         }
 
-        viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
-            // todo: DiffUtil here
-            adapter = RecordingsListAdapter(ArrayList(recordings.toMutableList()), onItemClick, onItemLongClick)
-            binding.recordingList.adapter = adapter
+        adapter = RecordingsListAdapter(
+            onItemClick,
+            onItemLongClick
+        )
+        binding.recordingList.adapter = adapter
 
+        viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
+
+            adapter.setData(recordings)
+            binding.recordingList.scrollToPosition(0)
 
         }
 

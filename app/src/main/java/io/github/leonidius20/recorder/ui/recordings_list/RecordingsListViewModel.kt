@@ -72,7 +72,7 @@ class RecordingsListViewModel @Inject constructor(
     val recordings = repository.recordings
         .map { list ->
 
-            list.map {
+            ArrayList(list.map {
                 RecordingUiModel(
                     it.name,
                     millisecondsToStopwatchString(it.duration),
@@ -80,7 +80,8 @@ class RecordingsListViewModel @Inject constructor(
                     // dateFormat.format(Date(it.dateTaken)),
                     it.uri,
                 )
-            }.toTypedArray()
+            })
+
 
         }.flowOn(ioDispatcher)
         .asLiveData()

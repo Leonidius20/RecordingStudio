@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.util.contains
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.ui.common.breakIntoRangesDescending
@@ -13,12 +14,26 @@ import io.github.leonidius20.recorder.ui.common.breakIntoRangesDescending
  * this adapter supports selecting multiple items, removing and (in future) changing their titles
  */
 class RecordingsListAdapter(
-    private val recordings: ArrayList<RecordingsListViewModel.RecordingUiModel>,
     private val onItemClicked: (Int) -> Unit,
     private val onItemLongClicked: (Int) -> Unit,
 ): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
 
-    private val selectedItems = SparseBooleanArray(recordings.size)
+    private var recordings = ArrayList<RecordingsListViewModel.RecordingUiModel>()
+
+    private val selectedItems = SparseBooleanArray()
+
+    fun setData(
+        newData: ArrayList<RecordingsListViewModel.RecordingUiModel>
+    ) {
+        val callback = RecordingsDiffUtilCallback(
+            oldList = recordings,
+            newList = newData
+        )
+        val diff = DiffUtil.calculateDiff(callback)
+        recordings = newData
+
+        diff.dispatchUpdatesTo(this)
+    }
 
     class ViewHolder(
         val root: RecordingListItemWrapper,
@@ -133,5 +148,32 @@ class RecordingsListAdapter(
         recordings[position] = with
         notifyItemChanged(position)
     }
+
+    val currentData
+        get() = recordings
+
+}
+
+class RecordingsDiffUtilCallback(
+    private val oldList: ArrayList<RecordingsListViewModel.RecordingUiModel>,
+    private val newList: ArrayList<RecordingsListViewModel.RecordingUiModel>,
+): DiffUtil.Callback() {
+
+    override fun getOldListSize() = oldList.size
+
+    override fun getNewListSize() = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val oldItem = oldList[oldItemPosition]
+        val newItem = newList[newItemPosition]
+        return oldItem.uri == newItem.uri // uri is the unique identifier
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val oldItem = oldList[oldItemPosition]
+        val newItem = newList[newItemPosition]
+        return oldItem == newItem // here we compare all fields including name, duration
+    }
+
 
 }
