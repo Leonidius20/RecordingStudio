@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="bottom"
     android:layoutDirection="ltr"
     android:background="@color/md_theme_secondaryContainer"
     android:orientation="vertical"
+
+    android:padding="4dp"
+
     tools:targetApi="28">
 
     <!--
@@ -19,7 +23,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:paddingTop="4dp"
         android:orientation="horizontal">
 
         <ImageButton
@@ -40,27 +43,36 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        >
 
         <TextView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/ExoStyledControls.TimeText.Position"
             android:id="@id/exo_position"/>
 
         <View
-            android:layout_width="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/exo_position"
+            app:layout_constraintEnd_toStartOf="@id/exo_duration"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@id/exo_progress_placeholder"/>
 
 
         <TextView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/ExoStyledControls.TimeText.Duration"
             android:id="@id/exo_duration"/>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>
