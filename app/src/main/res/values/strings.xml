@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Recording Studio</string>
-    <string name="app_name_short">Rec Studio</string>
+
     <string name="nav_title_record">Record</string>
     <string name="nav_title_recordings">Recordings</string>
     <string name="nav_title_settings">Settings</string>

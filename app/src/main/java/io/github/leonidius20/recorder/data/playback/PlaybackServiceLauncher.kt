@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.recordings_list.playback
+package io.github.leonidius20.recorder.data.playback
 
 import android.content.ComponentName
 import android.content.Context

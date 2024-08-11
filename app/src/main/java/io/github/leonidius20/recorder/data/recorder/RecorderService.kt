@@ -118,6 +118,7 @@ class RecorderService : LifecycleService() {
             .setContentTitle("Recording in progress")
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
             .build()
 
 

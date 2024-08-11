@@ -44,6 +44,22 @@ android {
     }
 
     testOptions.unitTests.isIncludeAndroidResources = true
+
+    flavorDimensions += "version"
+
+    productFlavors {
+
+        create("lite") {
+            dimension = "version"
+            applicationIdSuffix = ".lite"
+            versionNameSuffix = "-lite"
+        }
+
+        create("full") {
+            dimension = "version"
+        }
+
+    }
 }
 
 dependencies {
@@ -84,4 +100,6 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
+
+    // todo: if flavour = full, include AAP framework
 }

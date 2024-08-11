@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.DiffUtil
@@ -91,6 +92,8 @@ class RecordingsListFragment : Fragment() {
 
             adapter.setData(recordings)
             binding.recordingList.scrollToPosition(0)
+
+            // todo: use payloads to update file names
 
         }
 
@@ -329,6 +332,10 @@ class RecordingsListFragment : Fragment() {
         with(mediaController!!) {
             seekTo(position, 0L)
         }
+    }
+
+    fun attachPlayerToView(player: Player) {
+        binding.playerView.player = player
     }
 
 }

@@ -47,6 +47,7 @@
             android:layout_width="match_parent"
             app:surface_type="none"
             app:hide_on_touch="false"
+            app:controller_layout_id="@layout/playback_controls"
             android:layout_height="64dp"/>
         <!-- todo change the height of the controls -->
     </androidx.constraintlayout.widget.ConstraintLayout>
