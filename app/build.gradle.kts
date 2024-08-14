@@ -101,5 +101,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
 
+    implementation (libs.customactivityoncrash)
+
     // todo: if flavour = full, include AAP framework
 }

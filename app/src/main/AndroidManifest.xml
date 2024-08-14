@@ -57,6 +57,24 @@
 
         </activity>
 
+        <!-- todo: should it be exported? -->
+        <activity
+            android:name=".ui.crash.CrashActivity"
+            android:exported="false"
+            android:process=":error_activity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:finishOnTaskLaunch="true"
+
+            android:theme="@style/Theme.RecordingStudio.DialogActivity" >
+
+            <intent-filter>
+                <!-- ... -->
+                <action android:name="cat.ereza.customactivityoncrash.ERROR" />
+            </intent-filter>
+
+        </activity>
+
         <service
             android:name=".data.recorder.RecorderService"
             android:exported="false"

@@ -1,5 +1,6 @@
 [versions]
 agp = "8.3.0"
+customactivityoncrash = "2.4.0"
 fragmentTesting = "1.8.1"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
@@ -27,6 +28,7 @@ androidx-media3 = "1.4.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "fragmentTesting" }
+customactivityoncrash = { module = "cat.ereza:customactivityoncrash", version.ref = "customactivityoncrash" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

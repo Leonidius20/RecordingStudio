@@ -123,4 +123,10 @@
         <item name="android:layout_marginEnd">24dp</item>
     </style>
 
+    <style name="Theme.RecordingStudio.DialogActivity" parent="Theme.Material3.DayNight.Dialog" >
+
+        <item name="android:windowBackground">@android:color/transparent</item>
+
+    </style>
+
 </resources>

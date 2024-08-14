@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="activity"
+            type="io.github.leonidius20.recorder.ui.crash.CrashActivity" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="24dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/crash_copyStacktraceBtn"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="@{activity.viewModel.isStacktraceCopied() ? @string/crash_stacktrace_copied : @string/crash_copy_stacktrace  }"
+                app:icon="@{activity.viewModel.isStacktraceCopied() ? @drawable/ic_done : @drawable/ic_copy}"
+                android:layout_marginBottom="8dp"
+                android:enabled="@{!activity.viewModel.isStacktraceCopied()}"
+                android:onClick="@{() -> activity.copyStacktrace()}"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/crash_githubBtn"
+
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Go to GitHub issues"
+                app:icon="@drawable/ic_open_externally"
+                android:onClick="@{() -> activity.goToGithub()}"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/crash_restartBtn"
+
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Restart the app"
+                app:icon="@drawable/ic_restart"
+                android:onClick="@{() -> activity.restartApp()}"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/crash_dismissBtn"
+
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Dismiss"
+                android:onClick="@{() -> activity.closeApp()}"
+                app:icon="@drawable/ic_close" />
+
+        </LinearLayout>
+
+    </ScrollView>
+</layout>

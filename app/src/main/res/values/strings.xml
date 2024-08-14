@@ -26,4 +26,9 @@
     <string name="permissions_rationale">The app needs audio recording permission to work. In addition, the notification permission is needed to notify you if a recording is continuing in background after you left the app, or if an ongoing recording was stopped due to running out of battery or storage.</string>
     <string name="permissions_rationale_grant_in_settings">%1$s\n\nYou need to grant the permissions manually in the Settings.</string>
     <string name="phone_state_permission_rationale">In order to pause recording on incoming phone call, the app needs the permission to read phone state.</string>
+
+    <string name="crash_copy_stacktrace">Copy crash data</string>
+    <string name="crash_stacktrace_copied">Crash data copied</string>
+    <string name="github_bug_reporting_url" translatable="false">https://github.com/Leonidius20/RecordingStudio/issues</string>
+    <string name="crash_explanation">The app has crashed. If you want to report this crash, please copy the crash data to the clipboard, create an issue on GitHub explaining the circumstances of the crash, and paste the crash data into the description.</string>
 </resources>
