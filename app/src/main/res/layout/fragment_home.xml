@@ -64,6 +64,9 @@
                 android:layout_height="72dp"
                 app:iconGravity="textStart"
 
+                app:strokeWidth="0dp"
+                app:iconTint="?colorOnBackground"
+
                 android:layout_marginEnd="@dimen/margin_normal"
                 android:layout_marginBottom="@dimen/margin_large"
                 android:onClick="@{() -> fragment.onAudioSettingsBtnClick()}"
