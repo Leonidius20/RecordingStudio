@@ -1,6 +1,5 @@
 package io.github.leonidius20.recorder.ui.home
 
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
@@ -8,15 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val recorderServiceLauncher: RecorderServiceLauncher,
+    val settings: Settings,
 ) : ViewModel() {
 
     sealed class UiState(

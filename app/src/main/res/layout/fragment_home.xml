@@ -139,11 +139,15 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <FrameLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:id="@+id/quality_settings_bottom_sheet"
             style="@style/Widget.Material3.BottomSheet"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             app:behavior_hideable="true"
+            android:paddingStart="@dimen/margin_normal"
+            android:paddingEnd="@dimen/margin_normal"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
             <!-- Drag handle for accessibility -->
@@ -155,7 +159,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="title" />
+                android:textAppearance="?textAppearanceTitleLarge"
+                android:text="Audio source"
+                android:layout_marginBottom="@dimen/margin_small"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?textAppearanceBodyLarge"
+                android:text="Determines the kind of processing applied to audio by the device"
+                android:layout_marginBottom="@dimen/margin_small"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:id="@+id/audio_source_chip_group"
+                android:layout_marginBottom="@dimen/margin_normal">
+
+            </com.google.android.material.chip.ChipGroup>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -168,7 +192,7 @@
                 android:layout_height="wrap_content"
                 android:text="action" />
 
-        </FrameLayout>
+        </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

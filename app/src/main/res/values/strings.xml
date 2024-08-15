@@ -31,4 +31,6 @@
     <string name="crash_stacktrace_copied">Crash data copied</string>
     <string name="github_bug_reporting_url" translatable="false">https://github.com/Leonidius20/RecordingStudio/issues</string>
     <string name="crash_explanation">The app has crashed. If you want to report this crash, please copy the crash data to the clipboard, create an issue on GitHub explaining the circumstances of the crash, and paste the crash data into the description.</string>
+
+    <string name="pref_audio_source_key" translatable="false">audio_source</string>
 </resources>

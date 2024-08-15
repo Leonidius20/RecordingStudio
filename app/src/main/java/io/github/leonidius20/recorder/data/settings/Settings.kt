@@ -1,6 +1,7 @@
 package io.github.leonidius20.recorder.data.settings
 
 import android.content.Context
+import android.media.MediaRecorder
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -20,6 +21,7 @@ class Settings @Inject constructor(
         val stopOnLowBattery: Boolean,
         val stopOnLowStorage: Boolean,
         val pauseOnCall: Boolean,
+        val audioSource: Int,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -71,6 +73,10 @@ class Settings @Inject constructor(
             pauseOnCall = pref.getBoolean(
                 context.getString(R.string.pause_on_call_pref_key),
                 context.resources.getBoolean(R.bool.pause_on_call_default)),
+            audioSource = pref.getInt(
+                context.getString(R.string.pref_audio_source_key),
+                MediaRecorder.AudioSource.MIC,
+            )
         )
     }
 

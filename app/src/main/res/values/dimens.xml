@@ -6,5 +6,7 @@
 
     <dimen name="margin_normal">16dp</dimen>
 
+    <dimen name="margin_small">8dp</dimen>
+
     <dimen name="margin_large">48dp</dimen>
 </resources>
