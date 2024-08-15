@@ -1,14 +1,5 @@
 package io.github.leonidius20.recorder
 
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withTagValue
-import io.github.leonidius20.recorder.ui.home.BTN_IMG_TAG_PAUSE
-import io.github.leonidius20.recorder.ui.home.BTN_IMG_TAG_RECORD
-import io.github.leonidius20.recorder.ui.home.HomeFragment
-import org.hamcrest.core.IsEqual
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

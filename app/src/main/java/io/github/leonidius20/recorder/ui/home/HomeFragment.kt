@@ -122,5 +122,9 @@ class HomeFragment : Fragment() {
             toggleRecPause()
         }
     }
+
+    fun onAudioSettingsBtnClick() {
+        // todo
+    }
 }
 

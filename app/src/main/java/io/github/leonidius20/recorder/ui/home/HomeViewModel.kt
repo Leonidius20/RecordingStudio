@@ -24,6 +24,7 @@ class HomeViewModel @Inject constructor(
         val recPauseBtnIcon: RecPauseBtnIcon,
         val isStopButtonVisible: Boolean,
         val isTimerVisible: Boolean,
+        val audioSettingsButtonVisible: Boolean,
     ) {
 
         enum class RecPauseBtnIcon {
@@ -36,6 +37,7 @@ class HomeViewModel @Inject constructor(
             recPauseBtnIcon = RecPauseBtnIcon.RECORD,
             isStopButtonVisible = false,
             isTimerVisible = false,
+            audioSettingsButtonVisible = true,
         )
 
         data object Recording: UiState(
@@ -45,6 +47,7 @@ class HomeViewModel @Inject constructor(
             recPauseBtnIcon = RecPauseBtnIcon.PAUSE,
             isStopButtonVisible = true,
             isTimerVisible = true,
+            audioSettingsButtonVisible = false,
         )
 
         data object Paused: UiState(
@@ -52,6 +55,7 @@ class HomeViewModel @Inject constructor(
             recPauseBtnIcon = RecPauseBtnIcon.RECORD,
             isStopButtonVisible = true,
             isTimerVisible = true,
+            audioSettingsButtonVisible = false,
         )
 
     }

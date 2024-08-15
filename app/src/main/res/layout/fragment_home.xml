@@ -14,112 +14,159 @@
             name="fragment"
             type="io.github.leonidius20.recorder.ui.home.HomeFragment" />
     </data>
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment">
 
-        <com.visualizer.amplitude.AudioRecordView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/rec_timer"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            android:id="@+id/audioVisualizer"
-            android:layout_width="0dp"
-            app:layout_constraintHeight_max="300dp"
-            android:layout_height="0dp"
-            app:chunkAlignTo="center"
-            app:chunkRoundedCorners="true"
-            app:chunkSoftTransition="true"
-            app:chunkColor="?colorSecondary"
-            app:chunkSpace="5dp"
-            app:chunkWidth="10dp"
-            app:chunkMaxHeight="300dp"
-            app:chunkMinHeight="5dp"
-            app:direction="leftToRight"/>
-        
-        <TextView
-            android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"
-            android:text="@{viewModel.timerText}"
-            android:id="@+id/rec_timer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/recordButton"
-            android:layout_marginBottom="@dimen/margin_normal"
-            android:textAppearance="?textAppearanceLabelLarge"
-            />
+            <com.visualizer.amplitude.AudioRecordView
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/rec_timer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
 
-        <com.google.android.material.button.MaterialButton
-            style="?attr/materialIconButtonFilledStyle"
+                android:id="@+id/audioVisualizer"
+                android:layout_width="0dp"
+                app:layout_constraintHeight_max="300dp"
+                android:layout_height="0dp"
+                app:chunkAlignTo="center"
+                app:chunkRoundedCorners="true"
+                app:chunkSoftTransition="true"
+                app:chunkColor="?colorSecondary"
+                app:chunkSpace="5dp"
+                app:chunkWidth="10dp"
+                app:chunkMaxHeight="300dp"
+                app:chunkMinHeight="5dp"
+                app:direction="leftToRight"/>
 
-            app:backgroundTint="?colorSecondaryContainer"
+            <TextView
+                android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"
+                android:text="@{viewModel.timerText}"
+                android:id="@+id/rec_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/recordButton"
+                android:layout_marginBottom="@dimen/margin_normal"
+                android:textAppearance="?textAppearanceLabelLarge"
+                />
 
+            <com.google.android.material.button.MaterialButton
+                style="?attr/materialIconButtonOutlinedStyle"
+                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+                android:id="@+id/audioSettingsButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                app:iconGravity="textStart"
 
+                android:layout_marginEnd="@dimen/margin_normal"
+                android:layout_marginBottom="@dimen/margin_large"
+                android:onClick="@{() -> fragment.onAudioSettingsBtnClick()}"
+                android:visibility="@{viewModel.uiState.audioSettingsButtonVisible ? View.VISIBLE : View.GONE}"
 
-            app:iconTint="?colorOnSecondaryContainer"
+                app:icon="@drawable/ic_settings"
 
-            app:iconGravity="textStart"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/recordButton" />
 
-            tools:icon="@drawable/ic_record"
+            <com.google.android.material.button.MaterialButton
+                style="?attr/materialIconButtonFilledStyle"
 
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
-
-            android:elevation="1dp"
-            android:id="@+id/recordButton"
-
-            android:contentDescription="@string/rec_pause_btn_desc"
-
-            app:layout_constraintBottom_toBottomOf="parent"
-
-            android:layout_marginBottom="@dimen/margin_large"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:icon="@{viewModel.uiState.recPauseBtnIcon == RecPauseBtnIcon.RECORD ? @drawable/ic_record : @drawable/ic_pause}"
-            android:visibility="@{viewModel.uiState.recPauseBtnVisible ? View.VISIBLE : View.GONE}"
-            android:onClick="@{() -> fragment.onRecButtonClick()}"
-            />
-
-        <com.google.android.material.button.MaterialButton
-            style="?attr/materialIconButtonOutlinedStyle"
-            app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
-            android:id="@+id/stopButton"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            app:iconGravity="textStart"
+                app:backgroundTint="?colorSecondaryContainer"
 
 
 
-            app:strokeColor="?colorError"
-            app:iconTint="?colorError"
+                app:iconTint="?colorOnSecondaryContainer"
+
+                app:iconGravity="textStart"
+
+                tools:icon="@drawable/ic_record"
+
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+
+                android:elevation="1dp"
+                android:id="@+id/recordButton"
+
+                android:contentDescription="@string/rec_pause_btn_desc"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+
+                android:layout_marginBottom="@dimen/margin_large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:icon="@{viewModel.uiState.recPauseBtnIcon == RecPauseBtnIcon.RECORD ? @drawable/ic_record : @drawable/ic_pause}"
+                android:visibility="@{viewModel.uiState.recPauseBtnVisible ? View.VISIBLE : View.GONE}"
+                android:onClick="@{() -> fragment.onRecButtonClick()}"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                style="?attr/materialIconButtonOutlinedStyle"
+                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+                android:id="@+id/stopButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                app:iconGravity="textStart"
+
+                app:strokeColor="?colorError"
+                app:iconTint="?colorError"
+
+                android:layout_marginStart="@dimen/margin_normal"
+                android:layout_marginBottom="@dimen/margin_large"
+                android:onClick="@{() -> fragment.onStopBtnClick()}"
+                android:visibility="@{viewModel.uiState.stopButtonVisible ? View.VISIBLE : View.GONE}"
+
+                app:icon="@drawable/ic_stop"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/recordButton" />
+
+            <!--
+
+            android:scaleType="fitXY"
+                android:padding="20dp"
+            -->
 
 
-            android:layout_marginStart="@dimen/margin_normal"
-            android:layout_marginBottom="@dimen/margin_large"
-            android:onClick="@{() -> fragment.onStopBtnClick()}"
-            android:visibility="@{viewModel.uiState.stopButtonVisible ? View.VISIBLE : View.GONE}"
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-            app:icon="@drawable/ic_stop"
+        <FrameLayout
+            android:id="@+id/quality_settings_bottom_sheet"
+            style="@style/Widget.Material3.BottomSheet"
+            android:layout_width="match_parent"
+            app:behavior_hideable="true"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
+            <!-- Drag handle for accessibility -->
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:id="@+id/drag_handle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="title" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ff" />
 
+            <Button
+                android:id="@+id/bottomsheet_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="action" />
 
+        </FrameLayout>
 
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/recordButton" />
-
-        <!--
-
-        android:scaleType="fitXY"
-            android:padding="20dp"
-        -->
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>
