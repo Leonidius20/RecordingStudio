@@ -29,12 +29,13 @@ class Settings @Inject constructor(
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
 
     private val _outputFormatOptions = mutableMapOf(
-        MediaRecorder.OutputFormat.THREE_GPP to OutputFormatOption(MediaRecorder.OutputFormat.THREE_GPP, "3gpp", "audio/3gpp?????"),
+        MediaRecorder.OutputFormat.THREE_GPP to OutputFormatOption(MediaRecorder.OutputFormat.THREE_GPP, "3gpp", "audio/3gpp"),
         MediaRecorder.OutputFormat.MPEG_4 to OutputFormatOption(MediaRecorder.OutputFormat.MPEG_4, "mp4", "audio/mp4"),
         MediaRecorder.OutputFormat.AMR_NB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_NB, "amr nb", "audio/amr"),
-        MediaRecorder.OutputFormat.AMR_WB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_WB, "amr wb", "audio/amr"),
-        MediaRecorder.OutputFormat.AAC_ADTS to OutputFormatOption(MediaRecorder.OutputFormat.AAC_ADTS, "aac adts", "audio/aac"),
-        MediaRecorder.OutputFormat.WEBM to OutputFormatOption(MediaRecorder.OutputFormat.WEBM, "webm", "audio/webm"),
+        MediaRecorder.OutputFormat.AMR_WB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_WB, "amr wb", "audio/amr-wb"),
+        MediaRecorder.OutputFormat.AAC_ADTS to OutputFormatOption(MediaRecorder.OutputFormat.AAC_ADTS, "aac adts", "audio/aac-adts"),
+        // todo: figure out mime type for this, audio/webm is unsupported by MediaStore
+        // MediaRecorder.OutputFormat.WEBM to OutputFormatOption(MediaRecorder.OutputFormat.WEBM, "webm", "audio/webm"),
     )
 
     init {
@@ -63,14 +64,14 @@ class Settings @Inject constructor(
     private val pauseOnCallKey = context.getString(R.string.pause_on_call_pref_key)
 
     fun onSharedPreferenceChanged(
-        key: String?, fragment: PreferenceFragmentCompat,
+        key: String?, fragment: PreferenceFragmentCompat?,
     ) {
         _state.value = getCurrentSettingsState()
 
         // if pausing on incoming call was just enabled
         if (key == pauseOnCallKey && state.value.pauseOnCall) {
             // check or get call monitoring permission
-            PermissionX.init(fragment)
+            PermissionX.init(fragment!!)
                 .permissions(android.Manifest.permission.READ_PHONE_STATE)
                 .onExplainRequestReason { scope, deniedList ->
                     scope.showRequestReasonDialog(deniedList,
@@ -141,10 +142,16 @@ class Settings @Inject constructor(
     }
 
     fun setAudioSource(value: Int) {
+        val key = context.getString(R.string.pref_audio_source_key)
+
         pref.edit().putInt(
-            context.getString(R.string.pref_audio_source_key),
+            key,
             value
         ).apply()
+
+        // the listener only exists while the SettingsFragment is started,
+        // so we call manually.
+        onSharedPreferenceChanged(key, null)
     }
 
     data class OutputFormatOption(
@@ -156,14 +163,28 @@ class Settings @Inject constructor(
         val mimeType: String,
     )
 
-
-
-
-
     fun setOutputFormat(value: Int) {
+        val key = context.getString(R.string.pref_output_format_key)
+
         pref.edit().putInt(
-            context.getString(R.string.pref_output_format_key), value
+            key, value
         ).apply()
+
+        // the listener only exists while the SettingsFragment is started,
+        // so we call manually.
+        onSharedPreferenceChanged(key, null)
+    }
+
+    fun setCodec(value: Int) {
+        val key = "codec"
+
+        pref.edit().putInt(
+            key, value
+        ).apply()
+
+        // the listener only exists while the SettingsFragment is started,
+        // so we call manually.
+        onSharedPreferenceChanged(key, null)
     }
 
 }

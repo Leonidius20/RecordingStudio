@@ -156,57 +156,70 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <!-- Block relating to audio sources -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?textAppearanceTitleLarge"
-                android:text="Audio source"
-                android:layout_marginBottom="@dimen/margin_small"
-                />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?textAppearanceBodyLarge"
-                android:text="Determines the kind of processing applied to audio by the device"
-                android:layout_marginBottom="@dimen/margin_small"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                android:id="@+id/audio_source_chip_group"
-                android:layout_marginBottom="@dimen/margin_small">
+                    <!-- Block relating to audio sources -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:text="Audio source"
+                        android:layout_marginBottom="@dimen/margin_small"
+                        />
 
-            </com.google.android.material.chip.ChipGroup>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceBodyLarge"
+                        android:text="Determines the kind of processing applied to audio by the device"
+                        android:layout_marginBottom="@dimen/margin_small"/>
 
-            <TextView
-                android:id="@+id/audio_source_description_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?textAppearanceBodySmall"
-                tools:text="Explanation of the chosen audio source"
-                android:layout_marginBottom="@dimen/margin_normal"/>
+                    <com.google.android.material.chip.ChipGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        android:id="@+id/audio_source_chip_group"
+                        android:layout_marginBottom="@dimen/margin_small">
 
-            <!-- Block relating to output format -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?textAppearanceTitleLarge"
-                android:text="Format"
-                android:layout_marginBottom="@dimen/margin_small" />
+                    </com.google.android.material.chip.ChipGroup>
 
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                android:id="@+id/output_format_chip_group"
-                android:layout_marginBottom="@dimen/margin_normal">
+                    <TextView
+                        android:id="@+id/audio_source_description_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceBodySmall"
+                        tools:text="Explanation of the chosen audio source"
+                        android:layout_marginBottom="@dimen/margin_normal"/>
 
-            </com.google.android.material.chip.ChipGroup>
+                    <!-- Block relating to output format -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:text="Format"
+                        android:layout_marginBottom="@dimen/margin_small" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        android:id="@+id/output_format_chip_group"
+                        android:layout_marginBottom="@dimen/margin_normal">
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
+            </ScrollView>
 
         </LinearLayout>
 

@@ -80,18 +80,7 @@ class HomeViewModel @Inject constructor(
      */
     val amplitudes = recorderServiceLauncher.amplitudes
 
-    data class AudioSourceUIRepresentation(
-        val value: Int,
-        val name: String,
-        val description: String,
-        val isChecked: Boolean,
-    )
-
-    val audioSources = settings.audioSourceOptions.map {
-        AudioSourceUIRepresentation(
-            it.value, it.name, it.description, it.value == settings.state.value.audioSource
-        )
-    }
+    val audioSources = settings.audioSourceOptions
 
     fun onStartRecording() {
         recorderServiceLauncher.launchRecording()
@@ -120,5 +109,8 @@ class HomeViewModel @Inject constructor(
     fun selectOutputFormat(value: Int) {
         settings.setOutputFormat(value)
     }
+
+    fun isChecked(audioSource: Settings.AudioSourceOption) =
+        audioSource.value == settings.state.value.audioSource
 
 }

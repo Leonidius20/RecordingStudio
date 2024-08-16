@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.ui.crash
 
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import cat.ereza.customactivityoncrash.config.CaocConfig
@@ -16,6 +17,8 @@ class CrashActivity: AppCompatActivity() {
     private lateinit var config: CaocConfig
 
     val viewModel by viewModels<CrashViewModel>()
+
+    private lateinit var dialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +41,7 @@ class CrashActivity: AppCompatActivity() {
             it.lifecycleOwner = this
         }
 
-        MaterialAlertDialogBuilder(this)
+        dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.app_name_short)
             .setMessage(R.string.crash_explanation)
             .setCancelable(false)
@@ -66,6 +69,11 @@ class CrashActivity: AppCompatActivity() {
     fun goToGithub() {
         viewModel.launchGithubInBrowser()
         closeApp()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dialog.dismiss()
     }
 
 }

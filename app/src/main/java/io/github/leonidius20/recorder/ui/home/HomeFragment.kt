@@ -69,18 +69,18 @@ class HomeFragment : Fragment() {
                 text = source.name
                 id = chipViewId
                 tag = source
-                isChecked = source.isChecked
+                isChecked = viewModel.isChecked(source)
             }
 
             binding.audioSourceChipGroup.addView(chip)
 
-            if (source.isChecked) {
+            if (chip.isChecked) {
                 binding.audioSourceDescriptionText.text = source.description
             }
         }
 
         binding.audioSourceChipGroup.setOnCheckedStateChangeListener { group, _ ->
-            val selectedSource = group.findViewById<Chip>(group.checkedChipId).tag as HomeViewModel.AudioSourceUIRepresentation
+            val selectedSource = group.findViewById<Chip>(group.checkedChipId).tag as Settings.AudioSourceOption
             viewModel.selectAudioSource(selectedSource.value)
             binding.audioSourceDescriptionText.text = selectedSource.description
         }
