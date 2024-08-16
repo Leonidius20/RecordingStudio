@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.data.settings
 
 import android.content.Context
 import android.media.MediaRecorder
+import android.os.Build
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -80,5 +81,34 @@ class Settings @Inject constructor(
         )
     }
 
+    data class AudioSourceOption(
+        val value: Int,
+        val name: String,
+        val description: String,
+    )
+
+    private val _audioSourceOptions = mutableListOf(
+        AudioSourceOption(MediaRecorder.AudioSource.DEFAULT, "Default", "Default audio input. Some processing may be applied by device"),
+        AudioSourceOption(MediaRecorder.AudioSource.MIC, "Mic", "Regular microphone input (some processing may be applied by device)"),
+        AudioSourceOption(MediaRecorder.AudioSource.CAMCORDER, "Camcorder", "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"),
+        AudioSourceOption(MediaRecorder.AudioSource.VOICE_RECOGNITION, "Voice recognition", "Tuned for voice recognition"),
+        AudioSourceOption(MediaRecorder.AudioSource.VOICE_COMMUNICATION, "Voice communication", "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"),
+    )
+
+    val audioSourceOptions: List<AudioSourceOption>
+        get() = _audioSourceOptions
+
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            _audioSourceOptions.add(AudioSourceOption(MediaRecorder.AudioSource.UNPROCESSED, "Unprocessed", "No processing if the phone supports it, default otherwise"))
+        }
+    }
+
+    fun setAudioSource(value: Int) {
+        pref.edit().putInt(
+            context.getString(R.string.pref_audio_source_key),
+            value
+        ).apply()
+    }
 
 }

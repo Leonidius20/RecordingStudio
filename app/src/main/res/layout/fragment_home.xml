@@ -177,14 +177,17 @@
                 app:singleSelection="true"
                 app:selectionRequired="true"
                 android:id="@+id/audio_source_chip_group"
-                android:layout_marginBottom="@dimen/margin_normal">
+                android:layout_marginBottom="@dimen/margin_small">
 
             </com.google.android.material.chip.ChipGroup>
 
             <TextView
+                android:id="@+id/audio_source_description_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ff" />
+                android:textAppearance="?textAppearanceBodySmall"
+                tools:text="Explanation of the chosen audio source"
+                android:layout_marginBottom="@dimen/margin_normal"/>
 
             <Button
                 android:id="@+id/bottomsheet_button"

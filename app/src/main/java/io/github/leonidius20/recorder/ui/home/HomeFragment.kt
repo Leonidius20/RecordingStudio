@@ -1,16 +1,12 @@
 package io.github.leonidius20.recorder.ui.home
 
 import android.content.Intent
-import android.media.AudioManager
-import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.MediaStore.Audio
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -61,26 +57,31 @@ class HomeFragment : Fragment() {
         qualityBottomSheetBehavior = BottomSheetBehavior.from(binding.qualitySettingsBottomSheet)
         qualityBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-        val audioSources = mutableListOf(
-            Triple(MediaRecorder.AudioSource.DEFAULT, "Default", "explanation"),
-            Triple(MediaRecorder.AudioSource.MIC, "Mic", "explanation"),
-            Triple(MediaRecorder.AudioSource.CAMCORDER, "Camcorder", "explanation"),
-            Triple(MediaRecorder.AudioSource.VOICE_RECOGNITION, "Voice recognition", "Tuned for voice recognition"),
-            Triple(MediaRecorder.AudioSource.VOICE_COMMUNICATION, "Voice communication", "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"),
-        )
+        // todo: move this over to viewModel (the logic of compiling the list of options and determining if it is checked)
+        viewModel.audioSources.forEach { source ->
+            val chipViewId = View.generateViewId()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            audioSources.add(Triple(MediaRecorder.AudioSource.UNPROCESSED, "Unprocessed", "No processing if the phone supports it, default otherwise"))
-        }
-
-        audioSources.forEach { source ->
             val chip = Chip(context).apply {
-                isSelected = (source.first == viewModel.settings.state.value.audioSource)
-                text = source.second
-                // todo: set on choose listener
+                isCheckedIconVisible = true
+                isCheckable = true
+                isClickable = true
+                text = source.name
+                id = chipViewId
+                tag = source
+                isChecked = source.isChecked
             }
 
             binding.audioSourceChipGroup.addView(chip)
+
+            if (source.isChecked) {
+                binding.audioSourceDescriptionText.text = source.description
+            }
+        }
+
+        binding.audioSourceChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            val selectedSourceTriple = group.findViewById<Chip>(group.checkedChipId).tag as HomeViewModel.AudioSourceUIRepresentation
+            viewModel.selectAudioSource(selectedSourceTriple.value)
+            binding.audioSourceDescriptionText.text = selectedSourceTriple.description
         }
 
         // todo: restoring the visualizer on screen rotation
@@ -163,10 +164,6 @@ class HomeFragment : Fragment() {
                 BottomSheetBehavior.STATE_EXPANDED
             } else BottomSheetBehavior.STATE_HIDDEN
         }
-    }
-
-    fun onSelectAudioSource(source: Int) {
-        // todo
     }
 
 }

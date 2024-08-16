@@ -186,7 +186,7 @@ class RecorderService : LifecycleService() {
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri!!, "w")!!
 
         recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setAudioSource(settings.state.value.audioSource)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
             setOutputFile(descriptor.fileDescriptor)
             // todo: check what codecs there are and provide user with options
