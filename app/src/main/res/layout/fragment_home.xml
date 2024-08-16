@@ -156,6 +156,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <!-- Block relating to audio sources -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -189,11 +190,23 @@
                 tools:text="Explanation of the chosen audio source"
                 android:layout_marginBottom="@dimen/margin_normal"/>
 
-            <Button
-                android:id="@+id/bottomsheet_button"
+            <!-- Block relating to output format -->
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="action" />
+                android:textAppearance="?textAppearanceTitleLarge"
+                android:text="Format"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:id="@+id/output_format_chip_group"
+                android:layout_marginBottom="@dimen/margin_normal">
+
+            </com.google.android.material.chip.ChipGroup>
 
         </LinearLayout>
 

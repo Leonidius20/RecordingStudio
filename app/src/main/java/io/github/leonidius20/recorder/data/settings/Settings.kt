@@ -23,9 +23,38 @@ class Settings @Inject constructor(
         val stopOnLowStorage: Boolean,
         val pauseOnCall: Boolean,
         val audioSource: Int,
+        val outputFormat: OutputFormatOption,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
+
+    private val _outputFormatOptions = mutableMapOf(
+        MediaRecorder.OutputFormat.THREE_GPP to OutputFormatOption(MediaRecorder.OutputFormat.THREE_GPP, "3gpp", "audio/3gpp?????"),
+        MediaRecorder.OutputFormat.MPEG_4 to OutputFormatOption(MediaRecorder.OutputFormat.MPEG_4, "mp4", "audio/mp4"),
+        MediaRecorder.OutputFormat.AMR_NB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_NB, "amr nb", "audio/amr"),
+        MediaRecorder.OutputFormat.AMR_WB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_WB, "amr wb", "audio/amr"),
+        MediaRecorder.OutputFormat.AAC_ADTS to OutputFormatOption(MediaRecorder.OutputFormat.AAC_ADTS, "aac adts", "audio/aac"),
+        MediaRecorder.OutputFormat.WEBM to OutputFormatOption(MediaRecorder.OutputFormat.WEBM, "webm", "audio/webm"),
+    )
+
+    init {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            _outputFormatOptions.add(
+                OutputFormatOption(
+                    MediaRecorder.OutputFormat.MPEG_2_TS, "", ""
+                )
+            )
+        }*/
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            _outputFormatOptions[MediaRecorder.OutputFormat.OGG] = OutputFormatOption(
+                MediaRecorder.OutputFormat.OGG, "ogg", "audio/ogg"
+            )
+        }
+    }
+
+    val outputFormatOptions: Map<Int, OutputFormatOption>
+        get() = _outputFormatOptions
 
     private val _state = MutableStateFlow(getCurrentSettingsState())
 
@@ -77,11 +106,18 @@ class Settings @Inject constructor(
             audioSource = pref.getInt(
                 context.getString(R.string.pref_audio_source_key),
                 MediaRecorder.AudioSource.MIC,
-            )
+            ),
+            outputFormat = outputFormatOptions[pref.getInt(
+                context.getString(R.string.pref_output_format_key),
+                MediaRecorder.OutputFormat.THREE_GPP,
+            )]!!
         )
     }
 
     data class AudioSourceOption(
+        /**
+         * value expected by MediaRecorder.setAudioSource()
+         */
         val value: Int,
         val name: String,
         val description: String,
@@ -108,6 +144,25 @@ class Settings @Inject constructor(
         pref.edit().putInt(
             context.getString(R.string.pref_audio_source_key),
             value
+        ).apply()
+    }
+
+    data class OutputFormatOption(
+        /**
+         * value expected by MediaRecorder.setOutputFormat()
+         */
+        val value: Int,
+        val name: String,
+        val mimeType: String,
+    )
+
+
+
+
+
+    fun setOutputFormat(value: Int) {
+        pref.edit().putInt(
+            context.getString(R.string.pref_output_format_key), value
         ).apply()
     }
 

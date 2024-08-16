@@ -177,17 +177,19 @@ class RecorderService : LifecycleService() {
             registerInContext(this@RecorderService)
         }
 
+        val fileFormat = settings.state.value.outputFormat
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
 
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
-        fileUri = getRecFileUri(fileName)
+        fileUri = getRecFileUri(fileName, fileFormat.mimeType)
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri!!, "w")!!
+
 
         recorder = MediaRecorder().apply {
             setAudioSource(settings.state.value.audioSource)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFormat(fileFormat.value)
             setOutputFile(descriptor.fileDescriptor)
             // todo: check what codecs there are and provide user with options
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
@@ -263,11 +265,11 @@ class RecorderService : LifecycleService() {
     }
 
 
-    private fun getRecFileUri(name: String): Uri {
+    private fun getRecFileUri(name: String, mimeType: String): Uri {
         val resolver = applicationContext.contentResolver
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp") // todo: other types
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
             put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
         }
 

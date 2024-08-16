@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val recorderServiceLauncher: RecorderServiceLauncher,
-    val settings: Settings,
+    private val settings: Settings,
 ) : ViewModel() {
 
     sealed class UiState(
@@ -110,6 +110,15 @@ class HomeViewModel @Inject constructor(
 
     fun selectAudioSource(value: Int) {
         settings.setAudioSource(value)
+    }
+
+    val outputFormats = settings.outputFormatOptions.values
+
+    fun isChecked(format: Settings.OutputFormatOption) =
+        settings.state.value.outputFormat.value == format.value
+
+    fun selectOutputFormat(value: Int) {
+        settings.setOutputFormat(value)
     }
 
 }

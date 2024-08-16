@@ -19,6 +19,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -57,7 +58,7 @@ class HomeFragment : Fragment() {
         qualityBottomSheetBehavior = BottomSheetBehavior.from(binding.qualitySettingsBottomSheet)
         qualityBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-        // todo: move this over to viewModel (the logic of compiling the list of options and determining if it is checked)
+        // audio source selection chips
         viewModel.audioSources.forEach { source ->
             val chipViewId = View.generateViewId()
 
@@ -78,10 +79,32 @@ class HomeFragment : Fragment() {
             }
         }
 
-        binding.audioSourceChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            val selectedSourceTriple = group.findViewById<Chip>(group.checkedChipId).tag as HomeViewModel.AudioSourceUIRepresentation
-            viewModel.selectAudioSource(selectedSourceTriple.value)
-            binding.audioSourceDescriptionText.text = selectedSourceTriple.description
+        binding.audioSourceChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            val selectedSource = group.findViewById<Chip>(group.checkedChipId).tag as HomeViewModel.AudioSourceUIRepresentation
+            viewModel.selectAudioSource(selectedSource.value)
+            binding.audioSourceDescriptionText.text = selectedSource.description
+        }
+
+        // format selection chips
+        viewModel.outputFormats.forEach { format ->
+            val chipViewId = View.generateViewId()
+
+            val chip = Chip(context).apply {
+                isCheckedIconVisible = true
+                isCheckable = true
+                isClickable = true
+                text = format.name
+                id = chipViewId
+                tag = format
+                isChecked = viewModel.isChecked(format)
+            }
+
+            binding.outputFormatChipGroup.addView(chip)
+        }
+
+        binding.outputFormatChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            val selectedFormat = group.findViewById<Chip>(group.checkedChipId).tag as Settings.OutputFormatOption
+            viewModel.selectOutputFormat(selectedFormat.value)
         }
 
         // todo: restoring the visualizer on screen rotation
