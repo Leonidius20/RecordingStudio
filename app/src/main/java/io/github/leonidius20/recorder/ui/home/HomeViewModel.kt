@@ -113,4 +113,13 @@ class HomeViewModel @Inject constructor(
     fun isChecked(audioSource: Settings.AudioSourceOption) =
         audioSource.value == settings.state.value.audioSource
 
+    val encoderOptions = settings.encoderOptions
+
+    fun isEncoderChecked(encoder: Int) =
+        settings.state.value.encoder == encoder
+
+    fun setEncoder(encoder: Int) {
+        settings.setCodec(encoder)
+    }
+
 }

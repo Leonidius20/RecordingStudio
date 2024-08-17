@@ -191,8 +191,7 @@ class RecorderService : LifecycleService() {
             setAudioSource(settings.state.value.audioSource)
             setOutputFormat(fileFormat.value)
             setOutputFile(descriptor.fileDescriptor)
-            // todo: check what codecs there are and provide user with options
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+            setAudioEncoder(settings.state.value.encoder)
 
             try {
                 prepare()

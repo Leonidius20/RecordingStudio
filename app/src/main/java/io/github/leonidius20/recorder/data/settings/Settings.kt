@@ -24,6 +24,7 @@ class Settings @Inject constructor(
         val pauseOnCall: Boolean,
         val audioSource: Int,
         val outputFormat: OutputFormatOption,
+        val encoder: Int,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -56,6 +57,25 @@ class Settings @Inject constructor(
 
     val outputFormatOptions: Map<Int, OutputFormatOption>
         get() = _outputFormatOptions
+
+    private val _encoderOptions = mutableMapOf(
+        MediaRecorder.AudioEncoder.AMR_NB to "AMR Narrowband",
+        MediaRecorder.AudioEncoder.AMR_WB to "AMR Wideband",
+        MediaRecorder.AudioEncoder.AAC to "AAC",
+        MediaRecorder.AudioEncoder.HE_AAC to "HE-AAC",
+        MediaRecorder.AudioEncoder.AAC_ELD to "AAC-ELD",
+        MediaRecorder.AudioEncoder.VORBIS to "OGG Vorbis",
+
+    )
+
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            _encoderOptions[MediaRecorder.AudioEncoder.OPUS] = "Opus"
+        }
+    }
+
+    val encoderOptions: Map<Int, String>
+        get() = _encoderOptions
 
     private val _state = MutableStateFlow(getCurrentSettingsState())
 
@@ -111,7 +131,11 @@ class Settings @Inject constructor(
             outputFormat = outputFormatOptions[pref.getInt(
                 context.getString(R.string.pref_output_format_key),
                 MediaRecorder.OutputFormat.THREE_GPP,
-            )]!!
+            )]!!,
+            encoder = pref.getInt(
+                context.getString(R.string.pref_encoder_key),
+                MediaRecorder.AudioEncoder.AAC,
+            )
         )
     }
 
@@ -176,7 +200,7 @@ class Settings @Inject constructor(
     }
 
     fun setCodec(value: Int) {
-        val key = "codec"
+        val key = context.getString(R.string.pref_encoder_key)
 
         pref.edit().putInt(
             key, value

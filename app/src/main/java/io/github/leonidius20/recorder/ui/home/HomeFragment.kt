@@ -107,6 +107,28 @@ class HomeFragment : Fragment() {
             viewModel.selectOutputFormat(selectedFormat.value)
         }
 
+        // codec selection chips
+        viewModel.encoderOptions.entries.forEach { (value, name) ->
+            val chipViewId = View.generateViewId()
+
+            val chip = Chip(context).apply {
+                isCheckedIconVisible = true
+                isCheckable = true
+                isClickable = true
+                text = name
+                id = chipViewId
+                tag = value
+                isChecked = viewModel.isEncoderChecked(value)
+            }
+
+            binding.codecChipGroup.addView(chip)
+        }
+
+        binding.codecChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            val selectedCodecValue = group.findViewById<Chip>(group.checkedChipId).tag as Int
+            viewModel.setEncoder(selectedCodecValue)
+        }
+
         // todo: restoring the visualizer on screen rotation
 
         return root

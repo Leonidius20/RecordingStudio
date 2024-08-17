@@ -34,4 +34,5 @@
 
     <string name="pref_audio_source_key" translatable="false">audio_source</string>
     <string name="pref_output_format_key" translatable="false">output_format</string>
+    <string name="pref_encoder_key">codec</string>
 </resources>
