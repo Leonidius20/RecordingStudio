@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.ui.settings
 
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.os.Build
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
@@ -18,6 +19,19 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
+
+        findPreference<SwitchPreferenceCompat>(getString(R.string.pause_on_call_pref_key)).run {
+
+            // MediaRecorder doesn't support pausing before N.
+            // once we re-implement recording with AudioRecord + MediaCodec, we can
+            // remove this
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                this?.isChecked = false
+                this?.isEnabled = false
+            }
+
+
+        }
     }
 
     override fun onResume() {

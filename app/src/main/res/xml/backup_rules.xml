@@ -9,5 +9,7 @@
     <!--
    <include domain="sharedpref" path="."/>
    <exclude domain="sharedpref" path="device.xml"/>
+
 -->
+    <exclude domain="sharedpref" path=""/>
 </full-backup-content>

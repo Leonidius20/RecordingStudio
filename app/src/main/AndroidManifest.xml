@@ -19,9 +19,10 @@
     <!-- to stop recording when there is an incoming call -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+    <!-- todo: turn backup back on but make sure that call management permission is re-requested if "pause on call" was enabled -->
     <application
         android:name=".RecorderApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
