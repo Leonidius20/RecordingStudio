@@ -60,13 +60,18 @@ class RecordingsListRepository @Inject constructor(
     suspend fun getRecordings(): List<Recording> = withContext(ioDispatcher) {
         val recordings = mutableListOf<Recording>()
 
+        val dateColumn =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                MediaStore.Audio.Media.DATE_ADDED
+            else
+                MediaStore.Audio.Media.DATE_TAKEN
+
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DATE_TAKEN,
-            MediaStore.Audio.Media.IS_TRASHED,
+            dateColumn,
         )
 
         val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
@@ -75,7 +80,7 @@ class RecordingsListRepository @Inject constructor(
         )
 
         // sort by date descending
-        val sortOrder = "${MediaStore.Audio.Media.DATE_TAKEN} DESC"
+        val sortOrder = "$dateColumn DESC"
 
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -91,7 +96,7 @@ class RecordingsListRepository @Inject constructor(
             val durationColumn =
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
-            val dateTakenColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_TAKEN)
+            val dateTakenColumn = cursor.getColumnIndexOrThrow(dateColumn)
 
             while (cursor.moveToNext()) {
                 // Get values of columns for a given video.
