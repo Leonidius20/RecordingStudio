@@ -19,6 +19,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.data.settings.Codec
+import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import kotlinx.coroutines.flow.launchIn
@@ -93,7 +95,7 @@ class HomeFragment : Fragment() {
                 isCheckedIconVisible = true
                 isCheckable = true
                 isClickable = true
-                text = format.name
+                text = format.displayName
                 id = chipViewId
                 tag = format
                 isChecked = viewModel.isChecked(format)
@@ -103,30 +105,35 @@ class HomeFragment : Fragment() {
         }
 
         binding.outputFormatChipGroup.setOnCheckedStateChangeListener { group, _ ->
-            val selectedFormat = group.findViewById<Chip>(group.checkedChipId).tag as Settings.OutputFormatOption
-            viewModel.selectOutputFormat(selectedFormat.value)
+            val selectedFormat = group.findViewById<Chip>(group.checkedChipId).tag as Container
+            viewModel.selectOutputFormat(selectedFormat)
         }
 
         // codec selection chips
-        viewModel.encoderOptions.entries.forEach { (value, name) ->
-            val chipViewId = View.generateViewId()
+        viewModel.encoderOptions.observe(viewLifecycleOwner) { codecs ->
+            binding.codecChipGroup.removeAllViews()
 
-            val chip = Chip(context).apply {
-                isCheckedIconVisible = true
-                isCheckable = true
-                isClickable = true
-                text = name
-                id = chipViewId
-                tag = value
-                isChecked = viewModel.isEncoderChecked(value)
+            codecs.forEach { codec ->
+                val chipViewId = View.generateViewId()
+
+                val chip = Chip(context).apply {
+                    isCheckedIconVisible = true
+                    isCheckable = true
+                    isClickable = true
+                    text = codec.displayName
+                    id = chipViewId
+                    tag = codec
+                    isChecked = viewModel.isEncoderChecked(codec)
+                }
+
+                binding.codecChipGroup.addView(chip)
             }
-
-            binding.codecChipGroup.addView(chip)
         }
 
+        // codec selection chips
         binding.codecChipGroup.setOnCheckedStateChangeListener { group, _ ->
-            val selectedCodecValue = group.findViewById<Chip>(group.checkedChipId).tag as Int
-            viewModel.setEncoder(selectedCodecValue)
+            val selectedCodec = group.findViewById<Chip>(group.checkedChipId).tag as Codec
+            viewModel.setEncoder(selectedCodec)
         }
 
         // todo: restoring the visualizer on screen rotation

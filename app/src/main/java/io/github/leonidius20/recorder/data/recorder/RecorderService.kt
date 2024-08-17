@@ -4,7 +4,6 @@ import android.app.ForegroundServiceStartNotAllowedException
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentFilter
@@ -15,14 +14,12 @@ import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
-import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.IntentCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
@@ -31,9 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.Settings
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,9 +45,6 @@ private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.s
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
 // todo: for this, use lifecycle-aware components
-
-// todo: lifecycle aware component that sets ui state to IDLE when the service is destroyed
-// and remove reference to "launcher" here
 
 @AndroidEntryPoint
 class RecorderService : LifecycleService() {
@@ -191,7 +182,7 @@ class RecorderService : LifecycleService() {
             setAudioSource(settings.state.value.audioSource)
             setOutputFormat(fileFormat.value)
             setOutputFile(descriptor.fileDescriptor)
-            setAudioEncoder(settings.state.value.encoder)
+            setAudioEncoder(settings.state.value.encoder.value)
 
             try {
                 prepare()

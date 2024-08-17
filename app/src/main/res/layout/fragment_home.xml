@@ -177,7 +177,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceBodyLarge"
+                        android:textAppearance="?textAppearanceBodyMedium"
                         android:text="Determines the kind of processing applied to audio by the device"
                         android:layout_marginBottom="@dimen/margin_small"/>
 
@@ -204,7 +204,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceTitleLarge"
-                        android:text="Format"
+                        android:text="Container format"
                         android:layout_marginBottom="@dimen/margin_small" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -225,6 +225,13 @@
                         android:text="Codec"
                         android:layout_marginBottom="@dimen/margin_small" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceBodyMedium"
+                        android:text="Available codecs depend on the chosen container format"
+                        android:layout_marginBottom="@dimen/margin_small"/>
+
                     <com.google.android.material.chip.ChipGroup
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -234,6 +241,8 @@
                         android:layout_marginBottom="@dimen/margin_normal">
 
                     </com.google.android.material.chip.ChipGroup>
+
+                    <!-- todo: additional settings like sample rate and bitrate -->
 
                 </LinearLayout>
 

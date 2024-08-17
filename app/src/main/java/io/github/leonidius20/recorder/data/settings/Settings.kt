@@ -23,59 +23,11 @@ class Settings @Inject constructor(
         val stopOnLowStorage: Boolean,
         val pauseOnCall: Boolean,
         val audioSource: Int,
-        val outputFormat: OutputFormatOption,
-        val encoder: Int,
+        val outputFormat: Container,
+        val encoder: Codec,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
-
-    private val _outputFormatOptions = mutableMapOf(
-        MediaRecorder.OutputFormat.THREE_GPP to OutputFormatOption(MediaRecorder.OutputFormat.THREE_GPP, "3gpp", "audio/3gpp"),
-        MediaRecorder.OutputFormat.MPEG_4 to OutputFormatOption(MediaRecorder.OutputFormat.MPEG_4, "mp4", "audio/mp4"),
-        MediaRecorder.OutputFormat.AMR_NB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_NB, "amr nb", "audio/amr"),
-        MediaRecorder.OutputFormat.AMR_WB to OutputFormatOption(MediaRecorder.OutputFormat.AMR_WB, "amr wb", "audio/amr-wb"),
-        MediaRecorder.OutputFormat.AAC_ADTS to OutputFormatOption(MediaRecorder.OutputFormat.AAC_ADTS, "aac adts", "audio/aac-adts"),
-        // todo: figure out mime type for this, audio/webm is unsupported by MediaStore
-        // MediaRecorder.OutputFormat.WEBM to OutputFormatOption(MediaRecorder.OutputFormat.WEBM, "webm", "audio/webm"),
-    )
-
-    init {
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            _outputFormatOptions.add(
-                OutputFormatOption(
-                    MediaRecorder.OutputFormat.MPEG_2_TS, "", ""
-                )
-            )
-        }*/
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            _outputFormatOptions[MediaRecorder.OutputFormat.OGG] = OutputFormatOption(
-                MediaRecorder.OutputFormat.OGG, "ogg", "audio/ogg"
-            )
-        }
-    }
-
-    val outputFormatOptions: Map<Int, OutputFormatOption>
-        get() = _outputFormatOptions
-
-    private val _encoderOptions = mutableMapOf(
-        MediaRecorder.AudioEncoder.AMR_NB to "AMR Narrowband",
-        MediaRecorder.AudioEncoder.AMR_WB to "AMR Wideband",
-        MediaRecorder.AudioEncoder.AAC to "AAC",
-        MediaRecorder.AudioEncoder.HE_AAC to "HE-AAC",
-        MediaRecorder.AudioEncoder.AAC_ELD to "AAC-ELD",
-        MediaRecorder.AudioEncoder.VORBIS to "OGG Vorbis",
-
-    )
-
-    init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            _encoderOptions[MediaRecorder.AudioEncoder.OPUS] = "Opus"
-        }
-    }
-
-    val encoderOptions: Map<Int, String>
-        get() = _encoderOptions
 
     private val _state = MutableStateFlow(getCurrentSettingsState())
 
@@ -114,6 +66,20 @@ class Settings @Inject constructor(
     }
 
     private fun getCurrentSettingsState(): SettingsState {
+        val container = Container.getByValue(
+            pref.getInt(
+                context.getString(R.string.pref_output_format_key),
+                MediaRecorder.OutputFormat.THREE_GPP,
+            )
+        )
+
+        val codec = Codec.getByValue(
+            pref.getInt(
+                context.getString(R.string.pref_encoder_key),
+                container.defaultCodec.value,
+            )
+        )
+
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
                 context.getString(R.string.stop_on_low_battery_pref_key),
@@ -128,14 +94,8 @@ class Settings @Inject constructor(
                 context.getString(R.string.pref_audio_source_key),
                 MediaRecorder.AudioSource.MIC,
             ),
-            outputFormat = outputFormatOptions[pref.getInt(
-                context.getString(R.string.pref_output_format_key),
-                MediaRecorder.OutputFormat.THREE_GPP,
-            )]!!,
-            encoder = pref.getInt(
-                context.getString(R.string.pref_encoder_key),
-                MediaRecorder.AudioEncoder.AAC,
-            )
+            outputFormat = container,
+            encoder = codec,
         )
     }
 
@@ -178,32 +138,35 @@ class Settings @Inject constructor(
         onSharedPreferenceChanged(key, null)
     }
 
-    data class OutputFormatOption(
-        /**
-         * value expected by MediaRecorder.setOutputFormat()
-         */
-        val value: Int,
-        val name: String,
-        val mimeType: String,
-    )
-
-    fun setOutputFormat(value: Int) {
+    fun setOutputFormat(format: Container) {
         val key = context.getString(R.string.pref_output_format_key)
 
-        pref.edit().putInt(
-            key, value
-        ).apply()
+        val editingPref = pref.edit().putInt(
+            key, format.value
+        )
+
+        val currentCodec = state.value.encoder
+        if (!format.supports(currentCodec)) {
+            editingPref.putInt(
+                context.getString(R.string.pref_encoder_key),
+                format.defaultCodec.value,
+            )
+        }
+
+        editingPref.apply()
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
         onSharedPreferenceChanged(key, null)
+        // we don't need to call this for the changed codec, as long as
+        // this function reloads all of the settings every time
     }
 
-    fun setCodec(value: Int) {
+    fun setCodec(codec: Codec) {
         val key = context.getString(R.string.pref_encoder_key)
 
         pref.edit().putInt(
-            key, value
+            key, codec.value
         ).apply()
 
         // the listener only exists while the SettingsFragment is started,

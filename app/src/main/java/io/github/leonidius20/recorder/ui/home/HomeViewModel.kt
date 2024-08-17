@@ -5,8 +5,12 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.data.settings.Codec
+import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.flow.map
@@ -101,24 +105,29 @@ class HomeViewModel @Inject constructor(
         settings.setAudioSource(value)
     }
 
-    val outputFormats = settings.outputFormatOptions.values
+    val outputFormats = Container.entries
 
-    fun isChecked(format: Settings.OutputFormatOption) =
-        settings.state.value.outputFormat.value == format.value
+    val selectedContainer = settings.state.map {
+        it.outputFormat
+    }.asLiveData(viewModelScope.coroutineContext)
 
-    fun selectOutputFormat(value: Int) {
-        settings.setOutputFormat(value)
+    fun isChecked(container: Container) =
+        settings.state.value.outputFormat.value == container.value
+
+    fun selectOutputFormat(container: Container) {
+        settings.setOutputFormat(container)
     }
 
     fun isChecked(audioSource: Settings.AudioSourceOption) =
         audioSource.value == settings.state.value.audioSource
 
-    val encoderOptions = settings.encoderOptions
+    val encoderOptions = selectedContainer.map { it.availableCodecs }
 
-    fun isEncoderChecked(encoder: Int) =
-        settings.state.value.encoder == encoder
 
-    fun setEncoder(encoder: Int) {
+    fun isEncoderChecked(encoder: Codec) =
+        settings.state.value.encoder.value == encoder.value
+
+    fun setEncoder(encoder: Codec) {
         settings.setCodec(encoder)
     }
 
