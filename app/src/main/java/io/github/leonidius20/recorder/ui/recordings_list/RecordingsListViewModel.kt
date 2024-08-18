@@ -46,6 +46,7 @@ class RecordingsListViewModel @Inject constructor(
     private val locale = Locale.getDefault()
 
     data class RecordingUiModel(
+        val id: Long,
         val name: String,
         val duration: String,
         val size: String,
@@ -74,6 +75,7 @@ class RecordingsListViewModel @Inject constructor(
 
             ArrayList(list.map {
                 RecordingUiModel(
+                    it.id,
                     it.name,
                     millisecondsToStopwatchString(it.duration),
                     Formatter.formatFileSize(context, it.size.toLong()),

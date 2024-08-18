@@ -23,6 +23,7 @@ class RecordingsListRepository @Inject constructor(
 ) {
 
     data class Recording(
+        val id: Long,
         val uri: Uri,
         val name: String,
         val duration: Int,
@@ -113,7 +114,7 @@ class RecordingsListRepository @Inject constructor(
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                recordings.add(Recording(contentUri, name, duration, size, dateTaken))
+                recordings.add(Recording(id, contentUri, name, duration, size, dateTaken))
             }
 
         }

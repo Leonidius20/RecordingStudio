@@ -166,7 +166,7 @@ class RecordingsDiffUtilCallback(
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val oldItem = oldList[oldItemPosition]
         val newItem = newList[newItemPosition]
-        return oldItem.uri == newItem.uri // uri is the unique identifier
+        return oldItem.id == newItem.id // uri is the unique identifier
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
