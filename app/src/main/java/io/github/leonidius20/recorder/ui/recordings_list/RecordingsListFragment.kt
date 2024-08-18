@@ -160,13 +160,16 @@ class RecordingsListFragment : Fragment() {
     var actionMode: ActionMode? = null
 
     val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu?): Boolean {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
 
             if (adapter.getSelectedItemsCount() > 1) {
                 mode.menuInflater.inflate(R.menu.recordings_list_multiple_recordings_context_menu, menu)
             } else {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
+
+            // todo: this is temporary, remove once sharing is implemented
+            menu.removeItem(R.id.recordings_list_action_share)
 
             return true
         }
@@ -182,7 +185,8 @@ class RecordingsListFragment : Fragment() {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
 
-
+            // todo: this is temporary, remove once sharing is implemented
+            menu.removeItem(R.id.recordings_list_action_share)
 
             return true
         }

@@ -106,8 +106,6 @@ class RecordingsListRepository @Inject constructor(
                 val size = cursor.getInt(sizeColumn)
                 val dateTaken = cursor.getLong(dateTakenColumn)
 
-                // todo: it is the uri that are faulty probably, that's why we cannot delte jack shit
-                //Uri.withAppendedPath()
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
