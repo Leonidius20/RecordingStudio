@@ -102,7 +102,19 @@ class RecorderService : LifecycleService() {
 
         createPrematureStopNotificationChannel()
 
-        val notification = NotificationCompat.Builder(this, REC_IN_PROGRESS_CHANNEL_ID)
+        // used to control the recording from
+        val recControlBroadcastReceiver = RecordingControlBroadcastReceiver().apply {
+            val intentFilter = IntentFilter().apply {
+                addAction(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
+                addAction(RecordingControlBroadcastReceiver.ACTION_STOP)
+            }
+
+            ContextCompat.registerReceiver(
+                this@RecorderService, this,
+                intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        }
+
+        val notificationB = NotificationCompat.Builder(this, REC_IN_PROGRESS_CHANNEL_ID)
             // Create the notification to display while the service is running
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_microphone)
@@ -110,7 +122,18 @@ class RecorderService : LifecycleService() {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSilent(true)
-            .build()
+            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+
+        // todo: make it always once we re-implement recording with a lower-level api
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val toggleRecPauseIntent = Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
+            notificationB.addAction(R.drawable.ic_pause, "rec/pause", PendingIntent.getBroadcast(this, 0, toggleRecPauseIntent, PendingIntent.FLAG_IMMUTABLE))
+        }
+
+        val stopIntent = Intent(RecordingControlBroadcastReceiver.ACTION_STOP)
+        notificationB.addAction(R.drawable.ic_stop, "stop", PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE))
+
+        val notification = notificationB.build()
 
 
         val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
@@ -119,7 +142,7 @@ class RecorderService : LifecycleService() {
 
         try {
             ServiceCompat.startForeground(
-                this, 100,
+                this, PERSISTENT_NOTIFICATION_ID,
                 notification, foregroundServiceType
             )
         } catch (e: Exception) {
@@ -371,3 +394,4 @@ class RecorderService : LifecycleService() {
 
 private const val REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID = 1
 private const val REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID = 2
+private const val PERSISTENT_NOTIFICATION_ID = 100
