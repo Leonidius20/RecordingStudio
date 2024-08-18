@@ -38,6 +38,21 @@
 
         </Preference>
 
+        <Preference
+            app:key="app_version"
+            app:title="@string/settings_app_version"
+            app:summary="@string/version_name"/>
+
+        <Preference
+            app:key="app_flavor"
+            app:title="@string/settings_app_flavor"
+            app:summary="@string/flavor_name"/>
+
+        <Preference
+            app:key="app_build_type"
+            app:title="@string/settings_build_type"
+            app:summary="@string/build_type_name"/>
+
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

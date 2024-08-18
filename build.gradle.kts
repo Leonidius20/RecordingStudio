@@ -6,3 +6,13 @@ plugins {
     alias(libs.plugins.kapt) apply false
     alias(libs.plugins.hilt) apply false
 }
+
+buildscript {
+    repositories {
+        maven("https://jitpack.io")
+    }
+
+    dependencies {
+        classpath("com.github.alexfu:androidautoversion:3.3.0")
+    }
+}

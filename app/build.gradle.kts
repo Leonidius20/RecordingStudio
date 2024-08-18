@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kapt)
     alias(libs.plugins.hilt)
+    id("com.github.alexfu.androidautoversion")
 }
 
 android {
@@ -14,8 +15,10 @@ android {
         applicationId = "io.github.leonidius20.recorder"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = androidAutoVersion.versionCode
+        versionName = androidAutoVersion.versionName
+
+        resValue("string", "version_name", androidAutoVersion.versionName)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,6 +33,12 @@ android {
             )
             // todo: replace with real
             signingConfig = signingConfigs.getByName("debug")
+
+            resValue("string", "build_type_name", "release")
+        }
+
+        debug {
+            resValue("string", "build_type_name", "debug")
         }
     }
     compileOptions {
@@ -41,6 +50,7 @@ android {
     }
     buildFeatures {
         dataBinding = true
+        buildConfig = true
     }
 
     testOptions.unitTests.isIncludeAndroidResources = true

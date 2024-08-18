@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Recording Studio Lite</string>
     <string name="app_name_short">Rec Studio Lite</string>
+    <string name="flavor_name">Lite</string>
 </resources>
