@@ -12,9 +12,6 @@ class RecordingControlBroadcastReceiver: BroadcastReceiver() {
 
         if (intent.action == ACTION_PAUSE_OR_RESUME) {
             service.toggleRecPause()
-
-            // todo: change notification action text to "resume" or "pause" depending on state
-
         } else if (intent.action == ACTION_STOP) {
             service.stop()
         } else {
@@ -25,8 +22,6 @@ class RecordingControlBroadcastReceiver: BroadcastReceiver() {
     companion object {
         const val ACTION_PAUSE_OR_RESUME = "io.github.leonidius20.recorder.action_pause_or_resume"
         const val ACTION_STOP = "io.github.leonidius20.recorder.action_stop"
-
-        const val PERSISTENT_NOTIFICATION_ID_EXTRA_KEY = "persistent-notification-id"
     }
 
 }

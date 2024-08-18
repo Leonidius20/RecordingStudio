@@ -1,6 +1,7 @@
 package io.github.leonidius20.recorder.data.recorder
 
 import android.app.ForegroundServiceStartNotAllowedException
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -114,49 +115,10 @@ class RecorderService : LifecycleService() {
                 intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
         }
 
-        val notificationB = NotificationCompat.Builder(this, REC_IN_PROGRESS_CHANNEL_ID)
-            // Create the notification to display while the service is running
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.ic_microphone)
-            .setContentTitle("Recording in progress")
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setSilent(true)
-            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
-
-        // todo: make it always once we re-implement recording with a lower-level api
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val toggleRecPauseIntent = Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
-            notificationB.addAction(R.drawable.ic_pause, "rec/pause", PendingIntent.getBroadcast(this, 0, toggleRecPauseIntent, PendingIntent.FLAG_IMMUTABLE))
-        }
-
-        val stopIntent = Intent(RecordingControlBroadcastReceiver.ACTION_STOP)
-        notificationB.addAction(R.drawable.ic_stop, "stop", PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE))
-
-        val notification = notificationB.build()
 
 
-        val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
 
 
-        try {
-            ServiceCompat.startForeground(
-                this, PERSISTENT_NOTIFICATION_ID,
-                notification, foregroundServiceType
-            )
-        } catch (e: Exception) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && e is ForegroundServiceStartNotAllowedException
-            ) {
-
-                // App not in a valid state to start foreground service
-                // (e.g. started from bg)
-            }
-            e.printStackTrace()
-            _state.value = State.ERROR
-            stopSelf()
-        }
 
         val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
             callback = {
@@ -220,6 +182,28 @@ class RecorderService : LifecycleService() {
 
         _state.value = State.RECORDING
 
+        val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
+
+        // we only move service to foreground after the recording was successfully started
+        try {
+            ServiceCompat.startForeground(
+                this, PERSISTENT_NOTIFICATION_ID,
+                buildPersistentNotification(), foregroundServiceType
+            )
+        } catch (e: Exception) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && e is ForegroundServiceStartNotAllowedException
+            ) {
+
+                // App not in a valid state to start foreground service
+                // (e.g. started from bg)
+            }
+            e.printStackTrace()
+            _state.value = State.ERROR
+            stopSelf()
+        }
+
         stopwatch = Stopwatch()
         stopwatch.setOnTickListener {
             _timer.value = stopwatch.elapsedTime
@@ -273,6 +257,52 @@ class RecorderService : LifecycleService() {
         return state.value
     }
 
+    /**
+     * should happen after toggling rec/pause or every second to update timer
+     */
+    private fun updateNotification() {
+        NotificationManagerCompat.from(this).notify(
+            PERSISTENT_NOTIFICATION_ID, buildPersistentNotification()
+        )
+    }
+
+    private fun buildPersistentNotification(): Notification {
+        val titleText = when(state.value) {
+            State.RECORDING -> getString(R.string.notif_recording_in_progress)
+            State.PAUSED -> getString(R.string.notif_recording_paused)
+            else -> ""
+        }
+
+        val recPauseToggleActionText = when(state.value) {
+            State.RECORDING -> getString(R.string.notif_action_pause)
+            State.PAUSED -> getString(R.string.notif_action_resume)
+            else -> ""
+        }
+
+
+        val notificationB = NotificationCompat.Builder(this, REC_IN_PROGRESS_CHANNEL_ID)
+            // Create the notification to display while the service is running
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_microphone)
+            .setContentTitle(titleText)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
+            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+
+        // todo: make it always once we re-implement recording with a lower-level api
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val toggleRecPauseIntent = Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
+            notificationB.addAction(R.drawable.ic_pause, recPauseToggleActionText, PendingIntent.getBroadcast(this, 0, toggleRecPauseIntent, PendingIntent.FLAG_IMMUTABLE))
+        }
+
+        val stopIntent = Intent(RecordingControlBroadcastReceiver.ACTION_STOP)
+        notificationB.addAction(R.drawable.ic_stop,
+            getString(R.string.notif_action_stop), PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE))
+
+        return notificationB.build()
+    }
+
     fun stop() {
         stopSelf()
     }
@@ -302,6 +332,7 @@ class RecorderService : LifecycleService() {
         recorder.pause()
         stopwatch.pause()
         _state.value = State.PAUSED
+        updateNotification()
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -311,6 +342,8 @@ class RecorderService : LifecycleService() {
         _state.value = State.RECORDING
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
+
+        updateNotification()
     }
 
     /**

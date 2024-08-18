@@ -38,4 +38,9 @@
     <string name="settings_app_version">App version</string>
     <string name="settings_app_flavor">App flavor</string>
     <string name="settings_build_type">Build type</string>
+    <string name="notif_recording_in_progress">Recording in progress</string>
+    <string name="notif_recording_paused">Recording is paused</string>
+    <string name="notif_action_pause">Pause</string>
+    <string name="notif_action_resume">Resume</string>
+    <string name="notif_action_stop">Stop</string>
 </resources>
