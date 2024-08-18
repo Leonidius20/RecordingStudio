@@ -9,16 +9,18 @@
     </data>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:endIconMode="clear_text"
         android:hint="@string/new_name">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/file_name_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@={viewmodel.renameFileNewName}" />
+
+
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 </layout>

@@ -288,6 +288,7 @@ class RecorderService : LifecycleService() {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSilent(true)
+            .setOnlyAlertOnce(true)
             .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
 
         // todo: make it always once we re-implement recording with a lower-level api

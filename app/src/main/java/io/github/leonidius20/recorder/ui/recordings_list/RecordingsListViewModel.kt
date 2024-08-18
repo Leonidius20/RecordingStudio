@@ -90,7 +90,10 @@ class RecordingsListViewModel @Inject constructor(
 
 
     fun rename(datasetPosition: Int) {
+        val newName = renameFileNewName.value!!
         val item = recordings.value!![datasetPosition]
+
+        repository.rename(item.uri, item.id, newName)
     }
 
     @RequiresApi(Build.VERSION_CODES.R)

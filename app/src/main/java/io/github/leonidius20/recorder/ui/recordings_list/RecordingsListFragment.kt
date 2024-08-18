@@ -18,6 +18,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
@@ -26,6 +27,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.DiffUtil
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
@@ -136,12 +138,6 @@ class RecordingsListFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun rename(datasetPosition: Int) {
-        // show rename dialog
-        val currentName = viewModel.recordings.value!![datasetPosition].name
-        Toast.makeText(requireContext(), currentName, Toast.LENGTH_SHORT).show()
     }
 
     fun toggleSelection(position: Int) {
@@ -271,8 +267,14 @@ class RecordingsListFragment : Fragment() {
         //todo: dialog fragment with callback?
         viewModel.renameFileNewName.value = viewModel.recordings.value!![position].name
 
-        val dialogView = RenameDialogBinding.inflate(layoutInflater)
-        AlertDialog.Builder(requireContext())
+        val dialogView = RenameDialogBinding.inflate(layoutInflater).also { binding ->
+            // todo: remove all this after fixing 2 way data binding
+            binding.fileNameEditText.setText(viewModel.recordings.value!![position].name)
+            binding.fileNameEditText.addTextChangedListener {
+                viewModel.renameFileNewName.value = binding.fileNameEditText.text!!.toString()
+            }
+        }
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.recordings_list_choose_new_name)
             .setView(dialogView.root)
             .setPositiveButton(android.R.string.ok) { d, i ->
@@ -285,7 +287,7 @@ class RecordingsListFragment : Fragment() {
         val newData = viewModel.recordings.value!![position].copy(
             name = viewModel.renameFileNewName.value!!
         )
-        // todo: actually rename in Repository
+        viewModel.rename(position)
         adapter.replaceItemAt(position, newData)
     }
 

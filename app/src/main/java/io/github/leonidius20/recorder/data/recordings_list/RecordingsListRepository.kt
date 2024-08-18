@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.data.recordings_list
 
 import android.app.PendingIntent
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -134,6 +135,31 @@ class RecordingsListRepository @Inject constructor(
             // todo: create pending intent to show a custom confirmation dialog
             TODO("VERSION.SDK_INT < R")
         }
+    }
+
+    fun rename(uri: Uri, id: Long, newName: String) {
+        // Updates an existing media item.
+        val mediaId = id
+        val resolver = context.contentResolver
+
+        // When performing a single item update, prefer using the ID.
+        val selection = "${MediaStore.Audio.Media._ID} = ?"
+
+        // By using selection + args you protect against improper escaping of // values.
+        val selectionArgs = arrayOf(mediaId.toString())
+
+        // Update an existing recording.
+        val updatedRecordingDetails = ContentValues().apply {
+            put(MediaStore.Audio.Media.DISPLAY_NAME, newName)
+        }
+
+        // Use the individual song's URI to represent the collection that's
+        // updated.
+        val numSongsUpdated = resolver.update(
+            uri,
+            updatedRecordingDetails,
+            selection,
+            selectionArgs)
     }
 
 }
