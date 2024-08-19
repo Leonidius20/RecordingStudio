@@ -30,6 +30,7 @@ class RecordingsListRepository @Inject constructor(
         val duration: Int,
         val size: Int,
         val dateTaken: Long,
+        val mimeType: String,
     )
 
     private val _recordings = MutableStateFlow<List<Recording>>(emptyList())
@@ -74,6 +75,7 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.SIZE,
             dateColumn,
+            MediaStore.Audio.Media.MIME_TYPE,
         )
 
         val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
@@ -99,6 +101,7 @@ class RecordingsListRepository @Inject constructor(
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val dateTakenColumn = cursor.getColumnIndexOrThrow(dateColumn)
+            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
 
             while (cursor.moveToNext()) {
                 // Get values of columns for a given video.
@@ -107,6 +110,7 @@ class RecordingsListRepository @Inject constructor(
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
                 val dateTaken = cursor.getLong(dateTakenColumn)
+                val mimeType = cursor.getString(mimeTypeColumn)
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -115,7 +119,7 @@ class RecordingsListRepository @Inject constructor(
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                recordings.add(Recording(id, contentUri, name, duration, size, dateTaken))
+                recordings.add(Recording(id, contentUri, name, duration, size, dateTaken, mimeType))
             }
 
         }
@@ -137,7 +141,7 @@ class RecordingsListRepository @Inject constructor(
         }
     }
 
-    fun rename(uri: Uri, id: Long, newName: String) {
+    fun rename(uri: Uri, id: Long, newName: String/*, mimeType: String*/) {
         // Updates an existing media item.
         val mediaId = id
         val resolver = context.contentResolver
@@ -151,6 +155,7 @@ class RecordingsListRepository @Inject constructor(
         // Update an existing recording.
         val updatedRecordingDetails = ContentValues().apply {
             put(MediaStore.Audio.Media.DISPLAY_NAME, newName)
+            // put(MediaStore.Audio.Media.MIME_TYPE, mimeType)
         }
 
         // Use the individual song's URI to represent the collection that's

@@ -1,37 +1,27 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
 import android.app.PendingIntent
-import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.text.format.Formatter
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
-import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @HiltViewModel
 class RecordingsListViewModel @Inject constructor(
@@ -52,6 +42,7 @@ class RecordingsListViewModel @Inject constructor(
         val size: String,
         val uri: Uri,
         // val dateTaken: String,
+       // val mimeType: String,
     )
 
     /**
@@ -80,7 +71,8 @@ class RecordingsListViewModel @Inject constructor(
                     millisecondsToStopwatchString(it.duration),
                     Formatter.formatFileSize(context, it.size.toLong()),
                     // dateFormat.format(Date(it.dateTaken)),
-                    it.uri,
+                    it.uri,// todo: think about how we can go about removing fields that have nothing to do with UI, like mime type
+                    //it.mimeType,
                 )
             })
 
@@ -93,7 +85,7 @@ class RecordingsListViewModel @Inject constructor(
         val newName = renameFileNewName.value!!
         val item = recordings.value!![datasetPosition]
 
-        repository.rename(item.uri, item.id, newName)
+        repository.rename(item.uri, item.id, newName, /*item.mimeType*/)
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
