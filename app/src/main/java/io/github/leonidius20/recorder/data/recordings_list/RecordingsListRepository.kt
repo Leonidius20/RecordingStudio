@@ -6,7 +6,9 @@ import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -78,9 +80,26 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.MIME_TYPE,
         )
 
-        val selection = "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
+        val selectionColumn = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+            MediaStore.Audio.Media.DATA
+        else
+            MediaStore.Audio.Media.RELATIVE_PATH
+
+        val selectionColumnValue = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            val path = Environment.getExternalStorageDirectory().absolutePath + "/Recordings/RecordingStudio/" + "%"
+            Log.d("RecListRepo", "Path: $path")
+            path
+        }
+        else
+            "Recordings/RecordingStudio/"
+
+
+        val selection = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+            "$selectionColumn LIKE ?"
+            else
+            "$selectionColumn == ?"
         val selectionArgs = arrayOf(
-            "Recordings/RecordingStudio/",
+            selectionColumnValue,
         )
 
         // sort by date descending

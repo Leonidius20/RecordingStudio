@@ -27,6 +27,11 @@ class RecPermissionManager @Inject constructor() {
             permissionsToGet.add(android.Manifest.permission.POST_NOTIFICATIONS)
         }
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            permissionsToGet.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            permissionsToGet.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+
         PermissionX.init(fragment)
             .permissions(permissionsToGet)
             .onExplainRequestReason { scope, deniedList ->

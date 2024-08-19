@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ContentProviderClient
 import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentFilter
@@ -12,6 +13,7 @@ import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
@@ -314,7 +316,12 @@ class RecorderService : LifecycleService() {
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
+            } else {
+                put(MediaStore.MediaColumns.DATA, Environment.getExternalStorageDirectory().absolutePath + "/Recordings/RecordingStudio/" + name)
+            }
+
         }
 
         val uri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
