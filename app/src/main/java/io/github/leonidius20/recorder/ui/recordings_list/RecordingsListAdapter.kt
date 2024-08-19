@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
+import android.util.Log
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ class RecordingsListAdapter(
     private val onItemLongClicked: (Int) -> Unit,
 ): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
 
+    // todo: replace with viewModel.recordings livedata?
     private var recordings = ArrayList<RecordingsListViewModel.RecordingUiModel>()
 
     private val selectedItems = SparseBooleanArray()
@@ -48,6 +50,21 @@ class RecordingsListAdapter(
         override fun onLongClick(v: View): Boolean {
             onItemLongClicked(position)
             return true
+        }
+
+        internal fun updateName(newName: String) {
+            root.invokeWhenInflated {
+                binding.txtHeadline.text = newName
+            }
+        }
+
+        internal fun updateSelection(isSelected: Boolean) {
+            root.invokeWhenInflated {
+                binding.leadingIcon.setImageResource(
+                    if (isSelected) R.drawable.ic_selected else R.drawable.ic_microphone
+                )
+                binding.root.isSelected = isSelected
+            }
         }
 
         /*fun bind(recording: RecordingsListViewModel.RecordingUiModel) {
@@ -84,15 +101,37 @@ class RecordingsListAdapter(
         }
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            return onBindViewHolder(holder, position)
+        }
+
+        payloads.forEach { payload ->
+            when(payload) {
+                is RecordingChangePayload.Name -> {
+                    holder.updateName(payload.newName)
+                }
+                is RecordingChangePayload.Selection -> {
+                    holder.updateSelection(payload.isSelected)
+                }
+            }
+        }
+    }
+
     private fun isSelected(position: Int) = selectedItems.contains(position)
 
     fun toggleSelection(position: Int) {
-        if (selectedItems.get(position, false)) {
+        val wasSelected = selectedItems.get(position, false)
+
+        if (wasSelected) {
             selectedItems.delete(position)
         } else {
             selectedItems.put(position, true)
         }
-        notifyItemChanged(position)
+        notifyItemChanged(position, RecordingChangePayload.Selection(!wasSelected))
+        // todo: checked vs unchecked icon (as well as Playing icon in future)
+        // can be changed using payloads
+        // same for recording name
     }
 
     fun getSelectedItemsPositions(): List<Int> {
@@ -104,7 +143,7 @@ class RecordingsListAdapter(
     fun clearAllSelection() {
         val selection = getSelectedItemsPositions()
         selectedItems.clear()
-        selection.forEach { position -> notifyItemChanged(position) }
+        selection.forEach { position -> notifyItemChanged(position, RecordingChangePayload.Selection(false)) }
     }
 
     fun getSelectedItemsCount() = selectedItems.size()
@@ -149,6 +188,11 @@ class RecordingsListAdapter(
         notifyItemChanged(position)
     }
 
+    fun renameItemAt(position: Int, newName: String) {
+        recordings[position] = recordings[position].copy(name = newName)
+        notifyItemChanged(position, RecordingChangePayload.Name(newName))
+    }
+
     val currentData
         get() = recordings
 
@@ -175,5 +219,23 @@ class RecordingsDiffUtilCallback(
         return oldItem == newItem // here we compare all fields including name, duration
     }
 
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+        val oldItem = oldList[oldItemPosition]
+        val newItem = newList[newItemPosition]
+
+        if (oldItem.name != newItem.name) {
+            return RecordingChangePayload.Name(newItem.name)
+        }
+
+        return super.getChangePayload(oldItemPosition, newItemPosition)
+    }
+
+}
+
+private sealed interface RecordingChangePayload {
+
+    data class Name(val newName: String): RecordingChangePayload
+
+    data class Selection(val isSelected: Boolean): RecordingChangePayload
 
 }

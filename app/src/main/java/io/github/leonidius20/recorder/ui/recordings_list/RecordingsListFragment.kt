@@ -288,7 +288,7 @@ class RecordingsListFragment : Fragment() {
             name = viewModel.renameFileNewName.value!!
         )
         viewModel.rename(position)
-        adapter.replaceItemAt(position, newData)
+        adapter.renameItemAt(position, newData.name)
     }
 
     private var mediaController: MediaController? = null
