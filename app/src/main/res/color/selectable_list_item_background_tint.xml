@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/md_theme_secondaryContainer_mediumContrast"
+    <item
+        android:color="@color/md_theme_secondaryContainer_mediumContrast"
+        android:drawable="@color/md_theme_secondaryContainer_mediumContrast"
         android:state_selected="true"/>
-    <item android:color="@color/md_theme_surface"
+    <item
+        android:color="@color/md_theme_surface"
+        android:drawable="@color/md_theme_surface"
         android:state_selected="false"/>
 </selector>
