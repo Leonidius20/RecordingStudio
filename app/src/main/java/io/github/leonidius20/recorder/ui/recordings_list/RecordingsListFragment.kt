@@ -109,24 +109,20 @@ class RecordingsListFragment : Fragment() {
 
         trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
                 adapter.removeItems(adapter.getSelectedItemsPositions())
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
             actionMode!!.finish()
-            // todo: notify item removed? or maybe use diffutil
         }
 
         deleteRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                Toast.makeText(requireContext(), "success", Toast.LENGTH_SHORT).show()
                 adapter.removeItems(adapter.getSelectedItemsPositions())
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
             actionMode!!.finish()
-            // todo: notify item removed? or maybe use diffutil
         }
 
 
@@ -225,10 +221,27 @@ class RecordingsListFragment : Fragment() {
 
     fun delete() {
         val positions = adapter.getSelectedItemsPositions()
-        val intent = viewModel.requestDeleting(positions)
-        deleteRecordingsIntentLauncher.launch(
-            IntentSenderRequest.Builder(intent).build()
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = viewModel.requestDeleting(positions)
+            deleteRecordingsIntentLauncher.launch(
+                IntentSenderRequest.Builder(intent).build()
+            )
+        } else {
+            // todo: dialogFragment
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Deleting files")
+                .setMessage("Do you confirm deleting ${positions.size} selected file(s)?")
+                .setPositiveButton(android.R.string.yes) { _, _ ->
+                    viewModel.deleteWithoutConfirmation(positions)
+                    adapter.removeItems(adapter.getSelectedItemsPositions())
+                    actionMode!!.finish()
+                }
+                .setNegativeButton(android.R.string.no) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
     }
 
     fun rename() {

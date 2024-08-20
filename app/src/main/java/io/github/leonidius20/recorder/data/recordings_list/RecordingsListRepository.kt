@@ -151,12 +151,22 @@ class RecordingsListRepository @Inject constructor(
         return MediaStore.createTrashRequest(context.contentResolver, uris, true)
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     fun requestDeleting(uris: List<Uri>): PendingIntent {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            MediaStore.createDeleteRequest(context.contentResolver, uris)
-        } else {
-            // todo: create pending intent to show a custom confirmation dialog
-            TODO("VERSION.SDK_INT < R")
+        return MediaStore.createDeleteRequest(context.contentResolver, uris)
+    }
+
+    /**
+     * used on android versions lower than R
+     */
+    fun delete(uris: List<Uri>) {
+        // Remove a specific media item.
+        val resolver = context.contentResolver
+
+        uris.forEach { uri ->
+            resolver.delete(
+                uri, null, null
+            )
         }
     }
 

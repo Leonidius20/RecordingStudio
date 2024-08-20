@@ -95,8 +95,19 @@ class RecordingsListViewModel @Inject constructor(
         )
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.R)
     fun requestDeleting(positions: List<Int>): PendingIntent {
         return repository.requestDeleting(
+            positions.map { position -> recordings.value!![position].uri }
+        )
+    }
+
+    /**
+     * used on androids before R
+     */
+    fun deleteWithoutConfirmation(positions: List<Int>) {
+        repository.delete(
             positions.map { position -> recordings.value!![position].uri }
         )
     }
