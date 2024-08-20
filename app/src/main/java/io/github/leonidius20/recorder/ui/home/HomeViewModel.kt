@@ -105,7 +105,7 @@ class HomeViewModel @Inject constructor(
         settings.setAudioSource(value)
     }
 
-    val outputFormats = Container.entries
+    val outputFormats = Container.supportedContainers()
 
     val selectedContainer = settings.state.map {
         it.outputFormat

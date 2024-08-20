@@ -93,6 +93,8 @@ enum class Container(
 
         fun getByValue(value: Int) = map[value]!!
 
+        fun supportedContainers() = entries.filter { it.isSupported }
+
     }
 
 }
