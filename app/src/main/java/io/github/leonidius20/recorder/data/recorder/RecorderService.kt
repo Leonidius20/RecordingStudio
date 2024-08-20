@@ -18,13 +18,16 @@ import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MimeTypes
 import com.permissionx.guolindev.PermissionX
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,6 +40,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -162,6 +166,8 @@ class RecorderService : LifecycleService() {
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
         fileUri = getRecFileUri(fileName, fileFormat.mimeType)
+        Log.d("RECSERVICE", "file uri $fileUri")
+        // should be "content" also check EXTERNAL vs INTERNAL storage
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri!!, "w")!!
 
 
@@ -319,12 +325,20 @@ class RecorderService : LifecycleService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
             } else {
-                put(MediaStore.MediaColumns.DATA, Environment.getExternalStorageDirectory().absolutePath + "/Recordings/RecordingStudio/" + name)
+                val folderPath = Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/"
+                val fullFileName = "$name.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)}"
+                put(
+                    MediaStore.MediaColumns.DATA,
+                    folderPath + fullFileName
+                )
+                val folder = File(folderPath)
+                if (!folder.exists()) folder.mkdirs()
             }
 
         }
 
-        val uri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
+        val uri = resolver.insert(//MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
 
         return uri!!
     }

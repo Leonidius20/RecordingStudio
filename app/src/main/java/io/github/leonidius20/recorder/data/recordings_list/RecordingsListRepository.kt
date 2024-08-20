@@ -86,7 +86,7 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.RELATIVE_PATH
 
         val selectionColumnValue = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val path = Environment.getExternalStorageDirectory().absolutePath + "/Recordings/RecordingStudio/" + "%"
+            val path = Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
             Log.d("RecListRepo", "Path: $path")
             path
         }
