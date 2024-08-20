@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -23,6 +25,27 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("production") {
+            storeFile = project.rootProject.file("android-keystore.jks")
+            val secretPropertiesFile = project.rootProject.file("secrets.properties")
+            if (!secretPropertiesFile.exists()) {
+                // we are on github actions, get from env variables
+                storePassword = System.getenv("SIGNATURE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SIGNATURE_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNATURE_KEY_PASSWORD")
+            } else {
+                // we are on local machine, get from file
+                val secretProperties = Properties()
+                secretProperties.load(secretPropertiesFile.inputStream())
+
+                storePassword = secretProperties.getProperty("SIGNATURE_KEYSTORE_PASSWORD")
+                keyAlias = secretProperties.getProperty("SIGNATURE_KEY_ALIAS")
+                keyPassword = secretProperties.getProperty("SIGNATURE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -31,8 +54,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // todo: replace with real
-            signingConfig = signingConfigs.getByName("debug")
+
+            signingConfig = signingConfigs.getByName("production")
 
             resValue("string", "build_type_name", "release")
         }
