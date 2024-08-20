@@ -166,10 +166,7 @@ class RecorderService : LifecycleService() {
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
         fileUri = getRecFileUri(fileName, fileFormat.mimeType)
-        Log.d("RECSERVICE", "file uri $fileUri")
-        // should be "content" also check EXTERNAL vs INTERNAL storage
-        descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri!!, "w")!!
-
+        descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "w")!!
 
         recorder = MediaRecorder().apply {
             setAudioSource(settings.state.value.audioSource)
@@ -240,9 +237,17 @@ class RecorderService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         // ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        stopwatch.stop()
         recorder.stop()
         recorder.release()
+
+        contentResolver.update(fileUri, ContentValues().apply {
+            put(MediaStore.MediaColumns.SIZE, descriptor.statSize)
+            put(MediaStore.MediaColumns.DURATION, stopwatch.elapsedTime)
+        }, null, null)
+
         descriptor.close()
+
         // job.cancel()
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
