@@ -70,6 +70,11 @@ android {
         }
 
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 dependencies {
