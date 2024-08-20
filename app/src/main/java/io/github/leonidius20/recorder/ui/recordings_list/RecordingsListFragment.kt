@@ -3,7 +3,6 @@ package io.github.leonidius20.recorder.ui.recordings_list
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ActionMode
@@ -17,7 +16,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -26,7 +24,6 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -72,7 +69,7 @@ class RecordingsListFragment : Fragment() {
                 toggleSelection(position)
             } else {
                 // start playback
-                setFile(position)
+                setPlayingFile(position)
             }
         }
 
@@ -95,8 +92,6 @@ class RecordingsListFragment : Fragment() {
             adapter.setData(recordings)
             binding.recordingList.scrollToPosition(0)
 
-            // todo: use payloads to update file names
-
         }
 
         // this has to happen every time that we go to this fragment. However
@@ -109,7 +104,9 @@ class RecordingsListFragment : Fragment() {
 
         trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                adapter.removeItems(adapter.getSelectedItemsPositions())
+                val selectedPositions = adapter.getSelectedItemsPositions()
+                adapter.removeItems(selectedPositions)
+                selectedPositions.forEach { mediaController?.removeMediaItem(it) }
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
@@ -118,7 +115,9 @@ class RecordingsListFragment : Fragment() {
 
         deleteRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                adapter.removeItems(adapter.getSelectedItemsPositions())
+                val selectedPositions = adapter.getSelectedItemsPositions()
+                adapter.removeItems(selectedPositions)
+                selectedPositions.forEach { mediaController?.removeMediaItem(it) }
             } else {
                 Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
             }
@@ -233,7 +232,9 @@ class RecordingsListFragment : Fragment() {
                 .setMessage("Do you confirm deleting ${positions.size} selected file(s)?")
                 .setPositiveButton(android.R.string.yes) { _, _ ->
                     viewModel.deleteWithoutConfirmation(positions)
-                    adapter.removeItems(adapter.getSelectedItemsPositions())
+                    val selectedPositions = adapter.getSelectedItemsPositions()
+                    adapter.removeItems(selectedPositions)
+                    selectedPositions.forEach { mediaController?.removeMediaItem(it) }
                     actionMode!!.finish()
                 }
                 .setNegativeButton(android.R.string.no) { dialog, _ ->
@@ -326,11 +327,34 @@ class RecordingsListFragment : Fragment() {
 
             viewModel.recordings.value!!.forEach { recording ->
                 mediaController?.addMediaItem(
-                    MediaItem.Builder().setUri(recording.uri).setMediaMetadata(
-                        MediaMetadata.Builder().setDisplayTitle(recording.name).build()
-                    ).build()
+                    MediaItem.Builder()
+                        .setUri(recording.uri)
+                        .setMediaId(recording.id.toString())
+                        .setMediaMetadata(
+                            MediaMetadata.Builder().setDisplayTitle(recording.name).build()
+                        ).build()
                 )
             }
+
+            mediaController?.addListener(object : Player.Listener {
+
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    adapter.setPlaying(mediaController!!.currentMediaItemIndex)
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) {
+                        adapter.setPlaying(mediaController!!.currentMediaItemIndex)
+                    }
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        adapter.resetPlayingItemHighlighting()
+                    }
+                }
+
+            })
 
             mediaController?.prepare()
 
@@ -347,9 +371,11 @@ class RecordingsListFragment : Fragment() {
     }
 
 
-    private fun setFile(position: Int) {
+    private fun setPlayingFile(position: Int) {
         with(mediaController!!) {
             seekTo(position, 0L)
+            if (!isPlaying) play()
+            // adapter.setPlaying(position)
         }
     }
 

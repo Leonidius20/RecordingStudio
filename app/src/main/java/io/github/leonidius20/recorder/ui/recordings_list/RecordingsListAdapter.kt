@@ -1,6 +1,5 @@
 package io.github.leonidius20.recorder.ui.recordings_list
 
-import android.util.Log
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +23,11 @@ class RecordingsListAdapter(
 
     private val selectedItems = SparseBooleanArray()
 
+    /**
+     * item that is currently playing and should be marked appropriately
+     */
+    private var playingItem: Int? = null // todo: save in viewmodel
+
     fun setData(
         newData: ArrayList<RecordingsListViewModel.RecordingUiModel>
     ) {
@@ -37,7 +41,7 @@ class RecordingsListAdapter(
         diff.dispatchUpdatesTo(this)
     }
 
-    class ViewHolder(
+    inner class ViewHolder(
         val root: RecordingListItemWrapper,
         val onItemClicked: (Int) -> Unit,
         val onItemLongClicked: (Int) -> Unit,
@@ -61,9 +65,38 @@ class RecordingsListAdapter(
         internal fun updateSelection(isSelected: Boolean) {
             root.invokeWhenInflated {
                 binding.leadingIcon.setImageResource(
-                    if (isSelected) R.drawable.ic_selected else R.drawable.ic_microphone
+                    if (isSelected)
+                        R.drawable.ic_selected
+                    else if (playingItem == position)
+                        R.drawable.ic_audio_playing
+                    else
+                        R.drawable.ic_microphone
                 )
                 binding.root.isSelected = isSelected
+            }
+        }
+
+        fun updatePlaybackStatus(isPlaying: Boolean) {
+            root.invokeWhenInflated {
+                binding.txtHeadline.setTextColor(
+                    resources.getColor(
+                        if (isPlaying) R.color.md_theme_primary
+                        else R.color.md_theme_onSurface,
+                    )
+                )
+
+                binding.leadingIcon.setImageResource(
+                    if (isPlaying) R.drawable.ic_audio_playing
+                    else if (selectedItems.get(position)) R.drawable.ic_selected
+                    else R.drawable.ic_microphone,
+                )
+
+                binding.leadingIcon.drawable.setTint(
+                    resources.getColor(
+                        if (isPlaying) R.color.md_theme_primary
+                        else R.color.md_theme_onSurfaceVariant,
+                    )
+                )
             }
         }
 
@@ -98,6 +131,9 @@ class RecordingsListAdapter(
             } else {
                 binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_microphone))
             }
+
+            // todo: optimize update...() or bind...() functions
+            holder.updatePlaybackStatus(position == playingItem)
         }
     }
 
@@ -113,6 +149,9 @@ class RecordingsListAdapter(
                 }
                 is RecordingChangePayload.Selection -> {
                     holder.updateSelection(payload.isSelected)
+                }
+                is RecordingChangePayload.Playback -> {
+                    holder.updatePlaybackStatus(payload.isPlaying)
                 }
             }
         }
@@ -196,6 +235,23 @@ class RecordingsListAdapter(
     val currentData
         get() = recordings
 
+    fun setPlaying(position: Int) {
+        if (position == playingItem) return
+
+        resetPlayingItemHighlighting()
+
+        playingItem = position
+
+        notifyItemChanged(position, RecordingChangePayload.Playback(true))
+    }
+
+    fun resetPlayingItemHighlighting() {
+        if (playingItem != null) {
+            notifyItemChanged(playingItem!!, RecordingChangePayload.Playback(false))
+            playingItem = null
+        }
+    }
+
 }
 
 class RecordingsDiffUtilCallback(
@@ -237,5 +293,7 @@ private sealed interface RecordingChangePayload {
     data class Name(val newName: String): RecordingChangePayload
 
     data class Selection(val isSelected: Boolean): RecordingChangePayload
+
+    data class Playback(val isPlaying: Boolean): RecordingChangePayload
 
 }
