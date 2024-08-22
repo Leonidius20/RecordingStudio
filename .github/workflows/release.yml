@@ -47,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.read_version_name.outputs.major }}.${{ steps.read_version_name.outputs.minor }}.${{ steps.read_version_name.outputs.patch }}
-          release_name: ${{ steps.read_version_name.outputs.major }}.${{ steps.read_version_name.outputs.minor }}.${{ steps.read_version_name.outputs.patch }}
+          tag_name: v${{ steps.read_version_name.outputs.major }}.${{ steps.read_version_name.outputs.minor }}.${{ steps.read_version_name.outputs.patch }}
+          release_name: v${{ steps.read_version_name.outputs.major }}.${{ steps.read_version_name.outputs.minor }}.${{ steps.read_version_name.outputs.patch }}
           body: |
             Changes in this Release
             - <add changes here>
