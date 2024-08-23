@@ -85,7 +85,7 @@ android {
         create("lite") {
             dimension = "version"
             applicationIdSuffix = ".lite"
-            versionNameSuffix = "-lite"
+            // versionNameSuffix = "-lite"
         }
 
         create("full") {
