@@ -19,6 +19,9 @@
     <!-- to stop recording when there is an incoming call -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+    <!-- exclude access network state permission added by some library -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
+
     <!-- todo: turn backup back on but make sure that call management permission is re-requested if "pause on call" was enabled -->
     <application
         android:name=".RecorderApp"
