@@ -23,6 +23,10 @@ android {
         resValue("string", "version_name", androidAutoVersion.versionName)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // translated only into english and ukrainian languages,
+        // exclude strings from libraries in other languages
+        resourceConfigurations.addAll(listOf("en", "uk"))
     }
 
     signingConfigs {
