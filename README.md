@@ -2,7 +2,7 @@
 An Android sound recorder app. External effect plugin support is planned for the Full version.
 
 ---
-Download options coming soon
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="200px">](https://f-droid.org/en/packages/io.github.leonidius20.recorder.lite/)
 
 ---
 
