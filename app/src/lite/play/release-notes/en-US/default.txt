@@ -1,1 +1,3 @@
-The first release.
+0.1.2
+- Removed Vorbis encoder option (as it is not supported by Android);
+- Fixed crash when starting recording on Android 10 and 11

@@ -328,8 +328,12 @@ class RecorderService : LifecycleService() {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Recordings/RecordingStudio")
+                val mediaFolder =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        "Recordings" else "Music" // Recordings folder only appeared in Android 12
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "$mediaFolder/RecordingStudio")
             } else {
+                // "RELATIVE_PATH" only appeared in android 10
                 val folderPath = Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/"
                 val fullFileName = "$name.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)}"
                 put(
