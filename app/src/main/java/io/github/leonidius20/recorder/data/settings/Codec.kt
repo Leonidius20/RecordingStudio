@@ -20,7 +20,6 @@ enum class Codec(
     AAC(MediaRecorder.AudioEncoder.AAC, "AAC", true),
     HE_AAC(MediaRecorder.AudioEncoder.HE_AAC, "HE-AAC", true),
     AAC_ELD(MediaRecorder.AudioEncoder.AAC_ELD, "AAC-ELD", true),
-    VORBIS( MediaRecorder.AudioEncoder.VORBIS, "Vorbis", true),
 
     @RequiresApi(Build.VERSION_CODES.Q)
     OPUS(MediaRecorder.AudioEncoder.OPUS, "Opus", Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q);

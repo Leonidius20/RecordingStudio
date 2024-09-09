@@ -58,7 +58,7 @@ enum class Container(
         MediaRecorder.OutputFormat.OGG,
         "OGG", "audio/ogg",
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-        listOf(Codec.VORBIS, Codec.OPUS)
+        listOf(Codec.OPUS)
     );
 
     /**
