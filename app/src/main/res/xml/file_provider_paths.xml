@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- paths to files that can be given through FileProvider to other apps that
+     request recording through an intent with RECORD_SOUND action -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path
+        name="rec_studio_folder"
+        path="Recordings/RecordingStudio"/>
+
+    <external-path
+        name="rec_studio_folder"
+        path="Music/RecordingStudio"/>
+</paths>

@@ -35,6 +35,10 @@ class RecordingsListRepository @Inject constructor(
         val mimeType: String,
     )
 
+    /* TODO: reimplement with callbackFlow and
+        https://developer.android.com/reference/android/database/ContentObserver
+        MediaStore.addContentObserver(...)
+     */
     private val _recordings = MutableStateFlow<List<Recording>>(emptyList())
     val recordings = _recordings.asStateFlow()
 

@@ -48,4 +48,6 @@
     <string name="notif_action_stop">Stop</string>
     <string name="btn_audio_settings_desc">Audio Settings</string>
     <string name="btn_rec_stop_desc">Stop</string>
+
+    <string name="file_provider_authority" translatable="false">io.github.leonidius20.recorder.RecordingFileProvider</string>
 </resources>

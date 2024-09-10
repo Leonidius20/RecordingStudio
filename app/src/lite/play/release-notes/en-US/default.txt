@@ -2,3 +2,4 @@
 - Removed Vorbis encoder option (as it is not supported by Android);
 - Fixed crash when starting recording on Android 10 and 11;
 - Added contentDescription for Stop and Audio Settings buttons
+- Fixed sharing recordings with external apps that request them with RECORD_AUDIO intent action

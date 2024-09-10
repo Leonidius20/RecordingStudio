@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.home
 
+import android.content.ClipData
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -19,6 +22,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -169,11 +173,16 @@ class HomeFragment : Fragment() {
     }
 
     fun onStopBtnClick() {
+        val recordingUri = viewModel.getUri()
         viewModel.onStopRecording()
 
         if (requireActivity().intent?.action == MediaStore.Audio.Media.RECORD_SOUND_ACTION) {
-            // activity was lauched with intent and we need to return the recording
-            val replyIntent = Intent().apply { setData(viewModel.getUri()) }
+            // activity was launched with intent and we need to return the recording
+            val replyIntent = Intent().apply {
+                setData(recordingUri)
+                clipData = ClipData.newRawUri("", recordingUri)
+                setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
 
             requireActivity().run {
                 setResult(RESULT_OK, replyIntent)

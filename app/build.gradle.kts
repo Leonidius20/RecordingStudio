@@ -66,6 +66,13 @@ android {
 
         debug {
             resValue("string", "build_type_name", "debug")
+
+            // if there is an available signature, use it to sign debug builds
+            // so as to avoid having to re-install the app if you have a
+            // signed release build installed
+            if (project.rootProject.file("android-keystore.jks").exists()) {
+                signingConfig = signingConfigs.getByName("production")
+            }
         }
     }
     compileOptions {
