@@ -6,7 +6,7 @@
     <data>
         <import type="android.view.View"/>
         <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.Recording"/>
-        <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.RecPauseBtnIcon"/>
+        <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.RecPauseBtnState"/>
         <variable
             name="viewModel"
             type="io.github.leonidius20.recorder.ui.home.HomeViewModel" />
@@ -57,9 +57,13 @@
                 />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/audioSettingsButton"
+                app:icon="@drawable/ic_settings"
+                android:contentDescription="@string/btn_audio_settings_desc"
+
                 style="?attr/materialIconButtonOutlinedStyle"
                 app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
-                android:id="@+id/audioSettingsButton"
+
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 app:iconGravity="textStart"
@@ -72,47 +76,46 @@
                 android:onClick="@{() -> fragment.onAudioSettingsBtnClick()}"
                 android:visibility="@{viewModel.uiState.audioSettingsButtonVisible ? View.VISIBLE : View.GONE}"
 
-                app:icon="@drawable/ic_settings"
+
 
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/recordButton" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/recordButton"
+                app:icon="@{viewModel.uiState.recPauseBtnState == RecPauseBtnState.RECORD ? @drawable/ic_record : @drawable/ic_pause}"
+                tools:icon="@drawable/ic_record"
+                android:contentDescription="@{viewModel.uiState.recPauseBtnState == RecPauseBtnState.RECORD ? @string/btn_rec_desc : @string/btn_pause_desc}"
+
                 style="?attr/materialIconButtonFilledStyle"
 
                 app:backgroundTint="?colorSecondaryContainer"
-
-
-
                 app:iconTint="?colorOnSecondaryContainer"
 
                 app:iconGravity="textStart"
-
-                tools:icon="@drawable/ic_record"
 
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
 
                 android:elevation="1dp"
-                android:id="@+id/recordButton"
-
-                android:contentDescription="@string/rec_pause_btn_desc"
 
                 app:layout_constraintBottom_toBottomOf="parent"
 
                 android:layout_marginBottom="@dimen/margin_large"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:icon="@{viewModel.uiState.recPauseBtnIcon == RecPauseBtnIcon.RECORD ? @drawable/ic_record : @drawable/ic_pause}"
                 android:visibility="@{viewModel.uiState.recPauseBtnVisible ? View.VISIBLE : View.GONE}"
-                android:onClick="@{() -> fragment.onRecButtonClick()}"
-                />
+                android:onClick="@{() -> fragment.onRecButtonClick()}" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/stopButton"
+                app:icon="@drawable/ic_stop"
+                android:contentDescription="@string/btn_rec_stop_desc"
+
                 style="?attr/materialIconButtonOutlinedStyle"
                 app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
-                android:id="@+id/stopButton"
+
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 app:iconGravity="textStart"
@@ -124,8 +127,6 @@
                 android:layout_marginBottom="@dimen/margin_large"
                 android:onClick="@{() -> fragment.onStopBtnClick()}"
                 android:visibility="@{viewModel.uiState.stopButtonVisible ? View.VISIBLE : View.GONE}"
-
-                app:icon="@drawable/ic_stop"
 
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/recordButton" />

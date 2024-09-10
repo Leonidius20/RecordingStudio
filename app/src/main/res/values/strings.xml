@@ -3,7 +3,10 @@
     <string name="nav_title_record">Record</string>
     <string name="nav_title_recordings">Recordings</string>
     <string name="nav_title_settings">Settings</string>
-    <string name="rec_pause_btn_desc">Record or Pause</string>
+
+    <string name="btn_rec_desc">Record</string>
+    <string name="btn_pause_desc">Pause</string>
+
     <string name="rec_service_desc">Records audio from the microphone</string>
     <string name="recordings_list_action_rename">Rename</string>
     <string name="recordings_list_action_delete_forever">Delete forever</string>
@@ -43,4 +46,6 @@
     <string name="notif_action_pause">Pause</string>
     <string name="notif_action_resume">Resume</string>
     <string name="notif_action_stop">Stop</string>
+    <string name="btn_audio_settings_desc">Audio Settings</string>
+    <string name="btn_rec_stop_desc">Stop</string>
 </resources>

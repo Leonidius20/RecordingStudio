@@ -24,20 +24,20 @@ class HomeViewModel @Inject constructor(
 
     sealed class UiState(
         val isRecPauseBtnVisible: Boolean,
-        val recPauseBtnIcon: RecPauseBtnIcon,
+        val recPauseBtnState: RecPauseBtnState,
         val isStopButtonVisible: Boolean,
         val isTimerVisible: Boolean,
         val audioSettingsButtonVisible: Boolean,
     ) {
 
-        enum class RecPauseBtnIcon {
+        enum class RecPauseBtnState {
             RECORD,
             PAUSE,
         }
 
         data object Idle: UiState(
             isRecPauseBtnVisible = true,
-            recPauseBtnIcon = RecPauseBtnIcon.RECORD,
+            recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = false,
             isTimerVisible = false,
             audioSettingsButtonVisible = true,
@@ -47,7 +47,7 @@ class HomeViewModel @Inject constructor(
             isRecPauseBtnVisible =
             // pausing MediaRecorder is only available in Nougat
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
-            recPauseBtnIcon = RecPauseBtnIcon.PAUSE,
+            recPauseBtnState = RecPauseBtnState.PAUSE,
             isStopButtonVisible = true,
             isTimerVisible = true,
             audioSettingsButtonVisible = false,
@@ -55,7 +55,7 @@ class HomeViewModel @Inject constructor(
 
         data object Paused: UiState(
             isRecPauseBtnVisible = true,
-            recPauseBtnIcon = RecPauseBtnIcon.RECORD,
+            recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = true,
             isTimerVisible = true,
             audioSettingsButtonVisible = false,
