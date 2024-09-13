@@ -61,7 +61,6 @@
 
         </activity>
 
-        <!-- todo: should it be exported? -->
         <activity
             android:name=".ui.crash.CrashActivity"
             android:exported="false"
@@ -94,18 +93,6 @@
                 <action android:name="androidx.media3.session.MediaSessionService"/>
             </intent-filter>
         </service>
-
-        <provider
-            android:authorities="@string/file_provider_authority"
-            android:name=".ui.home.RecordingFileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_provider_paths"/>
-
-        </provider>
 
     </application>
 
