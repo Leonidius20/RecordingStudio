@@ -5,7 +5,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ContentProviderClient
 import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentFilter
@@ -13,26 +12,23 @@ import android.content.pm.ServiceInfo
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
-import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MimeTypes
 import com.permissionx.guolindev.PermissionX
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,7 +36,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -101,6 +96,14 @@ class RecorderService : LifecycleService() {
     // needed here so that we can return it from activity started for result (action record audio)
     lateinit var fileUri: Uri
 
+    @Inject
+    lateinit var recordingsListRepository: RecordingsListRepository
+
+    private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
+    private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
+    private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
+    private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -110,7 +113,7 @@ class RecorderService : LifecycleService() {
         createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        val recControlBroadcastReceiver = RecordingControlBroadcastReceiver().apply {
+        recControlBroadcastReceiver = RecordingControlBroadcastReceiver().apply {
             val intentFilter = IntentFilter().apply {
                 addAction(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
                 addAction(RecordingControlBroadcastReceiver.ACTION_STOP)
@@ -121,12 +124,7 @@ class RecorderService : LifecycleService() {
                 intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
         }
 
-
-
-
-
-
-        val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
+        lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
             callback = {
                 if (settings.state.value.stopOnLowBattery) {
                     stopAbruptly(explanation = "The device is running out of battery.")
@@ -139,7 +137,7 @@ class RecorderService : LifecycleService() {
                 intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
 
-        val lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
+        lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
             if (settings.state.value.stopOnLowStorage) {
                 stopAbruptly("The device is running out of storage.")
             }
@@ -150,7 +148,7 @@ class RecorderService : LifecycleService() {
                 intentFilter, ContextCompat.RECEIVER_EXPORTED)
         }
 
-        val callBroadcastReceiver = IncomingCallBroadcastReceiver {
+        callBroadcastReceiver = IncomingCallBroadcastReceiver {
             if (settings.state.value.pauseOnCall) {
                 pause()
                 sendNotificationAboutPausingOnCall()
@@ -165,7 +163,7 @@ class RecorderService : LifecycleService() {
 
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
-        fileUri = getRecFileUri(fileName, fileFormat.mimeType)
+        fileUri = recordingsListRepository.createRecordingFile(fileName, fileFormat.mimeType)
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "w")!!
 
         val settingsState = settings.state.value
@@ -254,6 +252,11 @@ class RecorderService : LifecycleService() {
         // job.cancel()
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
+
+        unregisterReceiver(recControlBroadcastReceiver)
+        unregisterReceiver(lowBatteryBroadcastReceiver)
+        unregisterReceiver(lowStorageBroadcastReceiver)
+        unregisterReceiver(callBroadcastReceiver)
     }
 
     /**
@@ -322,37 +325,6 @@ class RecorderService : LifecycleService() {
 
     fun stop() {
         stopSelf()
-    }
-
-
-    private fun getRecFileUri(name: String, mimeType: String): Uri {
-        val resolver = applicationContext.contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val mediaFolder =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                        "Recordings" else "Music" // Recordings folder only appeared in Android 12
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "$mediaFolder/RecordingStudio")
-            } else {
-                // "RELATIVE_PATH" only appeared in android 10
-                val folderPath = Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/"
-                val fullFileName = "$name.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)}"
-                put(
-                    MediaStore.MediaColumns.DATA,
-                    folderPath + fullFileName
-                )
-                val folder = File(folderPath)
-                if (!folder.exists()) folder.mkdirs()
-            }
-
-        }
-
-        val uri = resolver.insert(//MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        return uri!!
     }
 
     inner class Binder: android.os.Binder() {

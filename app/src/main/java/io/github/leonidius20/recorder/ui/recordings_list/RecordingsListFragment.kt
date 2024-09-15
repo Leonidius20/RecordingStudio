@@ -17,7 +17,6 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -32,9 +31,12 @@ import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.databinding.RenameDialogBinding
+import io.github.leonidius20.recorder.ui.common.RecStudioFragment
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.map
 
 @AndroidEntryPoint
-class RecordingsListFragment : Fragment() {
+class RecordingsListFragment : RecStudioFragment() {
 
     private var _binding: FragmentRecordingsListBinding? = null
 
@@ -64,9 +66,9 @@ class RecordingsListFragment : Fragment() {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
 
 
-        val onItemClick: (Int)->Unit = { position: Int ->
+        val onItemClick: (Int) -> Unit = { position: Int ->
             if (actionMode != null) {
-                toggleSelection(position)
+                viewModel.toggleSelection(position)
             } else {
                 // start playback
                 setPlayingFile(position)
@@ -78,7 +80,7 @@ class RecordingsListFragment : Fragment() {
                 actionMode = requireActivity().startActionMode(actionModeCallback)
             }
 
-            toggleSelection(position)
+            viewModel.toggleSelection(position)
         }
 
         adapter = RecordingsListAdapter(
@@ -87,11 +89,31 @@ class RecordingsListFragment : Fragment() {
         )
         binding.recordingList.adapter = adapter
 
-        viewModel.recordings.observe(viewLifecycleOwner) { recordings ->
+        viewModel.state.collectSinceStarted { state ->
 
-            adapter.setData(recordings)
+            adapter.setData(ArrayList(state.recordings))
             binding.recordingList.scrollToPosition(0)
 
+        }
+
+        viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
+            val shouldShowActionMode = numItemsSelected > 0
+
+            // if should show actionMode, but it is not being shown yet
+            if (shouldShowActionMode && actionMode == null) {
+                actionMode = requireActivity().startActionMode(actionModeCallback)
+            } else if (!shouldShowActionMode && actionMode != null) {
+                // if should not show action mode but it is being shown
+                actionMode!!.finish()
+                actionMode = null
+            }
+
+            if (shouldShowActionMode) {
+                actionMode!!.apply {
+                    title = getString(R.string.recs_list_action_mode_num_selected, numItemsSelected)
+                    invalidate()
+                }
+            }
         }
 
         // this has to happen every time that we go to this fragment. However
@@ -100,29 +122,33 @@ class RecordingsListFragment : Fragment() {
         // the MediaStore version, if it's changed, it will compare some other thing,
         // then use DiffUtil to change the list (some stuff may have been deleted or renamed
         // between
-        viewModel.loadRecordings()
+        //viewModel.loadRecordings()
 
-        trashRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val selectedPositions = adapter.getSelectedItemsPositions()
-                adapter.removeItems(selectedPositions)
-                selectedPositions.forEach { mediaController?.removeMediaItem(it) }
-            } else {
-                Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
-            }
-            actionMode!!.finish()
-        }
+        trashRecordingsIntentLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    /*val selectedPositions = adapter.getSelectedItemsPositions()
+                    adapter.removeItems(selectedPositions)
+                    selectedPositions.forEach { mediaController?.removeMediaItem(it) }*/
 
-        deleteRecordingsIntentLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val selectedPositions = adapter.getSelectedItemsPositions()
-                adapter.removeItems(selectedPositions)
-                selectedPositions.forEach { mediaController?.removeMediaItem(it) }
-            } else {
-                Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
+
+                } else {
+                    Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
+                }
+                actionMode!!.finish()
             }
-            actionMode!!.finish()
-        }
+
+        deleteRecordingsIntentLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    /*val selectedPositions = adapter.getSelectedItemsPositions()
+                    adapter.removeItems(selectedPositions)
+                    selectedPositions.forEach { mediaController?.removeMediaItem(it) }*/
+                } else {
+                    Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
+                }
+                actionMode!!.finish()
+            }
 
 
         // registerForContextMenu(binding.recordingList)
@@ -135,26 +161,17 @@ class RecordingsListFragment : Fragment() {
         _binding = null
     }
 
-    fun toggleSelection(position: Int) {
-        adapter.toggleSelection(position)
-        val selectedCount = adapter.getSelectedItemsCount()
-
-        if (selectedCount == 0) {
-            actionMode!!.finish()
-        } else {
-            actionMode!!.setTitle("${selectedCount} selected")
-            actionMode!!.invalidate()
-        }
-    }
-
 
     var actionMode: ActionMode? = null
 
-    val actionModeCallback = object : ActionMode.Callback {
+    private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
 
-            if (adapter.getSelectedItemsCount() > 1) {
-                mode.menuInflater.inflate(R.menu.recordings_list_multiple_recordings_context_menu, menu)
+            if (viewModel.state.value.numItemsSelected > 1) {
+                mode.menuInflater.inflate(
+                    R.menu.recordings_list_multiple_recordings_context_menu,
+                    menu
+                )
             } else {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
@@ -170,8 +187,11 @@ class RecordingsListFragment : Fragment() {
             // so we can add or remove menu elements here based on if it is
             // 1 element selected or multiple
             menu.clear()
-            if (adapter.getSelectedItemsCount() > 1) {
-                mode.menuInflater.inflate(R.menu.recordings_list_multiple_recordings_context_menu, menu)
+            if (viewModel.state.value.numItemsSelected > 1) {
+                mode.menuInflater.inflate(
+                    R.menu.recordings_list_multiple_recordings_context_menu,
+                    menu
+                )
             } else {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
@@ -184,16 +204,19 @@ class RecordingsListFragment : Fragment() {
 
         @SuppressLint("NewApi") // the "trash" option requires api 30 but it isn't shown in the menu on lower apis
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
-            when(item.itemId) {
+            when (item.itemId) {
                 R.id.recordings_list_action_rename -> {
                     rename()
                 }
+
                 R.id.recordings_list_action_delete_forever -> {
                     delete()
                 }
+
                 R.id.recordings_list_action_share -> {
                     // todo
                 }
+
                 R.id.recordings_list_action_trash -> {
                     trash()
                 }
@@ -202,7 +225,8 @@ class RecordingsListFragment : Fragment() {
         }
 
         override fun onDestroyActionMode(mode: ActionMode?) {
-            adapter.clearAllSelection()
+            //adapter.clearAllSelection()
+            viewModel.clearSelection()
             actionMode = null
         }
 
@@ -211,30 +235,32 @@ class RecordingsListFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun trash() {
-        val positions = adapter.getSelectedItemsPositions()
-        val intent = viewModel.requestTrashing(positions)
+        //val positions = adapter.getSelectedItemsPositions()
+        val intent = viewModel.requestTrashingSelected()
         trashRecordingsIntentLauncher.launch(
             IntentSenderRequest.Builder(intent).build()
         )
     }
 
     fun delete() {
-        val positions = adapter.getSelectedItemsPositions()
+        //val positions = adapter.getSelectedItemsPositions()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val intent = viewModel.requestDeleting(positions)
+            val intent = viewModel.requestDeletingSelected()
             deleteRecordingsIntentLauncher.launch(
                 IntentSenderRequest.Builder(intent).build()
             )
         } else {
             // todo: dialogFragment
+
+
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Deleting files")
-                .setMessage("Do you confirm deleting ${positions.size} selected file(s)?")
+                .setMessage("Do you confirm deleting ${viewModel.state.value.numItemsSelected} selected file(s)?")
                 .setPositiveButton(android.R.string.yes) { _, _ ->
-                    viewModel.deleteWithoutConfirmation(positions)
-                    val selectedPositions = adapter.getSelectedItemsPositions()
-                    adapter.removeItems(selectedPositions)
-                    selectedPositions.forEach { mediaController?.removeMediaItem(it) }
+                    viewModel.legacyDeleteSelectedWithoutConfirmation()
+                    /* val selectedPositions = adapter.getSelectedItemsPositions()
+                     adapter.removeItems(selectedPositions)
+                     selectedPositions.forEach { mediaController?.removeMediaItem(it) }*/
                     actionMode!!.finish()
                 }
                 .setNegativeButton(android.R.string.no) { dialog, _ ->
@@ -246,18 +272,14 @@ class RecordingsListFragment : Fragment() {
     }
 
     fun rename() {
-        val position = adapter.getSelectedItemsPositions().first()
+        //val position = adapter.getSelectedItemsPositions().first()
         // if success
         // todo: first stop actionmode, then show rename dialog, so that the need for payloads is evident
 
 
-
-
-
-
         actionMode!!.finish()
 
-        showRenameDialog(position) // probably not very sustainable when we will implement
+        showRenameDialog() // probably not very sustainable when we will implement
         // restoring the dialog after screen rotation. Maybe it is better to restore selected
         // items and then take position from there
 
@@ -267,7 +289,7 @@ class RecordingsListFragment : Fragment() {
     /**
      * shows rename dialog for the first time or after activity recreation
      */
-    fun showRenameDialog(position: Int) {
+    fun showRenameDialog() {
         // todo: dialog being shown is a part of UI state. It should be stored in viewmodel
         // and there should be a "render" function that simply renders out the state that is
         // saved in viewmodel
@@ -279,11 +301,13 @@ class RecordingsListFragment : Fragment() {
         // and reachitect the ui state logic
 
         //todo: dialog fragment with callback?
-        viewModel.renameFileNewName.value = viewModel.recordings.value!![position].name
+        val oldName = viewModel.getFirstSelectedItemName()
+
+        viewModel.renameFileNewName.value = oldName
 
         val dialogView = RenameDialogBinding.inflate(layoutInflater).also { binding ->
             // todo: remove all this after fixing 2 way data binding
-            binding.fileNameEditText.setText(viewModel.recordings.value!![position].name)
+            binding.fileNameEditText.setText(oldName)
             binding.fileNameEditText.addTextChangedListener {
                 viewModel.renameFileNewName.value = binding.fileNameEditText.text!!.toString()
             }
@@ -292,17 +316,14 @@ class RecordingsListFragment : Fragment() {
             .setTitle(R.string.recordings_list_choose_new_name)
             .setView(dialogView.root)
             .setPositiveButton(android.R.string.ok) { d, i ->
-                onRenameDialogSubmitted(position)
+                onRenameDialogSubmitted()
             }
             .show()
     }
 
-    private fun onRenameDialogSubmitted(position: Int) {
-        val newData = viewModel.recordings.value!![position].copy(
-            name = viewModel.renameFileNewName.value!!
-        )
-        viewModel.rename(position)
-        adapter.renameItemAt(position, newData.name)
+    private fun onRenameDialogSubmitted() {
+        viewModel.rename()
+        // adapter.renameItemAt(position, newData.name)
     }
 
     private var mediaController: MediaController? = null
@@ -312,11 +333,12 @@ class RecordingsListFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         val context = requireContext()
-        val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        val sessionToken =
+            SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val factory = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture = factory
-        factory.addListener( {
-            mediaController = factory?.let {
+        factory.addListener({
+            mediaController = factory.let {
                 if (it.isDone)
                     it.get()
                 else
@@ -325,7 +347,24 @@ class RecordingsListFragment : Fragment() {
 
             binding.playerView.player = mediaController
 
-            viewModel.recordings.value!!.forEach { recording ->
+            viewModel.state
+                .distinctUntilChangedBy { it.itemIds }
+                .map { it.recordings }
+                .collectSinceStarted { recordings ->
+
+                    mediaController?.replaceMediaItems(0, mediaController!!.mediaItemCount,
+                        recordings.map { recording ->
+                            MediaItem.Builder()
+                                .setUri(recording.uri)
+                                .setMediaId(recording.id.toString())
+                                .setMediaMetadata(
+                                    MediaMetadata.Builder().setDisplayTitle(recording.name).build()
+                                ).build()
+                        }
+                    )
+                }
+
+            /*viewModel.recordings.value!!.forEach { recording ->
                 mediaController?.addMediaItem(
                     MediaItem.Builder()
                         .setUri(recording.uri)
@@ -334,7 +373,7 @@ class RecordingsListFragment : Fragment() {
                             MediaMetadata.Builder().setDisplayTitle(recording.name).build()
                         ).build()
                 )
-            }
+            }*/
 
             mediaController?.addListener(object : Player.Listener {
 

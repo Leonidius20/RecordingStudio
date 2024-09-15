@@ -4,17 +4,25 @@ import android.app.PendingIntent
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.database.ContentObserver
+import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -39,36 +47,56 @@ class RecordingsListRepository @Inject constructor(
         https://developer.android.com/reference/android/database/ContentObserver
         MediaStore.addContentObserver(...)
      */
-    private val _recordings = MutableStateFlow<List<Recording>>(emptyList())
-    val recordings = _recordings.asStateFlow()
+
+    val recordings = callbackFlow {
+
+        val cursor = getCursorForRecordingsFolder()
+
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+
+            override fun onChange(selfChange: Boolean) {
+                trySend(Unit)
+            }
+
+        }
+
+        cursor?.registerContentObserver(observer)
+
+        awaitClose {
+            cursor?.apply {
+                unregisterContentObserver(observer)
+                close()
+            }
+        }
+
+    }.onStart { emit(Unit) }
+        .map { getRecordings() }
 
     //private var latestMediaStoreVersion: String? = null
     //private var latestMediaStoreGeneration: Long? = null
 
     // todo Cache the result?
 
-    suspend fun loadOrUpdateRecordingsIfNeeded() {
-       // val newMediaStoreVersion = MediaStore.getVersion(context)
-       // val newMediaStoreGeneration = MediaStore.getGeneration(context, MediaStore.VOLUME_EXTERNAL)
+    private suspend fun loadOrUpdateRecordingsIfNeeded() {
+        // val newMediaStoreVersion = MediaStore.getVersion(context)
+        // val newMediaStoreGeneration = MediaStore.getGeneration(context, MediaStore.VOLUME_EXTERNAL)
 //
-     //   if (newMediaStoreVersion != latestMediaStoreVersion) {
-      //      latestMediaStoreVersion = newMediaStoreVersion
+        //   if (newMediaStoreVersion != latestMediaStoreVersion) {
+        //      latestMediaStoreVersion = newMediaStoreVersion
 
-     //      _recordings.value = getRecordings()
-     //   } else  {
-            // mediastore version same, but something was added or modified
-      //      MediaStore.getG
-      //  }
+        //      _recordings.value = getRecordings()
+        //   } else  {
+        // mediastore version same, but something was added or modified
+        //      MediaStore.getG
+        //  }
 
 
         // todo: check MediaStore generation and whatnot
 
-        _recordings.value = getRecordings()
+       // _recordings.value = getRecordings()
     }
 
-    suspend fun getRecordings(): List<Recording> = withContext(ioDispatcher) {
-        val recordings = mutableListOf<Recording>()
-
+    private fun getCursorForRecordingsFolder(): Cursor? {
         val dateColumn =
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
                 MediaStore.Audio.Media.DATE_ADDED
@@ -90,17 +118,17 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.RELATIVE_PATH
 
         val selectionColumnValue = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val path = Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
+            val path =
+                Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
             Log.d("RecListRepo", "Path: $path")
             path
-        }
-        else
+        } else
             "Recordings/RecordingStudio/"
 
 
         val selection = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
             "$selectionColumn LIKE ?"
-            else
+        else
             "$selectionColumn == ?"
         val selectionArgs = arrayOf(
             selectionColumnValue,
@@ -109,13 +137,27 @@ class RecordingsListRepository @Inject constructor(
         // sort by date descending
         val sortOrder = "$dateColumn DESC"
 
-        context.contentResolver.query(
+        val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
             selection,
             selectionArgs,
             sortOrder
-        )?.use { cursor ->
+        )
+
+        return cursor
+    }
+
+    private suspend fun getRecordings(): List<Recording> = withContext(ioDispatcher) {
+        val recordings = mutableListOf<Recording>()
+
+        val dateColumn =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                MediaStore.Audio.Media.DATE_ADDED
+            else
+                MediaStore.Audio.Media.DATE_TAKEN
+
+        getCursorForRecordingsFolder()?.use { cursor ->
 
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn =
@@ -197,7 +239,42 @@ class RecordingsListRepository @Inject constructor(
             uri,
             updatedRecordingDetails,
             selection,
-            selectionArgs)
+            selectionArgs
+        )
+    }
+
+    fun createRecordingFile(name: String, mimeType: String): Uri {
+        val resolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val mediaFolder =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        "Recordings" else "Music" // Recordings folder only appeared in Android 12
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "$mediaFolder/RecordingStudio")
+            } else {
+                // "RELATIVE_PATH" only appeared in android 10
+                val folderPath =
+                    Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/"
+                val fullFileName =
+                    "$name.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)}"
+                put(
+                    MediaStore.MediaColumns.DATA,
+                    folderPath + fullFileName
+                )
+                val folder = File(folderPath)
+                if (!folder.exists()) folder.mkdirs()
+            }
+
+        }
+
+        val uri =
+            resolver.insert(//MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues
+            )
+
+        return uri!!
     }
 
 }
