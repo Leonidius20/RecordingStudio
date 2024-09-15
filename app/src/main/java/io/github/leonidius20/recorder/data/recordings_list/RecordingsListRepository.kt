@@ -93,7 +93,7 @@ class RecordingsListRepository @Inject constructor(
 
         // todo: check MediaStore generation and whatnot
 
-       // _recordings.value = getRecordings()
+        // _recordings.value = getRecordings()
     }
 
     private fun getCursorForRecordingsFolder(): Cursor? {
@@ -112,20 +112,28 @@ class RecordingsListRepository @Inject constructor(
             MediaStore.Audio.Media.MIME_TYPE,
         )
 
+        // next two variables exist because RELATIVE_PATH is available only on
+        // Android 10 and up, whereas the "Recordings" media folder is only
+        // available on Android 12 and up. We have to handle all possible
+        // combinations of path column with path value
         val selectionColumn = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
             MediaStore.Audio.Media.DATA
         else
             MediaStore.Audio.Media.RELATIVE_PATH
 
-        val selectionColumnValue = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val path =
-                Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
-            Log.d("RecListRepo", "Path: $path")
-            path
-        } else
-            "Recordings/RecordingStudio/"
-        /// here
-
+        val selectionColumnValue =
+            // from Android 5 up to Android 10 (exclusive)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                val path =
+                    Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
+                path
+            // Android 10, Android 11 (less than 12 but no less than 10)
+            } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                "Music/RecordingStudio"
+            // Android 12 and up (no less than Android 12)
+            } else
+                "Recordings/RecordingStudio/"
+        // todo: test this fix on an Android 11 emulator
 
         val selection = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
             "$selectionColumn LIKE ?"
