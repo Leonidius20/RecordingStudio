@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.recordings_list
+package io.github.leonidius20.recorder.ui.recordings_list.viewmodel
 
 import android.app.PendingIntent
 import android.content.Context
@@ -68,7 +68,7 @@ class RecordingsListViewModel @Inject constructor(
     /**
      * used in a dialog that is shown when user tries to rename a file
      */
-    val renameFileNewName = MutableLiveData<String>()
+    //val renameFileNewName = MutableLiveData<String>()
 
     //init {
     //    loadRecordings()
@@ -124,12 +124,12 @@ class RecordingsListViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
 
-    fun rename() {
+    /*fun rename() {
         val newName = renameFileNewName.value!!
         val item = itemThatUserWantsToRename
 
         repository.rename(item.uri, item.id, newName, /*item.mimeType*/)
-    }
+    }*/
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun requestTrashingSelected(): PendingIntent {
@@ -184,12 +184,14 @@ class RecordingsListViewModel @Inject constructor(
     // todo: refactor and remove
     private lateinit var itemThatUserWantsToRename: RecordingUiModel
 
-    // todo: refactor and remove
-    fun getFirstSelectedItemName(): String {
+    // todo: refactor navigation as a one-off effect, so that arguments
+    //  can be supplied by viewmodel, then remove this
+    //  and remove
+    fun getFirstSelectedItem(): RecordingUiModel {
 
         itemThatUserWantsToRename = state.value.recordings.first { it.isSelected }
 
-        return itemThatUserWantsToRename.name
+        return itemThatUserWantsToRename
     }
 
 }

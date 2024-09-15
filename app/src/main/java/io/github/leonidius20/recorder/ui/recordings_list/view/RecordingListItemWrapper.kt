@@ -1,11 +1,10 @@
-package io.github.leonidius20.recorder.ui.recordings_list
+package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.content.Context
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import io.github.leonidius20.recorder.databinding.RecordingListItem2Binding
-import io.github.leonidius20.recorder.databinding.RecordingListItemBinding
 import tech.okcredit.layout_inflator.OkLayoutInflater
 
 /**

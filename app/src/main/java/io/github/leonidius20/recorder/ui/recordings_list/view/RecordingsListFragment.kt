@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.recordings_list
+package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -23,6 +23,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -32,6 +33,7 @@ import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.databinding.RenameDialogBinding
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
+import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 
@@ -275,13 +277,22 @@ class RecordingsListFragment : RecStudioFragment() {
         //val position = adapter.getSelectedItemsPositions().first()
         // if success
         // todo: first stop actionmode, then show rename dialog, so that the need for payloads is evident
-
+        val selectedItem = viewModel.getFirstSelectedItem()
 
         actionMode!!.finish()
 
-        showRenameDialog() // probably not very sustainable when we will implement
+        // showRenameDialog() // probably not very sustainable when we will implement
         // restoring the dialog after screen rotation. Maybe it is better to restore selected
         // items and then take position from there
+
+        findNavController().navigate(
+            RecordingsListFragmentDirections.actionNavigationRecordingsListToRenameDialogFragment(
+                fileToRename = selectedItem.uri,
+                currentFileName = selectedItem.name,
+                id = selectedItem.id,
+            )
+        )
+
 
 
     }
@@ -289,7 +300,7 @@ class RecordingsListFragment : RecStudioFragment() {
     /**
      * shows rename dialog for the first time or after activity recreation
      */
-    fun showRenameDialog() {
+    /*fun showRenameDialog() {
         // todo: dialog being shown is a part of UI state. It should be stored in viewmodel
         // and there should be a "render" function that simply renders out the state that is
         // saved in viewmodel
@@ -319,12 +330,12 @@ class RecordingsListFragment : RecStudioFragment() {
                 onRenameDialogSubmitted()
             }
             .show()
-    }
+    }*/
 
-    private fun onRenameDialogSubmitted() {
+    /*private fun onRenameDialogSubmitted() {
         viewModel.rename()
         // adapter.renameItemAt(position, newData.name)
-    }
+    }*/
 
     private var mediaController: MediaController? = null
     private var controllerFuture: ListenableFuture<MediaController>? = null

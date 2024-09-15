@@ -4,23 +4,67 @@
 
     <data>
         <variable
-            name="viewmodel"
-            type="io.github.leonidius20.recorder.ui.recordings_list.RecordingsListViewModel" />
+            name="viewModel"
+            type="io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RenameDialogViewModel" />
     </data>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:minWidth="280dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:endIconMode="clear_text"
-        android:hint="@string/new_name">
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="@drawable/dialog_background"
+        android:elevation="6dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/file_name_edit_text"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?textAppearanceHeadlineSmall"
+            android:layout_marginBottom="16dp"
+            android:text="@string/recordings_list_choose_new_name"/>
+
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            android:layout_marginBottom="24dp"
+            android:hint="@string/new_name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/file_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@={viewModel.fileName}"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="end">
+
+            <Button
+                android:id="@+id/rename_dialog_cancel_button"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@android:string/cancel"/>
+
+            <Button
+                android:id="@+id/rename_dialog_confirm_button"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@android:string/ok"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 
-            />
-
-    </com.google.android.material.textfield.TextInputLayout>
 </layout>

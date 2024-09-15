@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.hilt)
     id("com.github.alexfu.androidautoversion")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {

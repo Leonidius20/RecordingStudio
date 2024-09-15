@@ -1,16 +1,14 @@
-package io.github.leonidius20.recorder.ui.recordings_list
+package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.util.Log
-import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.core.util.contains
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.ui.common.breakIntoRangesDescending
-import io.github.leonidius20.recorder.ui.recordings_list.RecordingsListViewModel.RecordingUiModel
+import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
+import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 
 /**
  * this adapter supports selecting multiple items, removing and (in future) changing their titles

@@ -13,13 +13,34 @@
 
     <fragment
         android:id="@+id/navigation_recordings_list"
-        android:name="io.github.leonidius20.recorder.ui.recordings_list.RecordingsListFragment"
+        android:name="io.github.leonidius20.recorder.ui.recordings_list.view.RecordingsListFragment"
         android:label="@string/nav_title_recordings"
-        tools:layout="@layout/fragment_recordings_list" />
+        tools:layout="@layout/fragment_recordings_list" >
+        <action
+            android:id="@+id/action_navigation_recordings_list_to_renameDialogFragment"
+            app:destination="@id/renameDialogFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_settings"
         android:name="io.github.leonidius20.recorder.ui.settings.SettingsFragment"
         android:label="@string/nav_title_settings"
         tools:layout="@layout/fragment_settings" />
+
+    <dialog
+        android:id="@+id/renameDialogFragment"
+        android:name="io.github.leonidius20.recorder.ui.recordings_list.view.RenameDialogFragment"
+        android:label="RenameDialogFragment" >
+        <argument
+            android:name="fileToRename"
+            app:argType="android.net.Uri" />
+        <argument
+            android:name="currentFileName"
+            app:argType="string" />
+        <argument
+            android:name="id"
+            app:argType="long" />
+    </dialog>
+
+
 </navigation>
