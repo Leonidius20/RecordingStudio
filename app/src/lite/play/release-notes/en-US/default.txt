@@ -1,2 +1,4 @@
 0.2.0
 - Added an option for selecting between mono and stereo recording (WIP)
+- Edge-to-edge design
+- Fixed various issues with the recordings list (WIP)

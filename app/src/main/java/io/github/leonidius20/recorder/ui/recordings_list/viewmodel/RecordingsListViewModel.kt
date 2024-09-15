@@ -7,7 +7,6 @@ import android.os.Build
 import android.text.format.Formatter
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,9 +43,9 @@ class RecordingsListViewModel @Inject constructor(
         val size: String,
         val uri: Uri,
         // val dateTaken: String,
-       // val mimeType: String,
+        // val mimeType: String,
         val isSelected: Boolean,
-        val isPlaying: Boolean,
+        val isPlaying: Boolean, // todo: refactor for viewmodel to hold info about items that are being played
     )
 
     data class UiState(
@@ -55,7 +54,9 @@ class RecordingsListViewModel @Inject constructor(
         // todo: lock recordings playback when recording is in progress, also pause any currently playing recording and acquire audio focus?
         val isRecInProgress: Boolean = false,
     ) {
-        companion object { fun default() = UiState(ArrayList()) }
+        companion object {
+            fun default() = UiState(ArrayList())
+        }
 
         val numItemsSelected = recordings.count { it.isSelected }
 
@@ -64,22 +65,6 @@ class RecordingsListViewModel @Inject constructor(
         val itemIds
             get() = recordings.map { it.id }
     }
-
-    /**
-     * used in a dialog that is shown when user tries to rename a file
-     */
-    //val renameFileNewName = MutableLiveData<String>()
-
-    //init {
-    //    loadRecordings()
-    //}
-
-    /*fun loadRecordings() {
-        viewModelScope.launch {
-            repository.loadOrUpdateRecordingsIfNeeded()
-
-        }
-    }*/
 
     private val recordingsList = repository.recordings
         .map { list ->
@@ -100,7 +85,6 @@ class RecordingsListViewModel @Inject constructor(
 
 
         }.flowOn(ioDispatcher)
-        //.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     // todo: underlying recordings collection update is an Intent, that is originated from data layer
 
 
@@ -123,13 +107,6 @@ class RecordingsListViewModel @Inject constructor(
     private val _state = MutableStateFlow<UiState>(UiState.default())
     val state = _state.asStateFlow()
 
-
-    /*fun rename() {
-        val newName = renameFileNewName.value!!
-        val item = itemThatUserWantsToRename
-
-        repository.rename(item.uri, item.id, newName, /*item.mimeType*/)
-    }*/
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun requestTrashingSelected(): PendingIntent {
