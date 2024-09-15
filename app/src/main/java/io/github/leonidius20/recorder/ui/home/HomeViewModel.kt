@@ -9,6 +9,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -129,6 +130,15 @@ class HomeViewModel @Inject constructor(
 
     fun setEncoder(encoder: Codec) {
         settings.setCodec(encoder)
+    }
+
+    val audioChannelsOptions = AudioChannels.entries
+
+    fun isChannelsOptionsChecked(channels: AudioChannels)
+        = channels == settings.state.value.numOfChannels
+
+    fun setChannels(channels: AudioChannels) {
+        settings.setNumberOfChannels(channels)
     }
 
 }

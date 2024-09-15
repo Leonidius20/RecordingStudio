@@ -168,16 +168,19 @@ class RecorderService : LifecycleService() {
         fileUri = getRecFileUri(fileName, fileFormat.mimeType)
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "w")!!
 
+        val settingsState = settings.state.value
+
         recorder = MediaRecorder().apply {
-            setAudioSource(settings.state.value.audioSource)
+            setAudioSource(settingsState.audioSource)
             setOutputFormat(fileFormat.value)
             setOutputFile(descriptor.fileDescriptor)
-            setAudioEncoder(settings.state.value.encoder.value)
+            setAudioEncoder(settingsState.encoder.value)
+            setAudioChannels(settingsState.numOfChannels.value)
 
             try {
                 prepare()
             } catch (e: IOException) {
-                Log.e("Recorder", "prepare() failed")
+                Log.e("Recorder", "prepare() failed", e)
                 _state.value = State.ERROR
                 stopSelf()
             }

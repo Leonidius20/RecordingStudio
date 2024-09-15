@@ -12,8 +12,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
-import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -22,7 +20,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -138,6 +136,28 @@ class HomeFragment : Fragment() {
         binding.codecChipGroup.setOnCheckedStateChangeListener { group, _ ->
             val selectedCodec = group.findViewById<Chip>(group.checkedChipId).tag as Codec
             viewModel.setEncoder(selectedCodec)
+        }
+
+        // audio channels (mono/stereo) chips
+        viewModel.audioChannelsOptions.forEach { option ->
+            val chipViewId = View.generateViewId()
+
+            val chip = Chip(context).apply {
+                isCheckedIconVisible = true
+                isCheckable = true
+                isClickable = true
+                text = getString(option.title)
+                id = chipViewId
+                tag = option
+                isChecked = viewModel.isChannelsOptionsChecked(option)
+            }
+
+            binding.channelsChipGroup.addView(chip)
+        }
+
+        binding.channelsChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            val selectedChannels = group.findViewById<Chip>(group.checkedChipId).tag as AudioChannels
+            viewModel.setChannels(selectedChannels)
         }
 
         // todo: restoring the visualizer on screen rotation

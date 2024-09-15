@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.data.settings
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import androidx.annotation.StringRes
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -25,6 +26,7 @@ class Settings @Inject constructor(
         val audioSource: Int,
         val outputFormat: Container,
         val encoder: Codec,
+        val numOfChannels: AudioChannels,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -96,6 +98,10 @@ class Settings @Inject constructor(
             ),
             outputFormat = container,
             encoder = codec,
+            numOfChannels = AudioChannels.fromInt(pref.getInt(
+                context.getString(R.string.num_channels_pref_key),
+                AudioChannels.MONO.toInt()
+            )),
         )
     }
 
@@ -171,6 +177,15 @@ class Settings @Inject constructor(
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
+        onSharedPreferenceChanged(key, null)
+    }
+
+    fun setNumberOfChannels(channels: AudioChannels) {
+        val key = context.getString(R.string.num_channels_pref_key)
+
+        pref.edit().putInt(key, channels.toInt())
+            .apply()
+
         onSharedPreferenceChanged(key, null)
     }
 

@@ -49,5 +49,14 @@
     <string name="btn_audio_settings_desc">Audio Settings</string>
     <string name="btn_rec_stop_desc">Stop</string>
 
-    <string name="file_provider_authority" translatable="false">io.github.leonidius20.recorder.RecordingFileProvider</string>
+    <string name="num_channels_pref_key" translatable="false">num_channels</string>
+    <string name="audio_settings_title_audio_source">Audio source</string>
+    <string name="audio_settings_description_audio_source">Determines the kind of processing applied to audio by the device</string>
+    <string name="audio_settings_title_container">Container format</string>
+    <string name="audio_settings_title_codec">Codec</string>
+    <string name="audio_settings_hint_codec">Available codecs depend on the chosen container format</string>
+    <string name="audio_settings_title_channels">Channels</string>
+    <string name="audio_settings_channels_value_mono">Mono</string>
+    <string name="audio_settings_channels_value_stereo">Stereo</string>
+    <string name="audio_settings_description_channels">Some devices may not support stereo recording</string>
 </resources>

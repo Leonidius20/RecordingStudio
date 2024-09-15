@@ -171,7 +171,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceTitleLarge"
-                        android:text="Audio source"
+                        android:text="@string/audio_settings_title_audio_source"
                         android:layout_marginBottom="@dimen/margin_small"
                         />
 
@@ -179,7 +179,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceBodyMedium"
-                        android:text="Determines the kind of processing applied to audio by the device"
+                        android:text="@string/audio_settings_description_audio_source"
                         android:layout_marginBottom="@dimen/margin_small"/>
 
                     <com.google.android.material.chip.ChipGroup
@@ -205,7 +205,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceTitleLarge"
-                        android:text="Container format"
+                        android:text="@string/audio_settings_title_container"
                         android:layout_marginBottom="@dimen/margin_small" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -223,14 +223,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceTitleLarge"
-                        android:text="Codec"
+                        android:text="@string/audio_settings_title_codec"
                         android:layout_marginBottom="@dimen/margin_small" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?textAppearanceBodyMedium"
-                        android:text="Available codecs depend on the chosen container format"
+                        android:text="@string/audio_settings_hint_codec"
                         android:layout_marginBottom="@dimen/margin_small"/>
 
                     <com.google.android.material.chip.ChipGroup
@@ -240,6 +240,44 @@
                         app:selectionRequired="true"
                         android:id="@+id/codec_chip_group"
                         android:layout_marginBottom="@dimen/margin_normal">
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <!-- Block relating to mono/stereo. Titled "Channels" -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:text="@string/audio_settings_title_channels"
+                        android:layout_marginBottom="@dimen/margin_small" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?textAppearanceBodyMedium"
+                        android:text="@string/audio_settings_description_channels"
+                        android:layout_marginBottom="@dimen/margin_small"/>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        android:id="@+id/channels_chip_group"
+                        android:layout_marginBottom="@dimen/margin_normal">
+
+                        <!--
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/audio_settings_channels_mono_chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/audio_settings_channels_value_mono"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/audio_settings_channels_stereo_chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/audio_settings_channels_value_stereo"/> -->
 
                     </com.google.android.material.chip.ChipGroup>
 
