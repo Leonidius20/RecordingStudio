@@ -140,15 +140,16 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- bottom sheet -->
         <LinearLayout
             android:orientation="vertical"
             android:id="@+id/quality_settings_bottom_sheet"
             style="@style/Widget.Material3.BottomSheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:paddingBottomSystemWindowInsets="false"
+
             app:behavior_hideable="true"
-            android:paddingStart="@dimen/margin_normal"
-            android:paddingEnd="@dimen/margin_normal"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
             <!-- Drag handle for accessibility -->
@@ -157,9 +158,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <ScrollView
+            <androidx.core.widget.NestedScrollView
+                android:paddingStart="@dimen/margin_normal"
+                android:paddingEnd="@dimen/margin_normal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -285,7 +290,7 @@
 
                 </LinearLayout>
 
-            </ScrollView>
+            </androidx.core.widget.NestedScrollView>
 
         </LinearLayout>
 
