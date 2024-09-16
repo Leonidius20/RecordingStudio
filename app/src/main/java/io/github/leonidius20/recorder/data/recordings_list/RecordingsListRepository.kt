@@ -116,6 +116,28 @@ class RecordingsListRepository @Inject constructor(
         // Android 10 and up, whereas the "Recordings" media folder is only
         // available on Android 12 and up. We have to handle all possible
         // combinations of path column with path value
+        val androidApiLevel = Build.VERSION.SDK_INT
+        val android10 = Build.VERSION_CODES.Q
+        val android12 = Build.VERSION_CODES.S
+        val pathColumnToValue =
+            when(androidApiLevel) {
+                in Int.MIN_VALUE until android10 -> {
+                    MediaStore.Audio.Media.DATA to Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
+                }
+                in android10 until android12 -> {
+                    // MediaStore.Audio.Media.RELATIVE_PATH to "Music/RecordingStudio"
+                    MediaStore.Audio.Media.DATA to Environment.getExternalStorageDirectory().absolutePath + "/Music/RecordingStudio/" + "%"
+                    // todo: i don't understand why RELATIVE_PATH doesn't work on Android 11
+                    //  even though it is inserted with relative path just fine
+                }
+                in android12 until Int.MAX_VALUE -> {
+                    MediaStore.Audio.Media.RELATIVE_PATH to "Recordings/RecordingStudio"
+                }
+                else -> { throw Error("Weird Android API level $androidApiLevel") }
+            }
+
+
+    /*
         val selectionColumn = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
             MediaStore.Audio.Media.DATA
         else
@@ -134,14 +156,29 @@ class RecordingsListRepository @Inject constructor(
             } else
                 "Recordings/RecordingStudio/"
         // todo: test this fix on an Android 11 emulator
+        */
 
-        val selection = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+        /*val _selection = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
             "$selectionColumn LIKE ?"
         else
             "$selectionColumn == ?"
         val selectionArgs = arrayOf(
             selectionColumnValue,
+        )*/
+
+        val selection = when(pathColumnToValue.first) {
+            MediaStore.Audio.Media.DATA -> {
+                "${MediaStore.Audio.Media.DATA} LIKE ?"
+            }
+            MediaStore.Audio.Media.RELATIVE_PATH -> {
+                "${MediaStore.Audio.Media.RELATIVE_PATH} == ?"
+            }
+            else -> { throw Error("unexpected path column") }
+        }
+        val selectionArgs = arrayOf(
+            pathColumnToValue.second
         )
+
 
         // sort by date descending
         val sortOrder = "$dateColumn DESC"
