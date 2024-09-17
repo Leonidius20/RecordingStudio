@@ -3,6 +3,8 @@ An Android sound recorder app. External effect plugin support is planned for the
 
 ---
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="200px">](https://f-droid.org/en/packages/io.github.leonidius20.recorder.lite/)
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid2.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/io.github.leonidius20.recorder.lite)
+
 
 ---
 

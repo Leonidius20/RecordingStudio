@@ -1,4 +1,7 @@
-0.2.0
-- Added an option for selecting between mono and stereo recording (WIP)
+0.1.3
+- Added an option for selecting between mono and stereo recording
+- Fixed recordings list not shown on Android 10 and 11 (WIP)
 - Edge-to-edge design
-- Fixed various issues with the recordings list (WIP)
+- Fixed possible inconsistencies between recordings list and player
+- Fixed selection state in recordings list being lost on screen rotation
+- Fixed rename dialog being lost on screen rotation
