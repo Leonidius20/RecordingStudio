@@ -60,4 +60,5 @@
     <string name="audio_settings_channels_value_stereo">Stereo</string>
     <string name="audio_settings_description_channels">Some devices may not support stereo recording</string>
     <string name="recs_list_action_mode_num_selected">%1$d selected</string>
+    <string name="recordings_list_empty">There are no recordings yet</string>
 </resources>

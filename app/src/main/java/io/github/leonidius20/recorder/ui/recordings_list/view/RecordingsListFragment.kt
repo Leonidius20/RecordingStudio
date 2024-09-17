@@ -16,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -94,6 +95,7 @@ class RecordingsListFragment : RecStudioFragment() {
             adapter.setData(ArrayList(state.recordings))
             binding.recordingList.scrollToPosition(0)
 
+            binding.emptyListText.isVisible = state.recordings.isEmpty()
         }
 
         viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
