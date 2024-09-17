@@ -10,3 +10,4 @@
 local.properties
 secrets.properties
 android-keystore.jks
+/.kotlin

@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.RecordingStudio" parent="Theme.Material3.Dark">
 
+    <style name="Theme.RecordingStudio" parent="Theme.Material3.Light">
         <!-- <item name="windowActionModeOverlay">true</item> -->
         <item name="actionModeStyle">@style/Widget.Material3.ActionMode</item>
         <item name="actionBarStyle">@style/Widget.Material3.ActionBar.Solid</item>
@@ -9,6 +10,10 @@
         <item name="actionBarPopupTheme">@style/Widget.Material3.PopupMenu</item>
 
         <item name="preferenceTheme">@style/ThemeOverlay.App.Preference</item>
+        <!-- <item name="preferenceFragmentCompatStyle">@style/Theme.RecordingStudio.MaterialPreferencesFragment</item>
+        <item name="preferenceCategoryStyle">@style/Theme.RecordingStudio.MaterialPreferenceCategory</item>
+        <item name="preferenceStyle">@style/Theme.RecordingStudio.PreferenceStyle</item>
+        <item name="switchPreferenceCompatStyle">@style/Theme.RecordingStudio.SwitchPreferenceStyle</item> -->
 
         <item name="android:windowLayoutInDisplayCutoutMode">
             always

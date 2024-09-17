@@ -142,15 +142,15 @@
 
         <!-- bottom sheet -->
         <LinearLayout
-            android:orientation="vertical"
             android:id="@+id/quality_settings_bottom_sheet"
             style="@style/Widget.Material3.BottomSheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:paddingBottomSystemWindowInsets="false"
-
+            android:orientation="vertical"
             app:behavior_hideable="true"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            app:paddingBottomSystemWindowInsets="false">
 
             <!-- Drag handle for accessibility -->
             <com.google.android.material.bottomsheet.BottomSheetDragHandleView
@@ -159,11 +159,10 @@
                 android:layout_height="wrap_content" />
 
             <androidx.core.widget.NestedScrollView
-                android:paddingStart="@dimen/margin_normal"
-                android:paddingEnd="@dimen/margin_normal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/margin_normal"
+                android:paddingEnd="@dimen/margin_normal">
 
 
                 <LinearLayout
@@ -175,25 +174,24 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceTitleLarge"
-                        android:text="@string/audio_settings_title_audio_source"
                         android:layout_marginBottom="@dimen/margin_small"
-                        />
+                        android:text="@string/audio_settings_title_audio_source"
+                        android:textAppearance="?textAppearanceTitleLarge" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceBodyMedium"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_description_audio_source"
-                        android:layout_marginBottom="@dimen/margin_small"/>
+                        android:textAppearance="?textAppearanceBodyMedium" />
 
                     <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/audio_source_chip_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true"
+                        android:layout_marginBottom="@dimen/margin_small"
                         app:selectionRequired="true"
-                        android:id="@+id/audio_source_chip_group"
-                        android:layout_marginBottom="@dimen/margin_small">
+                        app:singleSelection="true">
 
                     </com.google.android.material.chip.ChipGroup>
 
@@ -201,25 +199,25 @@
                         android:id="@+id/audio_source_description_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         android:textAppearance="?textAppearanceBodySmall"
-                        tools:text="Explanation of the chosen audio source"
-                        android:layout_marginBottom="@dimen/margin_normal"/>
+                        tools:text="Explanation of the chosen audio source" />
 
                     <!-- Block relating to output format -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_title_container"
-                        android:layout_marginBottom="@dimen/margin_small" />
+                        android:textAppearance="?textAppearanceTitleLarge" />
 
                     <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/output_format_chip_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         app:selectionRequired="true"
-                        android:id="@+id/output_format_chip_group"
-                        android:layout_marginBottom="@dimen/margin_normal">
+                        app:singleSelection="true">
 
                     </com.google.android.material.chip.ChipGroup>
 
@@ -227,24 +225,24 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_title_codec"
-                        android:layout_marginBottom="@dimen/margin_small" />
+                        android:textAppearance="?textAppearanceTitleLarge" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceBodyMedium"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_hint_codec"
-                        android:layout_marginBottom="@dimen/margin_small"/>
+                        android:textAppearance="?textAppearanceBodyMedium" />
 
                     <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/codec_chip_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         app:selectionRequired="true"
-                        android:id="@+id/codec_chip_group"
-                        android:layout_marginBottom="@dimen/margin_normal">
+                        app:singleSelection="true">
 
                     </com.google.android.material.chip.ChipGroup>
 
@@ -252,24 +250,24 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_title_channels"
-                        android:layout_marginBottom="@dimen/margin_small" />
+                        android:textAppearance="?textAppearanceTitleLarge" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?textAppearanceBodyMedium"
+                        android:layout_marginBottom="@dimen/margin_small"
                         android:text="@string/audio_settings_description_channels"
-                        android:layout_marginBottom="@dimen/margin_small"/>
+                        android:textAppearance="?textAppearanceBodyMedium" />
 
                     <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/channels_chip_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         app:selectionRequired="true"
-                        android:id="@+id/channels_chip_group"
-                        android:layout_marginBottom="@dimen/margin_normal">
+                        app:singleSelection="true">
 
                         <!--
                         <com.google.android.material.chip.Chip
