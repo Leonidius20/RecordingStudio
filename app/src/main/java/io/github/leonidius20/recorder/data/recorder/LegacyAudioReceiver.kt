@@ -6,21 +6,10 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
-import android.system.OsConstants
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import java.io.File
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.file.Files
 import javax.inject.Inject
 import kotlin.concurrent.thread
 
@@ -47,7 +36,7 @@ class LegacyAudioReceiver @Inject constructor(
 
     private val sampleRate = 44_100 // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
 
-    private lateinit var tempFile: File
+   // private lateinit var tempFile: File
 
     val inputChannel = AudioFormat.CHANNEL_IN_MONO
     val encoder = AudioFormat.ENCODING_PCM_16BIT
@@ -57,10 +46,12 @@ class LegacyAudioReceiver @Inject constructor(
     )
     val bufSize = minBufSize * 4 // why 4?
 
+
+
     @SuppressLint("MissingPermission")
     fun startRec(descriptor: ParcelFileDescriptor) {
 
-        tempFile = File.createTempFile("temp", ".pcm", context.cacheDir)
+       // tempFile = File.createTempFile("temp", ".pcm", context.cacheDir)
 
 
 
@@ -77,8 +68,15 @@ class LegacyAudioReceiver @Inject constructor(
         audioRecord.startRecording(/*null*/) // todo: mediaSyncEvent
         isRecording = true
 
+
+
         micReadingThread = thread(start = true) {
-                val outStream = FileOutputStream(tempFile)
+            val outStream = FileOutputStream(descriptor.fileDescriptor).also {
+                // leaving space for the header
+                it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
+            }
+
+
                 //android.system.Os.lseek(descriptor.fileDescriptor, WAV_HEADER_LENGTH_BYTES.toLong(), OsConstants.SEEK_SET)
                 // leaving space for header
 
@@ -119,9 +117,19 @@ class LegacyAudioReceiver @Inject constructor(
             )
         }*/
 
-                outStream.close()
+                //outStream.close()
 
+            outStream.channel.position(0) // back to the start to fill in the header
+            outStream.write(
+                generateWavHeader(
+                    bytesRecorded = bytesRecorded,
+                    numOfChannels = 1, // todo
+                    sampleRateHz = sampleRate,
+                )
+            )
+            //Log.d("audio rec", "wrote header")
 
+            outStream.close()
 
 
 
@@ -136,21 +144,13 @@ class LegacyAudioReceiver @Inject constructor(
 
 
 
-        val nonTempOutStream = FileOutputStream(descriptor.fileDescriptor)
 
         // micReadingThread.join()
         Log.d("audio rec", "now trying to reload data from temp to perm")
 
-        nonTempOutStream.write(
-            generateWavHeader(
-                bytesRecorded = bytesRecorded,
-                numOfChannels = 1, // todo
-                sampleRateHz = sampleRate,
-            )
-        )
-        Log.d("audio rec", "wrote header")
 
-        tempFile.inputStream().use { input ->
+
+        /*tempFile.inputStream().use { input ->
             Log.d("audio rec", "before writing out file")
             // val data = ByteArray(bufSize)
             nonTempOutStream.write(
@@ -164,7 +164,7 @@ class LegacyAudioReceiver @Inject constructor(
         Log.d("audio rec", "after closing perm out file")
 
         tempFile.delete()
-        Log.d("audio rec", "after deleting temp file")
+        Log.d("audio rec", "after deleting temp file")*/
 
         // micReadingJob.cancelAndJoin() // we should re-do it with coroutines and make sure ServiceScope doesn't die until all coroutines inside are finished
     }
@@ -291,27 +291,6 @@ class LegacyAudioReceiver @Inject constructor(
 
 
         return header
-    }
-
-    companion object {
-
-        /**
-         * @return 4-byte byte array
-         */
-        private fun Int.toLittleEndianByteArray(): ByteArray {
-            return ByteBuffer.allocate(4)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(this)
-                .array()
-        }
-
-        private fun Short.toLittleEndianByteArray(): ByteArray {
-            return ByteBuffer.allocate(2)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putShort(this)
-                .array()
-        }
-
     }
 
 }
