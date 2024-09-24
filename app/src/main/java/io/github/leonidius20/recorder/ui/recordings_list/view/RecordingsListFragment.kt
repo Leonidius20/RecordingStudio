@@ -93,7 +93,7 @@ class RecordingsListFragment : RecStudioFragment() {
         viewModel.state.collectSinceStarted { state ->
 
             adapter.setData(ArrayList(state.recordings))
-            binding.recordingList.scrollToPosition(0)
+            //binding.recordingList.scrollToPosition(0)
 
             binding.emptyListText.isVisible = state.recordings.isEmpty()
         }
@@ -125,7 +125,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 } else {
                     Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
                 }
-                actionMode!!.finish()
+                actionMode?.finish()
             }
 
         deleteRecordingsIntentLauncher =
@@ -135,7 +135,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 } else {
                     Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
                 }
-                actionMode!!.finish()
+                actionMode?.finish()
             }
 
 

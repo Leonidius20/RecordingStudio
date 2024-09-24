@@ -23,6 +23,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MimeTypes
 import com.permissionx.guolindev.PermissionX
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,7 +36,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,6 +64,8 @@ class RecorderService : LifecycleService() {
     private lateinit var descriptor: ParcelFileDescriptor
 
     private lateinit var recorder: MediaRecorder
+
+    @Inject lateinit var rec: LegacyAudioReceiver
 
     private val binder = Binder()
 
@@ -163,12 +168,19 @@ class RecorderService : LifecycleService() {
 
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
-        fileUri = recordingsListRepository.createRecordingFile(fileName, fileFormat.mimeType)
-        descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "w")!!
+        // http://androidxref.com/4.4.4_r1/xref/frameworks/base/media/java/android/media/MediaFile.java#174
+        fileUri = recordingsListRepository.createRecordingFile(fileName,
+            /*fileFormat.mimeType*/ "audio/x-wav"
+        )
+        descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "rw")!!
 
         val settingsState = settings.state.value
 
-        recorder = MediaRecorder().apply {
+
+        rec.startRec(descriptor)
+
+
+       /* recorder = MediaRecorder().apply {
             setAudioSource(settingsState.audioSource)
             setOutputFormat(fileFormat.value)
             setOutputFile(descriptor.fileDescriptor)
@@ -184,7 +196,8 @@ class RecorderService : LifecycleService() {
             }
 
             start()
-        }
+        }*/
+
 
         _state.value = State.RECORDING
 
@@ -221,7 +234,7 @@ class RecorderService : LifecycleService() {
             // every 100ms, emit maxAmplitude
             while(true) {
                 if (state.value == State.RECORDING) {
-                    _amplitudes.emit(recorder.maxAmplitude)
+                    // _amplitudes.emit(recorder.maxAmplitude)
                 }
                 delay(100)
             }
@@ -239,8 +252,11 @@ class RecorderService : LifecycleService() {
         super.onDestroy()
         // ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopwatch.stop()
-        recorder.stop()
-        recorder.release()
+        //recorder.stop()
+        //recorder.release()
+
+        rec.stopRec(descriptor)
+
 
         contentResolver.update(fileUri, ContentValues().apply {
             put(MediaStore.MediaColumns.SIZE, descriptor.statSize)

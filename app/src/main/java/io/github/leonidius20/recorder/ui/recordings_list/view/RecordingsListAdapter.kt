@@ -273,14 +273,12 @@ class RecordingsDiffUtilCallback(
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val oldItem = oldList[oldItemPosition]
         val newItem = newList[newItemPosition]
-        Log.d("adapter", "are items the same ${oldItem.id == newItem.id}")
         return oldItem.id == newItem.id // uri is the unique identifier
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val oldItem = oldList[oldItemPosition]
         val newItem = newList[newItemPosition]
-        Log.d("adapter", "are contents the same ${oldItem == newItem}")
         return oldItem == newItem // here we compare all fields including name, duration
     }
 
@@ -288,14 +286,11 @@ class RecordingsDiffUtilCallback(
         val oldItem = oldList[oldItemPosition]
         val newItem = newList[newItemPosition]
 
-        Log.d("adapter", "getting change payload")
-
         if (oldItem.name != newItem.name) {
             return RecordingChangePayload.Name(newItem.name)
         }
 
         if (oldItem.isSelected != newItem.isSelected) {
-            Log.d("adapter", "selection change payload")
             return RecordingChangePayload.Selection(newItem.isSelected)
         }
 
