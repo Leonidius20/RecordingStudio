@@ -59,6 +59,14 @@ enum class Container(
         "OGG", "audio/ogg",
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
         listOf(Codec.OPUS)
+    ),
+
+
+    WAV(
+        value = -1,
+        displayName = "WAV", mimeType = "audio/x-wav",
+        isSupportedByDevice = true,
+        supportedCodecs = listOf(Codec.PCM)
     );
 
     /**

@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,6 +37,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -58,9 +61,9 @@ class RecorderService : LifecycleService() {
 
     private lateinit var descriptor: ParcelFileDescriptor
 
-    private lateinit var recorder: MediaRecorder
+    // private lateinit var recorder: MediaRecorder
 
-    lateinit var rec: AudioRecorder
+    private lateinit var rec: AudioRecorder
 
     private val binder = Binder()
 
@@ -165,18 +168,36 @@ class RecorderService : LifecycleService() {
 
         // http://androidxref.com/4.4.4_r1/xref/frameworks/base/media/java/android/media/MediaFile.java#174
         fileUri = recordingsListRepository.createRecordingFile(fileName,
-            /*fileFormat.mimeType*/ "audio/x-wav"
+            fileFormat.mimeType
         )
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "rw")!!
 
         val settingsState = settings.state.value
 
-        rec = PcmAudioRecorder(
-            descriptor = descriptor,
-            audioSource = settingsState.audioSource,
-            sampleRate = 44_100, // todo
-            monoOrStereo = settingsState.numOfChannels,
-        )
+        if (fileFormat == Container.WAV) {
+            rec = PcmAudioRecorder(
+                descriptor = descriptor,
+                audioSource = settingsState.audioSource,
+                sampleRate = 44_100, // todo
+                monoOrStereo = settingsState.numOfChannels,
+            )
+        } else {
+
+            try {
+                rec = MediaRecorderWrapper(
+                    audioSource = settingsState.audioSource,
+                    container = fileFormat,
+                    descriptor = descriptor,
+                    encoder = settingsState.encoder,
+                    channels = settingsState.numOfChannels,
+                )
+            } catch (e: IOException) {
+                Log.e("Recorder", "prepare() failed", e)
+                _state.value = State.ERROR
+                stopSelf()
+            }
+
+        }
 
         rec.start()
 
@@ -235,7 +256,7 @@ class RecorderService : LifecycleService() {
             // every 100ms, emit maxAmplitude
             while(true) {
                 if (state.value == State.RECORDING) {
-                    // _amplitudes.emit(recorder.maxAmplitude)
+                    _amplitudes.emit(rec.maxAmplitude())
                 }
                 delay(100)
             }

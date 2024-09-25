@@ -306,4 +306,8 @@ class PcmAudioRecorder(
         return header
     }
 
+    override fun maxAmplitude(): Int {
+        return 0 // todo
+    }
+
 }

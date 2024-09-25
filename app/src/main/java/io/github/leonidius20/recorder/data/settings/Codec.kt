@@ -22,7 +22,13 @@ enum class Codec(
     AAC_ELD(MediaRecorder.AudioEncoder.AAC_ELD, "AAC-ELD", true),
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    OPUS(MediaRecorder.AudioEncoder.OPUS, "Opus", Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q);
+    OPUS(MediaRecorder.AudioEncoder.OPUS, "Opus", Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q),
+
+    PCM(
+        value = -1,
+        displayName = "PCM",
+        isSupportedByDevice = true,
+    );
 
     companion object {
 

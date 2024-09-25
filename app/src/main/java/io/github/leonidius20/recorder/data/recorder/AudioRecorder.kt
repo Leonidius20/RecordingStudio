@@ -10,6 +10,11 @@ interface AudioRecorder {
 
     fun stop()
 
+    /**
+     * max amplitude sampled since the last call to this method
+     */
+    fun maxAmplitude(): Int
+
     enum class State {
         IDLE,
         RECORDING,
