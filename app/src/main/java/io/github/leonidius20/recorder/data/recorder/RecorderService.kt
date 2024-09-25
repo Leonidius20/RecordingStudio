@@ -9,7 +9,6 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
-import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -61,9 +60,10 @@ class RecorderService : LifecycleService() {
 
     private lateinit var descriptor: ParcelFileDescriptor
 
-    // private lateinit var recorder: MediaRecorder
+    private lateinit var recorder: AudioRecorder
 
-    private lateinit var rec: AudioRecorder
+    val supportsPausing
+        get() = recorder.supportsPausing()
 
     private val binder = Binder()
 
@@ -175,7 +175,7 @@ class RecorderService : LifecycleService() {
         val settingsState = settings.state.value
 
         if (fileFormat == Container.WAV) {
-            rec = PcmAudioRecorder(
+            recorder = PcmAudioRecorder(
                 descriptor = descriptor,
                 audioSource = settingsState.audioSource,
                 sampleRate = 44_100, // todo
@@ -184,7 +184,7 @@ class RecorderService : LifecycleService() {
         } else {
 
             try {
-                rec = MediaRecorderWrapper(
+                recorder = MediaRecorderWrapper(
                     audioSource = settingsState.audioSource,
                     container = fileFormat,
                     descriptor = descriptor,
@@ -199,7 +199,7 @@ class RecorderService : LifecycleService() {
 
         }
 
-        rec.start()
+        recorder.start()
 
 
        /* recorder = MediaRecorder().apply {
@@ -256,7 +256,7 @@ class RecorderService : LifecycleService() {
             // every 100ms, emit maxAmplitude
             while(true) {
                 if (state.value == State.RECORDING) {
-                    _amplitudes.emit(rec.maxAmplitude())
+                    _amplitudes.emit(recorder.maxAmplitude())
                 }
                 delay(100)
             }
@@ -277,7 +277,7 @@ class RecorderService : LifecycleService() {
         //recorder.stop()
         //recorder.release()
 
-        rec.stop()
+        recorder.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -374,7 +374,7 @@ class RecorderService : LifecycleService() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun pause() {
         //recorder.pause()
-        rec.pause()
+        recorder.pause()
         stopwatch.pause()
         _state.value = State.PAUSED
         updateNotification()
@@ -383,7 +383,7 @@ class RecorderService : LifecycleService() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun resume() {
         //recorder.resume()
-        rec.resume()
+        recorder.resume()
         stopwatch.resume()
         _state.value = State.RECORDING
 

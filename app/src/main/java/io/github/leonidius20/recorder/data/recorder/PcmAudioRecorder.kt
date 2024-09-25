@@ -310,4 +310,6 @@ class PcmAudioRecorder(
         return 0 // todo
     }
 
+    override fun supportsPausing() = true
+
 }

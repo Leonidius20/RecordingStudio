@@ -26,6 +26,8 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         setOutputFile(descriptor.fileDescriptor)
         setAudioEncoder(encoder.value)
         setAudioChannels(channels.numberOfChannels())
+        // setAudioSamplingRate()
+        // setAudioEncodingBitRate()
 
         prepare() // throws IOException
     }
@@ -53,5 +55,8 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
     }
 
     override fun maxAmplitude() = recorder.maxAmplitude
+
+    override fun supportsPausing() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 
 }

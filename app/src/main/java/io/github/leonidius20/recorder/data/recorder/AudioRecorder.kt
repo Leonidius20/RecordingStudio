@@ -15,6 +15,8 @@ interface AudioRecorder {
      */
     fun maxAmplitude(): Int
 
+    fun supportsPausing(): Boolean
+
     enum class State {
         IDLE,
         RECORDING,

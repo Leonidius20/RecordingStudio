@@ -44,10 +44,10 @@ class HomeViewModel @Inject constructor(
             audioSettingsButtonVisible = true,
         )
 
-        data object Recording: UiState(
-            isRecPauseBtnVisible =
-            // pausing MediaRecorder is only available in Nougat
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
+        data class Recording(
+            private val isPausingSupported: Boolean,
+        ): UiState(
+            isRecPauseBtnVisible = isPausingSupported,
             recPauseBtnState = RecPauseBtnState.PAUSE,
             isStopButtonVisible = true,
             isTimerVisible = true,
@@ -67,7 +67,7 @@ class HomeViewModel @Inject constructor(
     val uiState: LiveData<UiState> = recorderServiceLauncher.state.map {
         when (it) {
             RecorderServiceLauncher.State.IDLE -> UiState.Idle
-            RecorderServiceLauncher.State.RECORDING -> UiState.Recording
+            RecorderServiceLauncher.State.RECORDING -> UiState.Recording(isPausingSupported = recorderServiceLauncher.isPausingSupported)
             RecorderServiceLauncher.State.PAUSED -> UiState.Paused
             RecorderServiceLauncher.State.ERROR -> UiState.Idle // todo: error UI state
         }

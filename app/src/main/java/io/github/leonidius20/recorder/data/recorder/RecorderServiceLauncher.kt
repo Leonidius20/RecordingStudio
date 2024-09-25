@@ -71,6 +71,13 @@ class RecorderServiceLauncher @Inject constructor(
      */
     val amplitudes = _amplitudes.asSharedFlow()
 
+    /**
+     * used by UI to decide if the pause button should be visible while rec is in progress.
+     * depends on the capabilities of the recorder used. Obtained from the service
+     */
+    var isPausingSupported = false
+        private set
+
 
     /**
      * @return LiveData with the state of the RecorderService
@@ -111,6 +118,9 @@ class RecorderServiceLauncher @Inject constructor(
     // for ERROR or IDLE state on destruction
     private val serviceLifecycleObserver = UiStateUpdater { state ->
         _state.value = state
+        if (state == State.IDLE || state == State.ERROR) {
+            isPausingSupported = false // resetting in case the next recording is started with other params that do not support pausing
+        }
     }
 
     override fun onServiceConnected(
@@ -129,7 +139,11 @@ class RecorderServiceLauncher @Inject constructor(
         service.service.lifecycleScope.launch {
             service.service.state.onEach {
                 when(it) {
-                    RecorderService.State.RECORDING -> _state.value = State.RECORDING
+                    RecorderService.State.RECORDING -> {
+                        // first update pausing support, only then change state
+                        isPausingSupported = service.service.supportsPausing
+                        _state.value = State.RECORDING
+                    }
                     RecorderService.State.PAUSED -> _state.value = State.PAUSED
                     RecorderService.State.ERROR -> {
                         // todo error ui state
