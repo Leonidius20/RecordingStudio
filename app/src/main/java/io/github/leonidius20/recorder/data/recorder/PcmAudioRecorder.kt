@@ -5,14 +5,13 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import java.io.FileOutputStream
 import kotlin.concurrent.thread
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
 
-class LegacyAudioReceiver(
+class PcmAudioRecorder(
     private val descriptor: ParcelFileDescriptor,
     private val audioSource: Int = MediaRecorder.AudioSource.MIC,
     private val sampleRate: Int = 44_100, // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
@@ -26,11 +25,15 @@ class LegacyAudioReceiver(
     private var isRecording = false
 
     @Volatile
+    private var isPaused = false
+
+    @Volatile
     private lateinit var micReadingThread: Thread
 
     @Volatile
     private var bytesRecorded = 0
 
+    private val pauseLock = java.lang.Object()
 
     private val inputChannel = when (monoOrStereo) {
         AudioChannels.MONO -> AudioFormat.CHANNEL_IN_MONO
@@ -76,6 +79,16 @@ class LegacyAudioReceiver(
             // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
             val buffer = ByteArray(bufSize)
             while (isRecording) {
+
+                synchronized(pauseLock) {
+                    while(isPaused) {
+                        pauseLock.wait()
+                    }
+                }
+
+                // if it was unpaused bc the recording was stopped
+                if (!isRecording) break
+
                 val bytesRead = audioRecord.read(buffer, 0, bufSize)
                 if (bytesRead == 0
                     || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
@@ -132,6 +145,7 @@ class LegacyAudioReceiver(
         audioRecord.stop()
         audioRecord.release()
 
+        resume() // so that the thread can finish it's work
 
         // micReadingThread.join()
 
@@ -156,11 +170,16 @@ class LegacyAudioReceiver(
     }
 
     override fun pause() {
-        TODO("Not yet implemented")
+        synchronized(pauseLock) {
+            isPaused = true
+        }
     }
 
     override fun resume() {
-        TODO("Not yet implemented")
+        synchronized(pauseLock) {
+            isPaused = false
+            pauseLock.notifyAll()
+        }
     }
 
     private fun generateWavHeader(
