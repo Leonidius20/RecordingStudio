@@ -65,7 +65,7 @@ class RecorderService : LifecycleService() {
 
     private lateinit var recorder: MediaRecorder
 
-    @Inject lateinit var rec: LegacyAudioReceiver
+    lateinit var rec: AudioRecorder
 
     private val binder = Binder()
 
@@ -176,8 +176,14 @@ class RecorderService : LifecycleService() {
 
         val settingsState = settings.state.value
 
+        rec = LegacyAudioReceiver(
+            descriptor = descriptor,
+            audioSource = settingsState.audioSource,
+            sampleRate = 44_100, // todo
+            monoOrStereo = settingsState.numOfChannels,
+        )
 
-        rec.startRec(descriptor)
+        rec.start()
 
 
        /* recorder = MediaRecorder().apply {
@@ -255,7 +261,7 @@ class RecorderService : LifecycleService() {
         //recorder.stop()
         //recorder.release()
 
-        rec.stopRec(descriptor)
+        rec.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -351,7 +357,8 @@ class RecorderService : LifecycleService() {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun pause() {
-        recorder.pause()
+        //recorder.pause()
+        rec.pause()
         stopwatch.pause()
         _state.value = State.PAUSED
         updateNotification()
@@ -359,7 +366,8 @@ class RecorderService : LifecycleService() {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun resume() {
-        recorder.resume()
+        //recorder.resume()
+        rec.resume()
         stopwatch.resume()
         _state.value = State.RECORDING
 

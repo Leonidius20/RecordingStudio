@@ -19,7 +19,7 @@ import javax.inject.Named
 @ServiceScoped
 class AudioReceiver @Inject constructor(
     @Named("cpu") private val cpuDispatcher: CoroutineDispatcher,
-) {
+)  {
 
     /**
      * we are going to have 1 coroutine reading audio bytes and putting them into a channel

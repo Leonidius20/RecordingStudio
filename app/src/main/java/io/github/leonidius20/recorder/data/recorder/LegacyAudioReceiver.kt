@@ -1,24 +1,23 @@
 package io.github.leonidius20.recorder.data.recorder
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.data.settings.AudioChannels
 import java.io.FileOutputStream
-import javax.inject.Inject
 import kotlin.concurrent.thread
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
 
-@ServiceScoped
-class LegacyAudioReceiver @Inject constructor(
-    @ApplicationContext private val context: Context,
-) {
+class LegacyAudioReceiver(
+    private val descriptor: ParcelFileDescriptor,
+    private val audioSource: Int = MediaRecorder.AudioSource.MIC,
+    private val sampleRate: Int = 44_100, // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
+    private val monoOrStereo: AudioChannels = AudioChannels.MONO
+) : AudioRecorder {
 
 
     private lateinit var audioRecord: AudioRecord
@@ -26,19 +25,18 @@ class LegacyAudioReceiver @Inject constructor(
     @Volatile
     private var isRecording = false
 
-
-    //private lateinit var micReadingThread: Thread
     @Volatile
     private lateinit var micReadingThread: Thread
 
     @Volatile
     private var bytesRecorded = 0
 
-    private val sampleRate = 44_100 // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
 
-   // private lateinit var tempFile: File
+    private val inputChannel = when (monoOrStereo) {
+        AudioChannels.MONO -> AudioFormat.CHANNEL_IN_MONO
+        AudioChannels.STEREO -> AudioFormat.CHANNEL_IN_STEREO
+    }
 
-    val inputChannel = AudioFormat.CHANNEL_IN_MONO
     val encoder = AudioFormat.ENCODING_PCM_16BIT
 
     val minBufSize = AudioRecord.getMinBufferSize(
@@ -47,18 +45,11 @@ class LegacyAudioReceiver @Inject constructor(
     val bufSize = minBufSize * 4 // why 4?
 
 
-
     @SuppressLint("MissingPermission")
-    fun startRec(descriptor: ParcelFileDescriptor) {
-
-       // tempFile = File.createTempFile("temp", ".pcm", context.cacheDir)
-
-
-
-
+    override fun start() {
 
         audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC, // todo: get from settings
+            audioSource,
             sampleRate,
             inputChannel,
             encoder,
@@ -77,53 +68,53 @@ class LegacyAudioReceiver @Inject constructor(
             }
 
 
-                //android.system.Os.lseek(descriptor.fileDescriptor, WAV_HEADER_LENGTH_BYTES.toLong(), OsConstants.SEEK_SET)
-                // leaving space for header
+            //android.system.Os.lseek(descriptor.fileDescriptor, WAV_HEADER_LENGTH_BYTES.toLong(), OsConstants.SEEK_SET)
+            // leaving space for header
 
-                //var bytesRecorded = 0
+            //var bytesRecorded = 0
 
-                // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
-                val buffer = ByteArray(bufSize)
-                while (isRecording) {
-                    val bytesRead = audioRecord.read(buffer, 0, bufSize)
-                    if (bytesRead == 0
-                        || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
-                        || bytesRead == AudioRecord.ERROR_BAD_VALUE
-                        || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
-                        || bytesRead == AudioRecord.ERROR
-                    ) {
-                        continue
-                    }
-                    outStream.write(buffer.sliceArray(0 until bytesRead))
-                    bytesRecorded += bytesRead
+            // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
+            val buffer = ByteArray(bufSize)
+            while (isRecording) {
+                val bytesRead = audioRecord.read(buffer, 0, bufSize)
+                if (bytesRead == 0
+                    || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
+                    || bytesRead == AudioRecord.ERROR_BAD_VALUE
+                    || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
+                    || bytesRead == AudioRecord.ERROR
+                ) {
+                    continue
                 }
+                outStream.write(buffer.sliceArray(0 until bytesRead))
+                bytesRecorded += bytesRead
+            }
 
-                // going back to add header
-                //android.system.Os.lseek(descriptor.fileDescriptor, 0, OsConstants.SEEK_SET)
-                /*outStream.write(generateWavHeader(
-            numOfChannels = 1, // todo
-            sampleRateHz = sampleRate,
-        ))*/
+            // going back to add header
+            //android.system.Os.lseek(descriptor.fileDescriptor, 0, OsConstants.SEEK_SET)
+            /*outStream.write(generateWavHeader(
+        numOfChannels = 1, // todo
+        sampleRateHz = sampleRate,
+    ))*/
 
-                /*outStream.channel.apply {
-            position(0) // back to start where we left 44 bytes for header
-            write(
-                ByteBuffer.wrap(
-                    generateWavHeader(
-                        numOfChannels = 1, // todo
-                        sampleRateHz = sampleRate,
-                    )
+            /*outStream.channel.apply {
+        position(0) // back to start where we left 44 bytes for header
+        write(
+            ByteBuffer.wrap(
+                generateWavHeader(
+                    numOfChannels = 1, // todo
+                    sampleRateHz = sampleRate,
                 )
             )
-        }*/
+        )
+    }*/
 
-                //outStream.close()
+            //outStream.close()
 
             outStream.channel.position(0) // back to the start to fill in the header
             outStream.write(
                 generateWavHeader(
                     bytesRecorded = bytesRecorded,
-                    numOfChannels = 1, // todo
+                    numOfChannels = monoOrStereo.numberOfChannels().toShort(),
                     sampleRateHz = sampleRate,
                 )
             )
@@ -132,22 +123,17 @@ class LegacyAudioReceiver @Inject constructor(
             outStream.close()
 
 
-
-            }
+        }
 
     }
 
-    fun stopRec(descriptor: ParcelFileDescriptor) {
+    override fun stop() {
         isRecording = false
         audioRecord.stop()
         audioRecord.release()
 
 
-
-
         // micReadingThread.join()
-        Log.d("audio rec", "now trying to reload data from temp to perm")
-
 
 
         /*tempFile.inputStream().use { input ->
@@ -167,6 +153,14 @@ class LegacyAudioReceiver @Inject constructor(
         Log.d("audio rec", "after deleting temp file")*/
 
         // micReadingJob.cancelAndJoin() // we should re-do it with coroutines and make sure ServiceScope doesn't die until all coroutines inside are finished
+    }
+
+    override fun pause() {
+        TODO("Not yet implemented")
+    }
+
+    override fun resume() {
+        TODO("Not yet implemented")
     }
 
     private fun generateWavHeader(
@@ -208,7 +202,7 @@ class LegacyAudioReceiver @Inject constructor(
         /*
          *   [Chunk describing the data format]
          */
-       // "fmt ".toByteArray().copyInto(header, destinationOffset = 12) // 4 bytes
+        // "fmt ".toByteArray().copyInto(header, destinationOffset = 12) // 4 bytes
         header[12] = 'f'.code.toByte()
         header[13] = 'm'.code.toByte()
         header[14] = 't'.code.toByte()
@@ -224,20 +218,20 @@ class LegacyAudioReceiver @Inject constructor(
         header[19] = 0
 
         //val audioFormat: Short = 1 // 1 - pcm int, 3 - IEEE 754 float todo
-       // audioFormat
-       //    .toLittleEndianByteArray()
+        // audioFormat
+        //    .toLittleEndianByteArray()
         //    .copyInto(header, 20) // 2 bytes
         header[20] = 1
         header[21] = 0
 
-       // numOfChannels
-         //   .toLittleEndianByteArray()
-       //     .copyInto(header, 22) // 2 bytes
+        // numOfChannels
+        //   .toLittleEndianByteArray()
+        //     .copyInto(header, 22) // 2 bytes
         header[22] = numOfChannels.toByte()
         header[23] = 0
 
         //sampleRateHz
-       //     .toLittleEndianByteArray()
+        //     .toLittleEndianByteArray()
         //    .copyInto(header, 24) // 4 bytes
         header[24] = (sampleRateHz and 0xff).toByte()
         header[25] = (sampleRateHz shr 8 and 0xff).toByte()
@@ -249,7 +243,7 @@ class LegacyAudioReceiver @Inject constructor(
         val bytesPerSecond: Int = bytesPerBlock * sampleRateHz // max 4 * 48_000 = ?
 
         //bytesPerSecond
-         //   .toLittleEndianByteArray()
+        //   .toLittleEndianByteArray()
         //    .copyInto(header, destinationOffset = 28) // 4 bytes
         header[28] = (bytesPerSecond and 0xff).toByte()
         header[29] = (bytesPerSecond shr 8 and 0xff).toByte()
@@ -263,7 +257,7 @@ class LegacyAudioReceiver @Inject constructor(
         header[33] = 0
 
 
-       // bitsPerSample
+        // bitsPerSample
         //    .toLittleEndianByteArray()
         //    .copyInto(header, destinationOffset = 34) // 2 bytes
         header[34] = bitsPerSample.toByte()
@@ -273,8 +267,8 @@ class LegacyAudioReceiver @Inject constructor(
         /*
          *   [Chunk containing the sampled data]
          */
-       // "data".toByteArray()
-         //   .copyInto(header, destinationOffset = 36) // 4 bytes
+        // "data".toByteArray()
+        //   .copyInto(header, destinationOffset = 36) // 4 bytes
         header[36] = 'd'.code.toByte()
         header[37] = 'a'.code.toByte()
         header[38] = 't'.code.toByte()

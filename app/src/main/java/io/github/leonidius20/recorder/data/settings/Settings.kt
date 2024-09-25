@@ -3,7 +3,6 @@ package io.github.leonidius20.recorder.data.settings
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
-import androidx.annotation.StringRes
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -100,7 +99,7 @@ class Settings @Inject constructor(
             encoder = codec,
             numOfChannels = AudioChannels.fromInt(pref.getInt(
                 context.getString(R.string.num_channels_pref_key),
-                AudioChannels.MONO.toInt()
+                AudioChannels.MONO.numberOfChannels()
             )),
         )
     }
@@ -183,7 +182,7 @@ class Settings @Inject constructor(
     fun setNumberOfChannels(channels: AudioChannels) {
         val key = context.getString(R.string.num_channels_pref_key)
 
-        pref.edit().putInt(key, channels.toInt())
+        pref.edit().putInt(key, channels.numberOfChannels())
             .apply()
 
         onSharedPreferenceChanged(key, null)
