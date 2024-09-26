@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
@@ -158,6 +159,20 @@ class HomeFragment : Fragment() {
         binding.channelsChipGroup.setOnCheckedStateChangeListener { group, _ ->
             val selectedChannels = group.findViewById<Chip>(group.checkedChipId).tag as AudioChannels
             viewModel.setChannels(selectedChannels)
+        }
+
+        binding.audioSettingsSampleRateSlider.apply {
+            wrapSelectorWheel = false
+            descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+            val values = viewModel.supportedSampleRates
+            minValue = 0
+            maxValue = values.size - 1
+            value = values.indexOf(viewModel.currentSampleRate)
+            displayedValues = Array(values.size) { index -> values[index].toString() }
+            setOnValueChangedListener { picker, oldVal, newVal ->
+                val newSampleRate = values[newVal]
+                viewModel.setSampleRate(newSampleRate)
+            }
         }
 
         // todo: restoring the visualizer on screen rotation

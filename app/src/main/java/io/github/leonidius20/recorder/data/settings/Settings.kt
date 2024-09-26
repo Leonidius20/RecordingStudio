@@ -1,6 +1,8 @@
 package io.github.leonidius20.recorder.data.settings
 
+import android.app.Application.AUDIO_SERVICE
 import android.content.Context
+import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
 import androidx.preference.PreferenceFragmentCompat
@@ -26,6 +28,7 @@ class Settings @Inject constructor(
         val outputFormat: Container,
         val encoder: Codec,
         val numOfChannels: AudioChannels,
+        val sampleRate: Int,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -101,6 +104,10 @@ class Settings @Inject constructor(
                 context.getString(R.string.num_channels_pref_key),
                 AudioChannels.MONO.numberOfChannels()
             )),
+            sampleRate = pref.getInt(
+                context.getString(R.string.sample_rate_pref_key),
+                defaultSampleRate
+            ),
         )
     }
 
@@ -187,5 +194,31 @@ class Settings @Inject constructor(
 
         onSharedPreferenceChanged(key, null)
     }
+
+    fun setSampleRate(rate: Int) {
+
+        val key = context.getString(R.string.sample_rate_pref_key)
+
+        pref.edit().putInt(key, rate)
+            .apply()
+
+        onSharedPreferenceChanged(key, null)
+    }
+
+    val supportedSampleRates: IntArray = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        (context.getSystemService(AUDIO_SERVICE) as AudioManager)
+            .getDevices(AudioManager.GET_DEVICES_INPUTS)
+            .firstOrNull()
+            ?.sampleRates
+            ?.sortedArray()?.let {
+                // if empty, means the device supports arbitrary values with resampling.
+                // we will just stick to some standard ones
+                if (it.isEmpty()) null else it
+            }
+    } else {
+       null
+    }) ?: intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
+
+    private val defaultSampleRate = 44_100
 
 }

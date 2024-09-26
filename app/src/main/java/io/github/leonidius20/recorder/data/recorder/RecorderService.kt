@@ -178,7 +178,7 @@ class RecorderService : LifecycleService() {
             recorder = PcmAudioRecorder(
                 descriptor = descriptor,
                 audioSource = settingsState.audioSource,
-                sampleRate = 44_100, // todo
+                sampleRate = settingsState.sampleRate,
                 monoOrStereo = settingsState.numOfChannels,
             )
         } else {
@@ -190,6 +190,7 @@ class RecorderService : LifecycleService() {
                     descriptor = descriptor,
                     encoder = settingsState.encoder,
                     channels = settingsState.numOfChannels,
+                    sampleRate = settingsState.sampleRate,
                 )
             } catch (e: IOException) {
                 Log.e("Recorder", "prepare() failed", e)

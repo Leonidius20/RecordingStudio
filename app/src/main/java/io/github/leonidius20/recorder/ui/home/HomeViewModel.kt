@@ -134,11 +134,21 @@ class HomeViewModel @Inject constructor(
 
     val audioChannelsOptions = AudioChannels.entries
 
+    // todo: one state for all settings, mvi
     fun isChannelsOptionsChecked(channels: AudioChannels)
         = channels == settings.state.value.numOfChannels
 
     fun setChannels(channels: AudioChannels) {
         settings.setNumberOfChannels(channels)
     }
+
+    val supportedSampleRates = settings.supportedSampleRates
+
+    fun setSampleRate(rate: Int) {
+        settings.setSampleRate(rate)
+    }
+
+    val currentSampleRate
+        get() = settings.state.value.sampleRate
 
 }

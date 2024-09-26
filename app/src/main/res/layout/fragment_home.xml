@@ -284,6 +284,27 @@
 
                     </com.google.android.material.chip.ChipGroup>
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_small"
+                        android:text="@string/audio_settings_title_sample_rate"
+                        android:textAppearance="?textAppearanceTitleLarge" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_small"
+                        android:text="@string/audio_settings_hint_sample_rate"
+                        android:textAppearance="?textAppearanceBodyMedium" />
+
+                    <NumberPicker
+                        android:id="@+id/audio_settings_sample_rate_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_normal"
+                        />
+
                     <!-- todo: additional settings like sample rate and bitrate -->
 
                 </LinearLayout>

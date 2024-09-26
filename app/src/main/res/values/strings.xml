@@ -61,4 +61,7 @@
     <string name="audio_settings_description_channels">Some devices may not support stereo recording</string>
     <string name="recs_list_action_mode_num_selected">%1$d selected</string>
     <string name="recordings_list_empty">There are no recordings yet</string>
+    <string name="audio_settings_title_sample_rate">Sample rate</string>
+    <string name="sample_rate_pref_key" translatable="false">sample_rate_pref_key</string>
+    <string name="audio_settings_hint_sample_rate">Available sample rates depend on the chosen codec</string>
 </resources>
