@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.max
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -164,14 +165,19 @@ class HomeFragment : Fragment() {
         binding.audioSettingsSampleRateSlider.apply {
             wrapSelectorWheel = false
             descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
-            val values = viewModel.supportedSampleRates
-            minValue = 0
-            maxValue = values.size - 1
-            value = values.indexOf(viewModel.currentSampleRate)
-            displayedValues = Array(values.size) { index -> values[index].toString() }
-            setOnValueChangedListener { picker, oldVal, newVal ->
-                val newSampleRate = values[newVal]
-                viewModel.setSampleRate(newSampleRate)
+
+            viewModel.supportedSampleRates.observe(viewLifecycleOwner) { values ->
+                displayedValues = null // otherwise it crashes after changing mix, max or displayedValues
+
+                minValue = 0
+                maxValue = values.size - 1
+                displayedValues = Array(values.size) { index -> values[index].toString() }
+                value = values.indexOf(viewModel.currentSampleRate)
+
+                setOnValueChangedListener { picker, oldVal, newVal ->
+                    val newSampleRate = values[newVal]
+                    viewModel.setSampleRate(newSampleRate)
+                }
             }
         }
 

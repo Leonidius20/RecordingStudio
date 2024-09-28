@@ -50,13 +50,18 @@ class Settings @Inject constructor(
             PermissionX.init(fragment!!)
                 .permissions(android.Manifest.permission.READ_PHONE_STATE)
                 .onExplainRequestReason { scope, deniedList ->
-                    scope.showRequestReasonDialog(deniedList,
+                    scope.showRequestReasonDialog(
+                        deniedList,
                         message = fragment.getString(R.string.phone_state_permission_rationale),
                         positiveText = fragment.getString(android.R.string.ok)
                     )
                 }.onForwardToSettings { scope, deniedList ->
-                    scope.showForwardToSettingsDialog(deniedList,
-                        message = fragment.getString(R.string.permissions_rationale_grant_in_settings, fragment.getString(R.string.phone_state_permission_rationale)),
+                    scope.showForwardToSettingsDialog(
+                        deniedList,
+                        message = fragment.getString(
+                            R.string.permissions_rationale_grant_in_settings,
+                            fragment.getString(R.string.phone_state_permission_rationale)
+                        ),
                         positiveText = fragment.getString(android.R.string.ok),
                         negativeText = fragment.getString(android.R.string.cancel)
                     )
@@ -87,23 +92,28 @@ class Settings @Inject constructor(
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
                 context.getString(R.string.stop_on_low_battery_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_low_battery_default)),
+                context.resources.getBoolean(R.bool.stop_on_low_battery_default)
+            ),
             stopOnLowStorage = pref.getBoolean(
                 context.getString(R.string.stop_on_low_storage_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_storage_default)),
+                context.resources.getBoolean(R.bool.stop_on_storage_default)
+            ),
             pauseOnCall = pref.getBoolean(
                 context.getString(R.string.pause_on_call_pref_key),
-                context.resources.getBoolean(R.bool.pause_on_call_default)),
+                context.resources.getBoolean(R.bool.pause_on_call_default)
+            ),
             audioSource = pref.getInt(
                 context.getString(R.string.pref_audio_source_key),
                 MediaRecorder.AudioSource.MIC,
             ),
             outputFormat = container,
             encoder = codec,
-            numOfChannels = AudioChannels.fromInt(pref.getInt(
-                context.getString(R.string.num_channels_pref_key),
-                AudioChannels.MONO.numberOfChannels()
-            )),
+            numOfChannels = AudioChannels.fromInt(
+                pref.getInt(
+                    context.getString(R.string.num_channels_pref_key),
+                    AudioChannels.MONO.numberOfChannels()
+                )
+            ),
             sampleRate = pref.getInt(
                 context.getString(R.string.sample_rate_pref_key),
                 defaultSampleRate
@@ -121,11 +131,31 @@ class Settings @Inject constructor(
     )
 
     private val _audioSourceOptions = mutableListOf(
-        AudioSourceOption(MediaRecorder.AudioSource.DEFAULT, "Default", "Default audio input. Some processing may be applied by device"),
-        AudioSourceOption(MediaRecorder.AudioSource.MIC, "Mic", "Regular microphone input (some processing may be applied by device)"),
-        AudioSourceOption(MediaRecorder.AudioSource.CAMCORDER, "Camcorder", "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"),
-        AudioSourceOption(MediaRecorder.AudioSource.VOICE_RECOGNITION, "Voice recognition", "Tuned for voice recognition"),
-        AudioSourceOption(MediaRecorder.AudioSource.VOICE_COMMUNICATION, "Voice communication", "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"),
+        AudioSourceOption(
+            MediaRecorder.AudioSource.DEFAULT,
+            "Default",
+            "Default audio input. Some processing may be applied by device"
+        ),
+        AudioSourceOption(
+            MediaRecorder.AudioSource.MIC,
+            "Mic",
+            "Regular microphone input (some processing may be applied by device)"
+        ),
+        AudioSourceOption(
+            MediaRecorder.AudioSource.CAMCORDER,
+            "Camcorder",
+            "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
+        ),
+        AudioSourceOption(
+            MediaRecorder.AudioSource.VOICE_RECOGNITION,
+            "Voice recognition",
+            "Tuned for voice recognition"
+        ),
+        AudioSourceOption(
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+            "Voice communication",
+            "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
+        ),
     )
 
     val audioSourceOptions: List<AudioSourceOption>
@@ -133,7 +163,13 @@ class Settings @Inject constructor(
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            _audioSourceOptions.add(AudioSourceOption(MediaRecorder.AudioSource.UNPROCESSED, "Unprocessed", "No processing if the phone supports it, default otherwise"))
+            _audioSourceOptions.add(
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.UNPROCESSED,
+                    "Unprocessed",
+                    "No processing if the phone supports it, default otherwise"
+                )
+            )
         }
     }
 
@@ -159,10 +195,7 @@ class Settings @Inject constructor(
 
         val currentCodec = state.value.encoder
         if (!format.supports(currentCodec)) {
-            editingPref.putInt(
-                context.getString(R.string.pref_encoder_key),
-                format.defaultCodec.value,
-            )
+            setCodec(format.defaultCodec, fireChangeListener = false)
         }
 
         editingPref.apply()
@@ -174,16 +207,25 @@ class Settings @Inject constructor(
         // this function reloads all of the settings every time
     }
 
-    fun setCodec(codec: Codec) {
+    fun setCodec(codec: Codec, fireChangeListener: Boolean = true) {
         val key = context.getString(R.string.pref_encoder_key)
 
         pref.edit().putInt(
             key, codec.value
         ).apply()
 
+        val currentSampleRate = state.value.sampleRate
+        if (!codec.supportsSampleRate(currentSampleRate)) {
+            setSampleRate(
+                codec.supportedSampleRateClosestTo(currentSampleRate),
+                fireChangeListener = false
+            )
+        }
+
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
-        onSharedPreferenceChanged(key, null)
+        if (fireChangeListener)
+            onSharedPreferenceChanged(key, null)
     }
 
     fun setNumberOfChannels(channels: AudioChannels) {
@@ -195,17 +237,22 @@ class Settings @Inject constructor(
         onSharedPreferenceChanged(key, null)
     }
 
-    fun setSampleRate(rate: Int) {
+    fun setSampleRate(rate: Int, fireChangeListener: Boolean = true) {
 
         val key = context.getString(R.string.sample_rate_pref_key)
 
         pref.edit().putInt(key, rate)
             .apply()
 
-        onSharedPreferenceChanged(key, null)
+        if (fireChangeListener)
+            onSharedPreferenceChanged(key, null)
     }
 
-    val supportedSampleRates: IntArray = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    /**
+     * sample rates supported by device. There is also a separate thing which is
+     * sample rates supported by various codecs.
+     */
+    val sampleRatesSupportedByDevice: IntArray = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         (context.getSystemService(AUDIO_SERVICE) as AudioManager)
             .getDevices(AudioManager.GET_DEVICES_INPUTS)
             .firstOrNull()
@@ -216,7 +263,7 @@ class Settings @Inject constructor(
                 if (it.isEmpty()) null else it
             }
     } else {
-       null
+        null
     }) ?: intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
 
     private val defaultSampleRate = 44_100

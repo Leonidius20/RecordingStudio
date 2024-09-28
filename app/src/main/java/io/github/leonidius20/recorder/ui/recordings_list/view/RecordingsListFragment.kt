@@ -244,7 +244,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 .setMessage("Do you confirm deleting ${viewModel.state.value.numItemsSelected} selected file(s)?")
                 .setPositiveButton(android.R.string.yes) { _, _ ->
                     viewModel.legacyDeleteSelectedWithoutConfirmation()
-                    actionMode!!.finish()
+                    actionMode?.finish()
                 }
                 .setNegativeButton(android.R.string.no) { dialog, _ ->
                     dialog.dismiss()
@@ -257,7 +257,7 @@ class RecordingsListFragment : RecStudioFragment() {
     fun rename() {
         val selectedItem = viewModel.getFirstSelectedItem()
 
-        actionMode!!.finish()
+        actionMode?.finish()
 
         findNavController().navigate(
             RecordingsListFragmentDirections.actionNavigationRecordingsListToRenameDialogFragment(

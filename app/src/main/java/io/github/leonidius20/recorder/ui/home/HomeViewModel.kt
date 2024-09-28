@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -122,7 +123,9 @@ class HomeViewModel @Inject constructor(
     fun isChecked(audioSource: Settings.AudioSourceOption) =
         audioSource.value == settings.state.value.audioSource
 
-    val encoderOptions = selectedContainer.map { it.availableCodecs }
+    val encoderOptions = selectedContainer
+        .map { it.availableCodecs }
+        .distinctUntilChanged()
 
 
     fun isEncoderChecked(encoder: Codec) =
@@ -142,7 +145,11 @@ class HomeViewModel @Inject constructor(
         settings.setNumberOfChannels(channels)
     }
 
-    val supportedSampleRates = settings.supportedSampleRates
+    val supportedSampleRates = settings.state.map {
+        it.encoder.supportedSampleRates
+            .intersect(settings.sampleRatesSupportedByDevice.toSet())
+            .sorted()
+    }.asLiveData(viewModelScope.coroutineContext)
 
     fun setSampleRate(rate: Int) {
         settings.setSampleRate(rate)
@@ -150,5 +157,7 @@ class HomeViewModel @Inject constructor(
 
     val currentSampleRate
         get() = settings.state.value.sampleRate
+
+
 
 }
