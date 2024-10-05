@@ -339,16 +339,6 @@ class PcmAudioRecorder(
         var amp = 0
         for (offset in 0 until pcmBytes.size step bytesPerInstant) {
             if (monoOrStereo.numberOfChannels() == 1) {
-                // convert bytesPerInstantBytes at offset with little endian order to int
-                /*val sample = ByteBuffer.wrap(
-                    pcmBytes.copyOfRange(offset, offset + bytesPerSample),
-                    //offset,
-                    //bytesPerSample,
-                ).order(ByteOrder.LITTLE_ENDIAN)
-                    .short.toInt() // 16 bit but if using other depths could be different
-                    */
-
-
                 var sample = 0
 
                 // convert little endian number to int
@@ -358,21 +348,30 @@ class PcmAudioRecorder(
                     sample += pcmBytes[offset + position]
                 }
 
-                //if (offset )
-                //Log.d("sample", "")
-
-
                 amp = max(amp, abs(sample))
             } else {
-                // todo
+
+                val secondSampleOffset = bytesPerSample
+
+                var leftSample = 0
+                for (position in bytesPerSample - 1 downTo 0 ) {
+                    leftSample = leftSample shl 8
+                    leftSample += pcmBytes[offset + position]
+                }
+
+                var rightSample = 0
+                for (position in bytesPerSample - 1 downTo 0 ) {
+                    rightSample = rightSample shl 8
+                    rightSample += pcmBytes[offset + secondSampleOffset + position]
+                }
+
+                val leftAndRightAverage = (leftSample / 2) + (rightSample / 2) // making sure they don't overflow
+
+                amp = max(amp, abs(leftAndRightAverage))
             }
-            // take abs value
-
-
         }
 
         val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
-        // scale to 0..20000
 
         synchronized(maxAmplitude) {
             maxAmplitude = max(maxAmplitude, ampScaled)
