@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.data.recorder
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.util.Log
 import androidx.annotation.RequiresApi
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.Codec
@@ -48,14 +49,14 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         recorder.resume()
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         recorder.apply {
             stop()
             release()
         }
     }
 
-    override fun maxAmplitude() = recorder.maxAmplitude
+    override fun maxAmplitude() = recorder.maxAmplitude // 20000 is max value
 
     override fun supportsPausing() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.N

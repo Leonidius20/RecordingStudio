@@ -7,8 +7,9 @@ import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import java.io.FileOutputStream
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
+import kotlin.math.abs
+import kotlin.math.max
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
 
@@ -145,7 +146,7 @@ class PcmAudioRecorder(
 
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         isRecording = false
         audioRecord.stop()
         audioRecord.release()
@@ -311,21 +312,71 @@ class PcmAudioRecorder(
         return header
     }
 
-    //@Volatile
-   // private var maxAmplitude = AtomicInteger(0)
+    @Volatile
+    private var maxAmplitude = 0
 
+    //todo - dynamic value
+    private val bitDepth = 16 // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
+
+    // bytes per one sample, if stereo that would be only left or only right channel sample
+    private val bytesPerSample = (bitDepth / 8)
+
+    // by instant i mean 1 sample if it is mono or 2 samples (left and right) from one instant in time, if it is stereo
+    private val bytesPerInstant = bytesPerSample * monoOrStereo.numberOfChannels()
+
+
+    // this is happening in a non-main thread that reads bytes from mic
     private fun extractAndRecordMaxAmplitude(pcmBytes: ByteArray) {
         // we need to check the bytes format, bc it could be mono or stereo
         // if stereo, we should probably average the two
         // http://soundfile.sapp.org/doc/WaveFormat/
 
-        if (monoOrStereo == AudioChannels.STEREO) {
-            // average out left and right channel values
+        // also the highest number can be different whether it is 8bit, 16bit, 32bit so on
+        // so it probably has to be scaled somehow
+
+        val numberOfInstants = pcmBytes.size / bytesPerInstant
+
+        var amp = 0
+        for (offset in 0 until pcmBytes.size step bytesPerInstant) {
+            if (monoOrStereo.numberOfChannels() == 1) {
+                // convert bytesPerInstantBytes at offset with little endian order to int
+                /*val sample = ByteBuffer.wrap(
+                    pcmBytes.copyOfRange(offset, offset + bytesPerSample),
+                    //offset,
+                    //bytesPerSample,
+                ).order(ByteOrder.LITTLE_ENDIAN)
+                    .short.toInt() // 16 bit but if using other depths could be different
+                    */
+
+
+                var sample = 0
+
+                // convert little endian number to int
+                // most significant byte is at highest address
+                for (position in bytesPerSample - 1 downTo 0 ) {
+                    sample = sample shl 8
+                    sample += pcmBytes[offset + position]
+                }
+
+                //if (offset )
+                //Log.d("sample", "")
+
+
+                amp = max(amp, abs(sample))
+            } else {
+                // todo
+            }
+            // take abs value
+
+
         }
 
-       // maxAmplitude.set()
+        val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
+        // scale to 0..20000
 
-        // lock that allows writing without waiting, but locks on read (priority of write)
+        synchronized(maxAmplitude) {
+            maxAmplitude = max(maxAmplitude, ampScaled)
+        }
     }
 
     override fun maxAmplitude(): Int {
@@ -333,7 +384,11 @@ class PcmAudioRecorder(
        //// maxAmplitude = 0 // reset so that we get fresh value on next call
         //return ampToReturn
 
-        return 0
+        return synchronized(maxAmplitude) {
+            val ampToReturn = maxAmplitude
+            maxAmplitude = 0 // reset so that we get fresh value on next call
+            return ampToReturn
+        }
     }
 
     override fun supportsPausing() = true

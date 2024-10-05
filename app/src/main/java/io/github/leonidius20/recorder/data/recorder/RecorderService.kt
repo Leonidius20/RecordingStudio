@@ -258,7 +258,7 @@ class RecorderService : LifecycleService() {
         //recorder.stop()
         //recorder.release()
 
-       // recorder.stop()
+        recorder.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -343,10 +343,7 @@ class RecorderService : LifecycleService() {
     }
 
     fun stop() {
-        lifecycleScope.launch {
-            recorder.stop()
-            stopSelf()
-        }
+        stopSelf()
     }
 
     inner class Binder: android.os.Binder() {

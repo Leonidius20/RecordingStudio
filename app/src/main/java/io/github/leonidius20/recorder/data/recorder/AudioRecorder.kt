@@ -14,7 +14,7 @@ interface AudioRecorder {
      * finish all these tasks, incl. waiting for any threads to finish,
      * and the Service can only be safely killed after it finishes
      */
-    suspend fun stop()
+    fun stop()
 
     /**
      * max amplitude sampled since the last call to this method
