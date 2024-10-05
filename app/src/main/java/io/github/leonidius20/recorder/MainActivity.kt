@@ -1,25 +1,23 @@
 package io.github.leonidius20.recorder
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.DisplayCutoutCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.marginLeft
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.internal.ViewUtils.requestApplyInsetsWhenAttached
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.navigationrail.NavigationRailView
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.ActivityMainBinding
 
@@ -61,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private fun applyWindowInsetsListener(rootView: View) {
         val orientation = resources.configuration.orientation
         val layoutDirection = resources.configuration.layoutDirection
+        val isLeftToRight = layoutDirection == View.LAYOUT_DIRECTION_LTR
 
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, windowInsets ->
             val insets = windowInsets.getInsets(
@@ -105,14 +104,7 @@ class MainActivity : AppCompatActivity() {
                WindowInsetsCompat.Type.displayCutout())
 
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                val navRail = binding.navView
 
-                navRail.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    marginStart =
-                        if (layoutDirection == View.LAYOUT_DIRECTION_LTR)
-                            cutoutInsets.left
-                        else cutoutInsets.right // maybe this takes RTL into account already?
-                }
 
                 rootView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginEnd = if (layoutDirection == View.LAYOUT_DIRECTION_LTR)
@@ -126,6 +118,26 @@ class MainActivity : AppCompatActivity() {
             // down to descendant views.
             //WindowInsetsCompat.CONSUMED
             windowInsets
+        }
+
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            binding.navView.doOnApplyWindowInsets { view, windowInsets, initialPadding ->
+                val cutoutInsets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.displayCutout())
+
+                if (isLeftToRight) {
+                    view.updatePadding(
+                        left = initialPadding.left + cutoutInsets.left
+                    )
+                } else {
+                    view.updatePadding(
+                    right = initialPadding.right + cutoutInsets.right
+                    )
+                }
+
+                windowInsets
+            }
+
         }
 
         // this does not bloody work!
@@ -160,3 +172,18 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+@SuppressLint("RestrictedApi")
+fun View.doOnApplyWindowInsets(block: (View, WindowInsetsCompat, Rect) -> WindowInsetsCompat) {
+
+    val initialPadding = recordInitialPaddingForView(this)
+
+    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+        block(v, insets, initialPadding)
+    }
+
+    requestApplyInsetsWhenAttached(this)
+}
+
+private fun recordInitialPaddingForView(view: View) =
+    Rect(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom)
