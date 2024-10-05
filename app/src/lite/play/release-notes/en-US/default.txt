@@ -2,3 +2,4 @@
 - Support for uncompressed WAV recording
 - Support for changing sample rate
 - Fixed crash on Android 8.1, 9, 10
+- Fixed UI elements drawn under display cutout

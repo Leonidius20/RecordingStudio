@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.DisplayCutoutCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginLeft
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.navigation.findNavController
@@ -17,6 +19,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.navigationrail.NavigationRailView
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.ActivityMainBinding
 
@@ -62,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, windowInsets ->
             val insets = windowInsets.getInsets(
                 WindowInsetsCompat.Type.systemBars()
-                        or WindowInsetsCompat.Type.displayCutout()
+                        // or WindowInsetsCompat.Type.displayCutout()
             )
             // Apply the insets as a margin to the view. This solution sets
             // only the bottom, left, and right dimensions, but you can apply whichever
@@ -79,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                  * there is no nav rail there if we are in portrait mode, or in RTL
                  * layout (e.g. hebrew), bc in this case the rail is on the right.
                  */
-                if (orientation == Configuration.ORIENTATION_PORTRAIT || resources.configuration.layoutDirection == Configuration.SCREENLAYOUT_LAYOUTDIR_RTL) {
+                /*if (orientation == Configuration.ORIENTATION_PORTRAIT || resources.configuration.layoutDirection == Configuration.SCREENLAYOUT_LAYOUTDIR_RTL) {
                     leftMargin = insets.left
                 }
 
@@ -91,12 +94,33 @@ class MainActivity : AppCompatActivity() {
                  */
                 if (orientation == Configuration.ORIENTATION_PORTRAIT || resources.configuration.layoutDirection == Configuration.SCREENLAYOUT_LAYOUTDIR_LTR) {
                     rightMargin = insets.right
-                }
+                }*/
 
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     bottomMargin = insets.bottom // (handled by bottom app bar in vertical mode).
                 }
             }
+
+            val cutoutInsets = windowInsets.getInsets(
+               WindowInsetsCompat.Type.displayCutout())
+
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                val navRail = binding.navView
+
+                navRail.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart =
+                        if (layoutDirection == View.LAYOUT_DIRECTION_LTR)
+                            cutoutInsets.left
+                        else cutoutInsets.right // maybe this takes RTL into account already?
+                }
+
+                rootView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = if (layoutDirection == View.LAYOUT_DIRECTION_LTR)
+                        cutoutInsets.right
+                    else cutoutInsets.left
+                }
+            }
+
 
             // Return CONSUMED if you don't want want the window insets to keep passing
             // down to descendant views.
@@ -105,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // this does not bloody work!
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        /*if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
             val navRail = binding.navView
 
@@ -131,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
                 windowInsets
             }
-        }
+        }*/
 
     }
 
