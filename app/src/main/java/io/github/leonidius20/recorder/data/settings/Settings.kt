@@ -29,6 +29,8 @@ class Settings @Inject constructor(
         val encoder: Codec,
         val numOfChannels: AudioChannels,
         val sampleRate: Int,
+        // val bitDepthsForCodecs: Map<Codec, BitDepthOption>,
+        // val bitRatesForCodecs: Map<Codec, BitRateOption>,
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -89,6 +91,13 @@ class Settings @Inject constructor(
             )
         )
 
+       /* val bitDepthsOrRates = Codec.entries
+            .filter { it.supportsSettingBitDepth }
+            .associateWith { codec ->
+                pref.getInt(codec.bitDepthOrRateForCodecPrefKey,
+                    codec.defaultBitDepth!!.value)
+            }*/
+
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
                 context.getString(R.string.stop_on_low_battery_pref_key),
@@ -118,6 +127,7 @@ class Settings @Inject constructor(
                 context.getString(R.string.sample_rate_pref_key),
                 defaultSampleRate
             ),
+            //bitDepthsForCodecs = bitDepthsOrRates,
         )
     }
 

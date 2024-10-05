@@ -16,7 +16,7 @@
         <item name="switchPreferenceCompatStyle">@style/Theme.RecordingStudio.SwitchPreferenceStyle</item> -->
 
         <item name="android:windowLayoutInDisplayCutoutMode">
-            always
+            shortEdges
         </item>
 
         <item name="colorPrimary">@color/md_theme_primary</item>

@@ -13,6 +13,12 @@ enum class Codec(
     val displayName: String,
     val isSupportedByDevice: Boolean,
     val supportedSampleRates: IntArray,
+
+    val supportsSettingBitDepth: Boolean = false,
+    val supportsSettingBitRate: Boolean = false,
+
+    val bitDepthOptions: Array<BitDepthOption>? = null,
+    val defaultBitDepth: BitDepthOption? = null,
 ) {
 
     // todo: check support some other way too
@@ -67,7 +73,13 @@ enum class Codec(
         displayName = "PCM",
         isSupportedByDevice = true,
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        supportsSettingBitDepth = true,
+        bitDepthOptions = PcmBitDepthOption.entries.map { it as BitDepthOption }.toTypedArray(),
+        defaultBitDepth = PcmBitDepthOption.PCM_16BIT_INT,
     );
+
+    val bitDepthOrRateForCodecPrefKey
+        get() = "$value-bit"
 
     fun supportedSampleRateClosestTo(rate: Int): Int {
         return supportedSampleRates.mapIndexed { index, supportedRate ->

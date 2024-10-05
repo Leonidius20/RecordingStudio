@@ -13,7 +13,7 @@
         <item name="preferenceTheme">@style/ThemeOverlay.App.Preference</item>
 
         <item name="android:windowLayoutInDisplayCutoutMode">
-            always
+            shortEdges
         </item>
 
         <item name="colorPrimary">@color/md_theme_primary</item>

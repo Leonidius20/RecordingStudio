@@ -28,7 +28,7 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         setAudioEncoder(encoder.value)
         setAudioChannels(channels.numberOfChannels())
         setAudioSamplingRate(sampleRate)
-        // setAudioEncodingBitRate()
+        // setAudioEncodingBitRate() // in bits per s
 
         prepare() // throws IOException
     }
