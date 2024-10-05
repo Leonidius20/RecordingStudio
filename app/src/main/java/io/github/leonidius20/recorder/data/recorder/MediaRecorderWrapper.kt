@@ -48,7 +48,7 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         recorder.resume()
     }
 
-    override fun stop() {
+    override suspend fun stop() {
         recorder.apply {
             stop()
             release()

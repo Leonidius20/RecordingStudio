@@ -1,5 +1,5 @@
 0.2.0
-- Support for uncompressed WAV recording
+- Support for uncompressed WAV recording (only 16 bit int for now)
 - Support for changing sample rate
 - Fixed crash on Android 8.1, 9, 10
 - Fixed UI elements drawn under display cutout

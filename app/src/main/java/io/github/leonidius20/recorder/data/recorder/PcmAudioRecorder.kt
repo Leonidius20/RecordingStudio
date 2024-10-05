@@ -7,6 +7,7 @@ import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import java.io.FileOutputStream
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
@@ -14,7 +15,7 @@ private const val WAV_HEADER_LENGTH_BYTES = 44
 class PcmAudioRecorder(
     private val descriptor: ParcelFileDescriptor,
     private val audioSource: Int = MediaRecorder.AudioSource.MIC,
-    private val sampleRate: Int = 44_100, // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
+    private val sampleRate: Int, // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
     private val monoOrStereo: AudioChannels = AudioChannels.MONO
 ) : AudioRecorder {
 
@@ -63,6 +64,9 @@ class PcmAudioRecorder(
         isRecording = true
 
 
+        // todo: redo this with coroutine
+         // also, we can use some write-priority lock synchronize maxAmp value
+        //
 
         micReadingThread = thread(start = true) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
@@ -100,6 +104,7 @@ class PcmAudioRecorder(
                 }
                 outStream.write(buffer.sliceArray(0 until bytesRead))
                 bytesRecorded += bytesRead
+                extractAndRecordMaxAmplitude(buffer)
             }
 
             // going back to add header
@@ -140,7 +145,7 @@ class PcmAudioRecorder(
 
     }
 
-    override fun stop() {
+    override suspend fun stop() {
         isRecording = false
         audioRecord.stop()
         audioRecord.release()
@@ -306,8 +311,29 @@ class PcmAudioRecorder(
         return header
     }
 
+    //@Volatile
+   // private var maxAmplitude = AtomicInteger(0)
+
+    private fun extractAndRecordMaxAmplitude(pcmBytes: ByteArray) {
+        // we need to check the bytes format, bc it could be mono or stereo
+        // if stereo, we should probably average the two
+        // http://soundfile.sapp.org/doc/WaveFormat/
+
+        if (monoOrStereo == AudioChannels.STEREO) {
+            // average out left and right channel values
+        }
+
+       // maxAmplitude.set()
+
+        // lock that allows writing without waiting, but locks on read (priority of write)
+    }
+
     override fun maxAmplitude(): Int {
-        return 0 // todo
+       // val ampToReturn = maxAmplitude
+       //// maxAmplitude = 0 // reset so that we get fresh value on next call
+        //return ampToReturn
+
+        return 0
     }
 
     override fun supportsPausing() = true

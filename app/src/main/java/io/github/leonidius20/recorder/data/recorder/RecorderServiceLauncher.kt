@@ -104,9 +104,13 @@ class RecorderServiceLauncher @Inject constructor(
     }
 
     fun stopRecording() {
-        context.stopService(
+        /*context.stopService(
             Intent(context, RecorderService::class.java)
-        )
+        )*/
+
+        // theoretically it is possible to send a broadcast here instead of
+        //  relying on binding
+        binder!!.service.stop()
         _state.value = State.IDLE
     }
 

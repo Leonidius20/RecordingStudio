@@ -202,26 +202,6 @@ class RecorderService : LifecycleService() {
 
         recorder.start()
 
-
-       /* recorder = MediaRecorder().apply {
-            setAudioSource(settingsState.audioSource)
-            setOutputFormat(fileFormat.value)
-            setOutputFile(descriptor.fileDescriptor)
-            setAudioEncoder(settingsState.encoder.value)
-            setAudioChannels(settingsState.numOfChannels.value)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                Log.e("Recorder", "prepare() failed", e)
-                _state.value = State.ERROR
-                stopSelf()
-            }
-
-            start()
-        }*/
-
-
         _state.value = State.RECORDING
 
         val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
@@ -278,7 +258,7 @@ class RecorderService : LifecycleService() {
         //recorder.stop()
         //recorder.release()
 
-        recorder.stop()
+       // recorder.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -363,7 +343,10 @@ class RecorderService : LifecycleService() {
     }
 
     fun stop() {
-        stopSelf()
+        lifecycleScope.launch {
+            recorder.stop()
+            stopSelf()
+        }
     }
 
     inner class Binder: android.os.Binder() {
