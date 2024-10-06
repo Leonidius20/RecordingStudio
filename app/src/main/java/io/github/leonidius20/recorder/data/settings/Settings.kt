@@ -29,7 +29,11 @@ class Settings @Inject constructor(
         val encoder: Codec,
         val numOfChannels: AudioChannels,
         val sampleRate: Int,
-        // val bitDepthsForCodecs: Map<Codec, BitDepthOption>,
+        val bitDepthsForCodecs: Map<Codec, BitDepthOption>,
+        // todo: maybe we instead should make Codec a proper class with subsclasses,
+        // where each instance is a codec with certain parameters set up (sample rate, bit rate)
+        // and the class itself will be checking if these parameters work together?
+
         // val bitRatesForCodecs: Map<Codec, BitRateOption>,
     )
 
@@ -91,12 +95,16 @@ class Settings @Inject constructor(
             )
         )
 
-       /* val bitDepthsOrRates = Codec.entries
+        val bitDepthsForCodecs = Codec.entries
             .filter { it.supportsSettingBitDepth }
             .associateWith { codec ->
-                pref.getInt(codec.bitDepthOrRateForCodecPrefKey,
-                    codec.defaultBitDepth!!.value)
-            }*/
+                codec.getBitDepthOptionFromPrefValue(
+                    pref.getInt(
+                        codec.bitDepthOrRateForCodecPrefKey,
+                        codec.defaultBitDepth!!.valueForPref
+                    )
+                )
+            }
 
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
@@ -127,7 +135,7 @@ class Settings @Inject constructor(
                 context.getString(R.string.sample_rate_pref_key),
                 defaultSampleRate
             ),
-            //bitDepthsForCodecs = bitDepthsOrRates,
+            bitDepthsForCodecs = bitDepthsForCodecs,
         )
     }
 
@@ -262,20 +270,35 @@ class Settings @Inject constructor(
      * sample rates supported by device. There is also a separate thing which is
      * sample rates supported by various codecs.
      */
-    val sampleRatesSupportedByDevice: IntArray = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        (context.getSystemService(AUDIO_SERVICE) as AudioManager)
-            .getDevices(AudioManager.GET_DEVICES_INPUTS)
-            .firstOrNull()
-            ?.sampleRates
-            ?.sortedArray()?.let {
-                // if empty, means the device supports arbitrary values with resampling.
-                // we will just stick to some standard ones
-                if (it.isEmpty()) null else it
-            }
-    } else {
-        null
-    }) ?: intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
+    val sampleRatesSupportedByDevice: IntArray =
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            (context.getSystemService(AUDIO_SERVICE) as AudioManager)
+                .getDevices(AudioManager.GET_DEVICES_INPUTS)
+                .firstOrNull()
+                ?.sampleRates
+                ?.sortedArray()?.let {
+                    // if empty, means the device supports arbitrary values with resampling.
+                    // we will just stick to some standard ones
+                    if (it.isEmpty()) null else it
+                }
+        } else {
+            null
+        }) ?: intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
 
     private val defaultSampleRate = 44_100
+
+    fun setBitDepth(bitDepth: BitDepthOption) {
+
+        if (!state.value.encoder.supportsSettingBitDepth) {
+            throw IllegalStateException("tried changing bit depth while selected encoder doesn't support it")
+        }
+
+        val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
+
+        pref.edit().putInt(key, bitDepth.valueForPref)
+            .apply()
+
+        onSharedPreferenceChanged(key, null)
+    }
 
 }

@@ -90,6 +90,14 @@ enum class Codec(
 
     fun supportsSampleRate(rate: Int) = rate in supportedSampleRates
 
+    fun getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
+        if(this == Codec.PCM) {
+            return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
+        } else {
+            throw Error("this codec does not support setting bit depths")
+        }
+    }
+
     companion object {
 
         private val map by lazy {

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
 import io.github.leonidius20.recorder.data.settings.AudioChannels
+import io.github.leonidius20.recorder.data.settings.BitDepthOption
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -37,7 +38,7 @@ class HomeViewModel @Inject constructor(
             PAUSE,
         }
 
-        data object Idle: UiState(
+        data object Idle : UiState(
             isRecPauseBtnVisible = true,
             recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = false,
@@ -47,7 +48,7 @@ class HomeViewModel @Inject constructor(
 
         data class Recording(
             private val isPausingSupported: Boolean,
-        ): UiState(
+        ) : UiState(
             isRecPauseBtnVisible = isPausingSupported,
             recPauseBtnState = RecPauseBtnState.PAUSE,
             isStopButtonVisible = true,
@@ -55,7 +56,7 @@ class HomeViewModel @Inject constructor(
             audioSettingsButtonVisible = false,
         )
 
-        data object Paused: UiState(
+        data object Paused : UiState(
             isRecPauseBtnVisible = true,
             recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = true,
@@ -138,8 +139,8 @@ class HomeViewModel @Inject constructor(
     val audioChannelsOptions = AudioChannels.entries
 
     // todo: one state for all settings, mvi
-    fun isChannelsOptionsChecked(channels: AudioChannels)
-        = channels == settings.state.value.numOfChannels
+    fun isChannelsOptionsChecked(channels: AudioChannels) =
+        channels == settings.state.value.numOfChannels
 
     fun setChannels(channels: AudioChannels) {
         settings.setNumberOfChannels(channels)
@@ -158,6 +159,21 @@ class HomeViewModel @Inject constructor(
     val currentSampleRate
         get() = settings.state.value.sampleRate
 
+    val availableBitDepths = settings.state.map {
+        if (it.encoder.supportsSettingBitDepth) {
+            it.encoder.bitDepthOptions
+        } else emptyArray()
+    }.asLiveData(viewModelScope.coroutineContext)
 
+    val currentBitDepth
+        get() = with(settings.state.value) {
+            if (encoder.supportsSettingBitDepth) {
+                bitDepthsForCodecs[encoder]
+            } else null
+        }
+
+    fun setBitDepth(bitDepthOption: BitDepthOption) {
+        settings.setBitDepth(bitDepthOption)
+    }
 
 }

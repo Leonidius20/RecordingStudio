@@ -13,6 +13,7 @@ import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.max
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -177,6 +177,28 @@ class HomeFragment : Fragment() {
                 setOnValueChangedListener { picker, oldVal, newVal ->
                     val newSampleRate = values[newVal]
                     viewModel.setSampleRate(newSampleRate)
+                }
+            }
+        }
+
+        // bit depth selection
+        viewModel.availableBitDepths.observe(viewLifecycleOwner) { availableBitDepths ->
+            if (availableBitDepths == null || availableBitDepths.isEmpty()) {
+                binding.bitDepthSettingsBlock.isVisible = false
+            } else {
+                binding.bitDepthSettingsBlock.isVisible = true
+
+                binding.audioSettingsBitDepthSlider.apply {
+                    displayedValues = null // otherwise it crashes after changing mix, max or displayedValues
+                    minValue = 0
+                    maxValue = availableBitDepths.size - 1
+                    displayedValues = Array(availableBitDepths.size) { index -> availableBitDepths[index].displayName }
+                    value = availableBitDepths.indexOf(viewModel.currentBitDepth)
+
+                    setOnValueChangedListener { picker, oldVal, newVal ->
+                        val newBitDepth = availableBitDepths[newVal]
+                        viewModel.setBitDepth(newBitDepth)
+                    }
                 }
             }
         }

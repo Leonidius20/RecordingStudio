@@ -29,6 +29,16 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         setAudioEncoder(encoder.value)
         setAudioChannels(channels.numberOfChannels())
         setAudioSamplingRate(sampleRate)
+        /*setOnInfoListener(object : MediaRecorder.OnInfoListener {
+            override fun onInfo(
+                mr: MediaRecorder?,
+                what: Int,
+                extra: Int
+            ) {
+
+            }
+
+        })*/
         // setAudioEncodingBitRate() // in bits per s
 
         prepare() // throws IOException

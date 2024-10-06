@@ -6,6 +6,7 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.data.settings.AudioChannels
+import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import java.io.FileOutputStream
 import kotlin.concurrent.thread
 import kotlin.math.abs
@@ -16,8 +17,9 @@ private const val WAV_HEADER_LENGTH_BYTES = 44
 class PcmAudioRecorder(
     private val descriptor: ParcelFileDescriptor,
     private val audioSource: Int = MediaRecorder.AudioSource.MIC,
-    private val sampleRate: Int, // Sampling rates for raw PCM recordings at 8000, 16000 and 44100 Hz.
-    private val monoOrStereo: AudioChannels = AudioChannels.MONO
+    private val sampleRate: Int,
+    private val monoOrStereo: AudioChannels = AudioChannels.MONO,
+    private val bitDepth: PcmBitDepthOption,
 ) : AudioRecorder {
 
 
@@ -42,7 +44,7 @@ class PcmAudioRecorder(
         AudioChannels.STEREO -> AudioFormat.CHANNEL_IN_STEREO
     }
 
-    val encoder = AudioFormat.ENCODING_PCM_16BIT
+    val encoder = bitDepth.valueForAudioRecordApi
 
     val minBufSize = AudioRecord.getMinBufferSize(
         sampleRate, inputChannel, encoder
@@ -242,11 +244,11 @@ class PcmAudioRecorder(
         header[18] = 0
         header[19] = 0
 
-        //val audioFormat: Short = 1 // 1 - pcm int, 3 - IEEE 754 float todo
+        //val audioFormat: Short = 1 // 1 - pcm int, 3 - IEEE 754 float
         // audioFormat
         //    .toLittleEndianByteArray()
         //    .copyInto(header, 20) // 2 bytes
-        header[20] = 1
+        header[20] = if (bitDepth.isFloat) 3 else 1 // 1 - pcm int, 3 - IEEE 754 float
         header[21] = 0
 
         // numOfChannels
@@ -263,7 +265,7 @@ class PcmAudioRecorder(
         header[26] = 0 // could >> 16, but it will never be more than 48000 which fits in 2 bytes
         header[27] = 0
 
-        val bitsPerSample: Short = 16 // todo: other formats support
+        val bitsPerSample: Short = bitDepth.bitsPerSample
         val bytesPerBlock: Short = ((numOfChannels * bitsPerSample) / 8).toShort() // max 4
         val bytesPerSecond: Int = bytesPerBlock * sampleRateHz // max 4 * 48_000 = ?
 
@@ -315,11 +317,10 @@ class PcmAudioRecorder(
     @Volatile
     private var maxAmplitude = 0
 
-    //todo - dynamic value
-    private val bitDepth = 16 // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
+    private val bitsPerSample = bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
 
     // bytes per one sample, if stereo that would be only left or only right channel sample
-    private val bytesPerSample = (bitDepth / 8)
+    private val bytesPerSample = (bitsPerSample / 8)
 
     // by instant i mean 1 sample if it is mono or 2 samples (left and right) from one instant in time, if it is stereo
     private val bytesPerInstant = bytesPerSample * monoOrStereo.numberOfChannels()
@@ -333,6 +334,8 @@ class PcmAudioRecorder(
 
         // also the highest number can be different whether it is 8bit, 16bit, 32bit so on
         // so it probably has to be scaled somehow
+
+        // TODO: support FLOAT values
 
         val numberOfInstants = pcmBytes.size / bytesPerInstant
 
