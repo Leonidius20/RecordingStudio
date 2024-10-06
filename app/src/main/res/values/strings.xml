@@ -65,4 +65,6 @@
     <string name="sample_rate_pref_key" translatable="false">sample_rate_pref_key</string>
     <string name="audio_settings_hint_sample_rate">Available sample rates depend on the chosen codec</string>
     <string name="audio_settings_title_bit_depth">Bit Depth</string>
+    <string name="selector_previous_value">Previous value</string>
+    <string name="selector_next_value">Next value</string>
 </resources>

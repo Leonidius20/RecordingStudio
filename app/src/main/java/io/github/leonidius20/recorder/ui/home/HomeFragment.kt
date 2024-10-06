@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
@@ -182,7 +183,8 @@ class HomeFragment : Fragment() {
         }
 
         // bit depth selection
-        viewModel.availableBitDepths.observe(viewLifecycleOwner) { availableBitDepths ->
+        // todo: uncomment for 0.2.0
+        /*viewModel.availableBitDepths.observe(viewLifecycleOwner) { availableBitDepths ->
             if (availableBitDepths == null || availableBitDepths.isEmpty()) {
                 binding.bitDepthSettingsBlock.isVisible = false
             } else {
@@ -201,6 +203,11 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
+        }*/
+
+        // todo: remove for 0.2.0
+        viewModel.isCurrentEncoderPcm.observe(viewLifecycleOwner) { isTrue ->
+            binding.sampleRateSettingsBlock.isVisible = isTrue
         }
 
         // todo: restoring the visualizer on screen rotation

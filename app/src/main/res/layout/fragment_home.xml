@@ -284,6 +284,13 @@
 
                     </com.google.android.material.chip.ChipGroup>
 
+                <LinearLayout
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/sample_rate_settings_block">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -304,6 +311,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_normal"
                         />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:visibility="gone"

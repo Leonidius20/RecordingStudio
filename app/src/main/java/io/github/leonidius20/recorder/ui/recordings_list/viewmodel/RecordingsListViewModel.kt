@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.text.format.Formatter
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -143,7 +142,6 @@ class RecordingsListViewModel @Inject constructor(
 
     // todo: intent
     fun toggleSelection(index: Int) {
-        Log.d("vm", "toggle selection @ index $index")
         setItemSelected(index, !_state.value.recordings[index].isSelected)
     }
 

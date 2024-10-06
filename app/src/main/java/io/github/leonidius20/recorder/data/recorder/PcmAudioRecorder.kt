@@ -19,7 +19,7 @@ class PcmAudioRecorder(
     private val audioSource: Int = MediaRecorder.AudioSource.MIC,
     private val sampleRate: Int,
     private val monoOrStereo: AudioChannels = AudioChannels.MONO,
-    private val bitDepth: PcmBitDepthOption,
+    private val bitDepth: PcmBitDepthOption = PcmBitDepthOption.PCM_16BIT_INT,
 ) : AudioRecorder {
 
 

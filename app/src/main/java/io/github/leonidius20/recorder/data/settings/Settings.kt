@@ -233,12 +233,15 @@ class Settings @Inject constructor(
         ).apply()
 
         val currentSampleRate = state.value.sampleRate
-        if (!codec.supportsSampleRate(currentSampleRate)) {
+
+
+        // todo uncomment for 0.2.0
+        /*if (!codec.supportsSampleRate(currentSampleRate)) {
             setSampleRate(
                 codec.supportedSampleRateClosestTo(currentSampleRate),
                 fireChangeListener = false
             )
-        }
+        }*/
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.

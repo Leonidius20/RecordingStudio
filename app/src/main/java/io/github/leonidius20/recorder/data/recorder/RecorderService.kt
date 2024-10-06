@@ -182,7 +182,8 @@ class RecorderService : LifecycleService() {
                 audioSource = settingsState.audioSource,
                 sampleRate = settingsState.sampleRate,
                 monoOrStereo = settingsState.numOfChannels,
-                bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
+                // todo: uncomment for 0.2.0
+                // bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
             )
         } else {
 
@@ -193,7 +194,7 @@ class RecorderService : LifecycleService() {
                     descriptor = descriptor,
                     encoder = settingsState.encoder,
                     channels = settingsState.numOfChannels,
-                    sampleRate = settingsState.sampleRate,
+                    // sampleRate = settingsState.sampleRate,
                 )
             } catch (e: IOException) {
                 Log.e("Recorder", "prepare() failed", e)

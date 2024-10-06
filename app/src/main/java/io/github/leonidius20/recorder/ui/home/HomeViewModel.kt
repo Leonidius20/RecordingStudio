@@ -176,4 +176,10 @@ class HomeViewModel @Inject constructor(
         settings.setBitDepth(bitDepthOption)
     }
 
+    @Deprecated("remove for 0.2.0") // todo
+    val isCurrentEncoderPcm =
+        settings.state
+            .map { it.encoder == Codec.PCM }
+            .asLiveData(viewModelScope.coroutineContext)
+
 }

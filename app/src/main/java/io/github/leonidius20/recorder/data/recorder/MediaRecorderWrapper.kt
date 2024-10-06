@@ -19,7 +19,7 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
     descriptor: ParcelFileDescriptor,
     encoder: Codec,
     channels: AudioChannels,
-    sampleRate: Int,
+    // sampleRate: Int,  // todo
 ) : AudioRecorder {
 
     val recorder = MediaRecorder().apply {
@@ -28,7 +28,8 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
         setOutputFile(descriptor.fileDescriptor)
         setAudioEncoder(encoder.value)
         setAudioChannels(channels.numberOfChannels())
-        setAudioSamplingRate(sampleRate)
+        //todo uncomment once bit rate is implemented
+        // setAudioSamplingRate(sampleRate)
         /*setOnInfoListener(object : MediaRecorder.OnInfoListener {
             override fun onInfo(
                 mr: MediaRecorder?,
