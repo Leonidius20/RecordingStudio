@@ -36,7 +36,12 @@ enum class Container(
         MediaRecorder.OutputFormat.AAC_ADTS,
         "AAC ADTS", "audio/aac-adts",
         true,
-        listOf(Codec.AAC, Codec.HE_AAC, Codec.AAC_ELD)
+        listOf(
+            Codec.AAC,
+            // todo fix and bring back
+            // Codec.HE_AAC,
+            // Codec.AAC_ELD,
+        )
     ),
 
     AMR_NB(

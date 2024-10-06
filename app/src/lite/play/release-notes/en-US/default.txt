@@ -4,3 +4,4 @@
 - Fixed crash on Android 8.1, 9, 10
 - Fixed crash after deleting recordings
 - Fixed UI elements drawn under display cutout in landscape mode
+- Temporarily removed HE-AAC and AAC-ELD codec options for AAC-ADTS container as they don't work

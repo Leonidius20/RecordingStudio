@@ -88,12 +88,15 @@ class Settings @Inject constructor(
             )
         )
 
-        val codec = Codec.getByValue(
+        var codec = Codec.getByValue(
             pref.getInt(
                 context.getString(R.string.pref_encoder_key),
                 container.defaultCodec.value,
             )
         )
+        if (!container.supports(codec)) {
+            codec = container.defaultCodec
+        }
 
         val bitDepthsForCodecs = Codec.entries
             .filter { it.supportsSettingBitDepth }
