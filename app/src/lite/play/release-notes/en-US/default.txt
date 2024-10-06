@@ -1,6 +1,6 @@
 0.1.4
 - Support for uncompressed WAV recording (only 16 bit int depth for now)
-- Support for changing sample rate on WAV recordings (coming soon for other formats)
+- Support for changing sample rate
 - Fixed crash on Android 8.1, 9, 10
 - Fixed crash after deleting recordings
 - Fixed UI elements drawn under display cutout in landscape mode

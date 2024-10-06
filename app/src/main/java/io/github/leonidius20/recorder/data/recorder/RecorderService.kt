@@ -194,7 +194,7 @@ class RecorderService : LifecycleService() {
                     descriptor = descriptor,
                     encoder = settingsState.encoder,
                     channels = settingsState.numOfChannels,
-                    // sampleRate = settingsState.sampleRate,
+                    sampleRate = settingsState.sampleRate,
                 )
             } catch (e: IOException) {
                 Log.e("Recorder", "prepare() failed", e)

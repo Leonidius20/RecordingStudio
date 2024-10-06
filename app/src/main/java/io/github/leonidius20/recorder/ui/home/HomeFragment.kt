@@ -206,9 +206,9 @@ class HomeFragment : Fragment() {
         }*/
 
         // todo: remove for 0.2.0
-        viewModel.isCurrentEncoderPcm.observe(viewLifecycleOwner) { isTrue ->
+        /*viewModel.isCurrentEncoderPcm.observe(viewLifecycleOwner) { isTrue ->
             binding.sampleRateSettingsBlock.isVisible = isTrue
-        }
+        }*/
 
         // todo: restoring the visualizer on screen rotation
 

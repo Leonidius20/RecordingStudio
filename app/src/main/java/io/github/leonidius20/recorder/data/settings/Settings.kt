@@ -239,12 +239,12 @@ class Settings @Inject constructor(
 
 
         // todo uncomment for 0.2.0
-        /*if (!codec.supportsSampleRate(currentSampleRate)) {
+        if (!codec.supportsSampleRate(currentSampleRate)) {
             setSampleRate(
                 codec.supportedSampleRateClosestTo(currentSampleRate),
                 fireChangeListener = false
             )
-        }*/
+        }
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
