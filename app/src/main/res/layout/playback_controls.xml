@@ -1,78 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- todo https://developer.android.com/develop/ui/views/theming/shadows-clipping -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_gravity="bottom"
-    android:layoutDirection="ltr"
-    android:background="@color/md_theme_secondaryContainer"
-    android:orientation="vertical"
-
-    android:padding="4dp"
-
-    tools:targetApi="28">
-
-    <!--
-        docs regarding the IDs used here:
-        https://github.com/google/ExoPlayer/blob/release-v2/library/ui/src/main/java/com/google/android/exoplayer2/ui/PlayerControlView.java
-    -->
+    android:layout_width="match_parent"
+    style="?attr/materialCardViewElevatedStyle"
+    android:layout_height="match_parent">
 
     <LinearLayout
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@id/exo_prev"
-            style="@style/ExoMediaButton.Previous"/>
+        android:layout_gravity="bottom"
+        android:layoutDirection="ltr"
+        android:background="?colorSurfaceContainerLow"
+        android:elevation="1dp"
+        android:orientation="vertical"
 
-        <ImageButton android:id="@id/exo_play_pause"
-            style="@style/ExoMediaButton.Play"/>
+        android:padding="4dp"
 
-        <ImageButton
-            android:id="@id/exo_next"
-            style="@style/ExoMediaButton.Next"/>
+        tools:targetApi="28">
 
-        <!-- todo: slider for time -->
+        <!--
+            docs regarding the IDs used here:
+            https://github.com/google/ExoPlayer/blob/release-v2/library/ui/src/main/java/com/google/android/exoplayer2/ui/PlayerControlView.java
+        -->
+
+        <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@id/exo_prev"
+                style="@style/ExoMediaButton.Previous"
+                app:tint="?colorOnSurface" />
+
+            <ImageButton android:id="@id/exo_play_pause"
+                style="@style/ExoMediaButton.Play"/>
+
+            <ImageButton
+                android:id="@id/exo_next"
+                style="@style/ExoMediaButton.Next"/>
+
+            <!-- todo: slider for time -->
 
 
 
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <TextView
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/ExoStyledControls.TimeText.Position"
+                android:id="@id/exo_position"/>
+
+            <View
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/exo_position"
+                app:layout_constraintEnd_toStartOf="@id/exo_duration"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@id/exo_progress_placeholder"/>
+
+
+            <TextView
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/ExoStyledControls.TimeText.Duration"
+                android:id="@id/exo_duration"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-
-        <TextView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/ExoStyledControls.TimeText.Position"
-            android:id="@id/exo_position"/>
-
-        <View
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/exo_position"
-            app:layout_constraintEnd_toStartOf="@id/exo_duration"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@id/exo_progress_placeholder"/>
-
-
-        <TextView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/ExoStyledControls.TimeText.Duration"
-            android:id="@id/exo_duration"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

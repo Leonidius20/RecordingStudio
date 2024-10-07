@@ -79,7 +79,7 @@
             android:layout_marginEnd="@dimen/margin_small"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:elevation="6dp"
+
 
             android:layout_height="70dp"/>
         <!-- todo change the height of the controls -->
