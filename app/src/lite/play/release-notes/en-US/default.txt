@@ -1,7 +1,2 @@
-0.1.4
-- Support for uncompressed WAV recording (only 16 bit int depth for now)
-- Support for changing sample rate
-- Fixed crash on Android 8.1, 9, 10
-- Fixed crash after deleting recordings
-- Fixed UI elements drawn under display cutout in landscape mode
-- Temporarily removed HE-AAC and AAC-ELD codec options for AAC-ADTS container as they don't work
+0.1.5
+- Fixed crash on starting recording if sample rate has not been changed
