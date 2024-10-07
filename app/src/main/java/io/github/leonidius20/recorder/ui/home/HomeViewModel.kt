@@ -148,7 +148,7 @@ class HomeViewModel @Inject constructor(
 
     val supportedSampleRates = settings.state.map {
         it.encoder.supportedSampleRates
-            .intersect(settings.sampleRatesSupportedByDevice.toSet())
+            .intersect(settings.sampleRatesSupportedByDevice)
             .sorted()
     }.asLiveData(viewModelScope.coroutineContext)
 

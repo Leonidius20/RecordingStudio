@@ -12,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,6 +39,27 @@ class Settings @Inject constructor(
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
+
+    /**
+     * sample rates supported by device. There is also a separate thing which is
+     * sample rates supported by various codecs.
+     */
+    val sampleRatesSupportedByDevice: SortedSet<Int> =
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            (context.getSystemService(AUDIO_SERVICE) as AudioManager)
+                .getDevices(AudioManager.GET_DEVICES_INPUTS)
+                .firstOrNull()
+                ?.sampleRates
+                ?.toSortedSet()
+                ?.let {
+                    // if empty, means the device supports arbitrary values with resampling.
+                    // we will just stick to some standard ones
+                    if (it.isEmpty()) null else it
+                }
+        } else {
+            null
+        }) ?: sortedSetOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
+
 
     private val _state = MutableStateFlow(getCurrentSettingsState())
 
@@ -136,7 +158,7 @@ class Settings @Inject constructor(
             ),
             sampleRate = pref.getInt(
                 context.getString(R.string.sample_rate_pref_key),
-                defaultSampleRate
+                medianSampleRateSupportedByCodecAndDevice(codec)
             ),
             bitDepthsForCodecs = bitDepthsForCodecs,
         )
@@ -272,26 +294,6 @@ class Settings @Inject constructor(
             onSharedPreferenceChanged(key, null)
     }
 
-    /**
-     * sample rates supported by device. There is also a separate thing which is
-     * sample rates supported by various codecs.
-     */
-    val sampleRatesSupportedByDevice: IntArray =
-        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            (context.getSystemService(AUDIO_SERVICE) as AudioManager)
-                .getDevices(AudioManager.GET_DEVICES_INPUTS)
-                .firstOrNull()
-                ?.sampleRates
-                ?.sortedArray()?.let {
-                    // if empty, means the device supports arbitrary values with resampling.
-                    // we will just stick to some standard ones
-                    if (it.isEmpty()) null else it
-                }
-        } else {
-            null
-        }) ?: intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
-
-    private val defaultSampleRate = 44_100
 
     fun setBitDepth(bitDepth: BitDepthOption) {
 
@@ -305,6 +307,22 @@ class Settings @Inject constructor(
             .apply()
 
         onSharedPreferenceChanged(key, null)
+    }
+
+    /**
+     * returns not the highest and not the lowest sample rate supported by codec
+     * and device. Some middle value. The reason for this is that the highest sample
+     * rate sounds bad with the default bitrate, and we have not implemented changing
+     * the latter yet.
+     */
+    private fun medianSampleRateSupportedByCodecAndDevice(codec: Codec): Int {
+        val rates = codec.supportedSampleRates.intersect(
+            sampleRatesSupportedByDevice
+        ).toIntArray()
+
+        val middleIndex = rates.size / 2
+
+        return rates[middleIndex]
     }
 
 }
