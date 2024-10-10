@@ -24,6 +24,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.time.measureTime
@@ -84,7 +85,7 @@ class PcmAudioRecorder(
                 it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
             }
 
-            val buffer = ByteArray(bufSize) // todo: direct bytebuf
+            val buffer = ByteBuffer.allocateDirect(bufSize).order(ByteOrder.LITTLE_ENDIAN)
 
             var bytesRecorded = 0
 
@@ -103,12 +104,12 @@ class PcmAudioRecorder(
 
                     val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         audioRecord.read(
-                            buffer, 0, bufSize,
+                            buffer, bufSize,
                             AudioRecord.READ_NON_BLOCKING,
                         )
                     } else {
                         audioRecord.read(
-                            buffer, 0, bufSize,
+                            buffer, bufSize,
                         )
                     }
 
@@ -120,10 +121,18 @@ class PcmAudioRecorder(
                     ) {
                         continue
                     }
-                    outStream.write(buffer.sliceArray(0 until bytesRead))
+
+                    //val readBytesAsArray = buffer.capacity()//.sliceArray(0 until bytesRead)
+
+                //val bb = buffer
+                    buffer.limit(bytesRead)
+
+                    outStream.channel.write(buffer)
+                    // outStream.write(readBytesAsArray)
                     bytesRecorded += bytesRead
                     extractAndRecordMaxAmplitude(buffer)
 
+                    buffer.clear()
                 //}
 
                // Log.d("timing", "It took $time ms to run one iteration of loop")
@@ -294,7 +303,7 @@ class PcmAudioRecorder(
 
 
     // this is happening in a non-main thread that reads bytes from mic
-    private fun extractAndRecordMaxAmplitude(pcmBytes: ByteArray) {
+    private fun extractAndRecordMaxAmplitude(pcmBytes: ByteBuffer) {
         // we need to check the bytes format, bc it could be mono or stereo
         // if stereo, we should probably average the two
         // http://soundfile.sapp.org/doc/WaveFormat/
@@ -304,10 +313,10 @@ class PcmAudioRecorder(
 
         // TODO: support FLOAT values
 
-        val numberOfInstants = pcmBytes.size / bytesPerInstant
+        val numberOfInstants = pcmBytes.limit() / bytesPerInstant
 
         var amp = 0
-        for (offset in 0 until pcmBytes.size step bytesPerInstant) {
+        for (offset in 0 until pcmBytes.limit() step bytesPerInstant) {
             if (monoOrStereo.numberOfChannels() == 1) {
                 var sample = 0
 
