@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.scopes.FragmentScoped
 import io.github.leonidius20.recorder.R
+import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -18,7 +19,7 @@ class RecPermissionManager @Inject constructor() {
      */
     suspend fun checkOrRequestRecordingPermission(
         fragment: Fragment
-    ): Boolean = suspendCoroutine {
+    ): Boolean = suspendCancellableCoroutine {
         val permissionsToGet = mutableListOf(
             android.Manifest.permission.RECORD_AUDIO,
         )

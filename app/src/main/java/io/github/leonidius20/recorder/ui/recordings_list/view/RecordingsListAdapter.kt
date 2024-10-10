@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.recordings_list.view
 
+import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -13,9 +14,15 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
  * this adapter supports selecting multiple items, removing and (in future) changing their titles
  */
 class RecordingsListAdapter(
+    private val context: Context,
     private val onItemClicked: (Int) -> Unit,
     private val onItemLongClicked: (Int) -> Unit,
 ): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
+
+    /**
+     * for when the element is neither selected nor is playing right now
+     */
+    private val regularIcon = ContextCompat.getDrawable(context, R.drawable.ic_microphone)
 
     // todo: replace with viewModel.recordings livedata?
     private var recordings = ArrayList<RecordingUiModel>()
@@ -129,7 +136,7 @@ class RecordingsListAdapter(
                 binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_selected))
                // binding.leadingIcon.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_errorContainer_highContrast))
             } else {
-                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_microphone))
+                binding.leadingIcon.setImageDrawable(regularIcon)
             }
 
             // todo: optimize update...() or bind...() functions

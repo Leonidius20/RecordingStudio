@@ -7,7 +7,12 @@ import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import java.io.FileOutputStream
+import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.max
@@ -20,6 +25,11 @@ class PcmAudioRecorder(
     private val sampleRate: Int,
     private val monoOrStereo: AudioChannels = AudioChannels.MONO,
     private val bitDepth: PcmBitDepthOption = PcmBitDepthOption.PCM_16BIT_INT,
+
+    /**
+     * used to launch the coroutine reading bytes from mic in loop
+     */
+    private val coroutineScope: CoroutineScope,
 ) : AudioRecorder {
 
 
@@ -31,8 +41,8 @@ class PcmAudioRecorder(
     @Volatile
     private var isPaused = false
 
-    @Volatile
-    private lateinit var micReadingThread: Thread
+    // @Volatile
+    private lateinit var micReadingThread: Job
 
     @Volatile
     private var bytesRecorded = 0
@@ -71,7 +81,7 @@ class PcmAudioRecorder(
          // also, we can use some write-priority lock synchronize maxAmp value
         //
 
-        micReadingThread = thread(start = true) {
+        micReadingThread = coroutineScope.launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
                 // leaving space for the header
                 it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
@@ -85,7 +95,7 @@ class PcmAudioRecorder(
 
             // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
             val buffer = ByteArray(bufSize)
-            while (isRecording) {
+            while (isRecording) { // todo: make it cooperative in case scope is cancelled
 
                 synchronized(pauseLock) {
                     while(isPaused) {
@@ -148,14 +158,14 @@ class PcmAudioRecorder(
 
     }
 
-    override fun stop() {
+    override suspend fun stop() {
         isRecording = false
         audioRecord.stop()
         audioRecord.release()
 
         resume() // so that the thread can finish it's work
 
-        // micReadingThread.join()
+        micReadingThread.join()
 
 
         /*tempFile.inputStream().use { input ->

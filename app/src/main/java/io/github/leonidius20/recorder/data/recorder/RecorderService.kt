@@ -32,11 +32,14 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -108,6 +111,8 @@ class RecorderService : LifecycleService() {
     private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
+
+    private lateinit var amplitudeVizUpdateJob: Job
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -184,6 +189,7 @@ class RecorderService : LifecycleService() {
                 monoOrStereo = settingsState.numOfChannels,
                 // todo: uncomment for 0.2.0
                 // bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
+                coroutineScope = lifecycleScope,
             )
         } else {
 
@@ -237,13 +243,16 @@ class RecorderService : LifecycleService() {
         stopwatch.start()
 
 
-        lifecycleScope.launch {
+        amplitudeVizUpdateJob = lifecycleScope.launch {
             // every 100ms, emit maxAmplitude
-            while(true) {
+            while(isActive) {
                 if (state.value == State.RECORDING) {
                     _amplitudes.emit(recorder.maxAmplitude())
+                    delay(100)
+                } else {
+                    // first() supposed to be cancellable?
+                    state.first { it == State.RECORDING }
                 }
-                delay(100)
             }
         }
 
@@ -258,11 +267,11 @@ class RecorderService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         // ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-        stopwatch.stop()
+        //stopwatch.stop()
         //recorder.stop()
         //recorder.release()
 
-        recorder.stop()
+        // recorder.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -347,7 +356,13 @@ class RecorderService : LifecycleService() {
     }
 
     fun stop() {
-        stopSelf()
+        amplitudeVizUpdateJob.cancel()
+        stopwatch.stop()
+
+        lifecycleScope.launch {
+            recorder.stop()
+            stopSelf()
+        }
     }
 
     inner class Binder: android.os.Binder() {

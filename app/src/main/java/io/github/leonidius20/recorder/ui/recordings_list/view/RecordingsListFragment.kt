@@ -85,6 +85,7 @@ class RecordingsListFragment : RecStudioFragment() {
         }
 
         adapter = RecordingsListAdapter(
+            requireContext(),
             onItemClick,
             onItemLongClick
         )
