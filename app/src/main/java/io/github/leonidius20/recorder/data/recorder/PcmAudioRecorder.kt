@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.util.Log
+import androidx.annotation.RequiresApi
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import kotlinx.coroutines.CancellationException
@@ -15,11 +18,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.time.measureTime
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
 
@@ -40,13 +47,7 @@ class PcmAudioRecorder(
 
     private lateinit var audioRecord: AudioRecord
 
-
-    // @Volatile
     private lateinit var micReadingThread: Job
-
-    @Volatile
-    private var bytesRecorded = 0
-
 
     private val inputChannel = when (monoOrStereo) {
         AudioChannels.MONO -> AudioFormat.CHANNEL_IN_MONO
@@ -62,6 +63,8 @@ class PcmAudioRecorder(
 
     private val isPausedState = MutableStateFlow(false)
 
+    private val maxAmplitudeState = MutableStateFlow(0)
+
     @SuppressLint("MissingPermission")
     override fun start() {
 
@@ -75,39 +78,55 @@ class PcmAudioRecorder(
 
         audioRecord.startRecording()
 
-        // todo: synchronize maxAmp value?
-
         micReadingThread = coroutineScope.launch(cpuDispatcher) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
                 // leaving space for the header
                 it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
             }
 
-            val buffer = ByteArray(bufSize)
+            val buffer = ByteArray(bufSize) // todo: direct bytebuf
+
+            var bytesRecorded = 0
+
             while (isActive) {
+                //val time = measureTime {
 
-                if (isPausedState.value == true) {
-                    // waiting either to be resumed, or to be stopped (cancelled)
-                    try {
-                        isPausedState.first { it == false }
-                    } catch (_: CancellationException) {
-                        // recording got stopped (coroutine cancelled) while waiting
-                        break // get to writing the header and closing streams
+                    if (isPausedState.value == true) {
+                        // waiting either to be resumed, or to be stopped (cancelled)
+                        try {
+                            isPausedState.first { it == false }
+                        } catch (_: CancellationException) {
+                            // recording got stopped (coroutine cancelled) while waiting
+                            break // get to writing the header and closing streams
+                        }
                     }
-                }
 
-                val bytesRead = audioRecord.read(buffer, 0, bufSize)
+                    val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        audioRecord.read(
+                            buffer, 0, bufSize,
+                            AudioRecord.READ_NON_BLOCKING,
+                        )
+                    } else {
+                        audioRecord.read(
+                            buffer, 0, bufSize,
+                        )
+                    }
+
                 if (bytesRead == 0
-                    || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
-                    || bytesRead == AudioRecord.ERROR_BAD_VALUE
-                    || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
-                    || bytesRead == AudioRecord.ERROR
-                ) {
-                    continue
-                }
-                outStream.write(buffer.sliceArray(0 until bytesRead))
-                bytesRecorded += bytesRead
-                extractAndRecordMaxAmplitude(buffer)
+                        || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
+                        || bytesRead == AudioRecord.ERROR_BAD_VALUE
+                        || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
+                        || bytesRead == AudioRecord.ERROR
+                    ) {
+                        continue
+                    }
+                    outStream.write(buffer.sliceArray(0 until bytesRead))
+                    bytesRecorded += bytesRead
+                    extractAndRecordMaxAmplitude(buffer)
+
+                //}
+
+               // Log.d("timing", "It took $time ms to run one iteration of loop")
             }
 
             audioRecord.apply {
@@ -265,9 +284,6 @@ class PcmAudioRecorder(
         return header
     }
 
-    @Volatile
-    private var maxAmplitude = 0
-
     private val bitsPerSample = bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
 
     // bytes per one sample, if stereo that would be only left or only right channel sample
@@ -327,21 +343,12 @@ class PcmAudioRecorder(
 
         val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
 
-        synchronized(maxAmplitude) {
-            maxAmplitude = max(maxAmplitude, ampScaled)
-        }
+        maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
     }
 
     override fun maxAmplitude(): Int {
-       // val ampToReturn = maxAmplitude
-       //// maxAmplitude = 0 // reset so that we get fresh value on next call
-        //return ampToReturn
-
-        return synchronized(maxAmplitude) {
-            val ampToReturn = maxAmplitude
-            maxAmplitude = 0 // reset so that we get fresh value on next call
-            return ampToReturn
-        }
+        // return old value and set new value to 0
+        return maxAmplitudeState.getAndUpdate { 0 }
     }
 
     override fun supportsPausing() = true

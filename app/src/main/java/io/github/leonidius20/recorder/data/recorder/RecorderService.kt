@@ -32,6 +32,7 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -46,6 +47,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.time.measureTime
 
 private const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.inprogress"
 private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.stopped"
@@ -95,8 +98,6 @@ class RecorderService : LifecycleService() {
     val amplitudes = _amplitudes.asSharedFlow()
 
     private lateinit var stopwatch: Stopwatch
-
-    //private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
 
     @Inject
     lateinit var settings: Settings
@@ -243,7 +244,7 @@ class RecorderService : LifecycleService() {
         stopwatch.start()
 
 
-        amplitudeVizUpdateJob = lifecycleScope.launch {
+        amplitudeVizUpdateJob = lifecycleScope.launch(Dispatchers.Default) {
             // every 100ms, emit maxAmplitude
             while(isActive) {
                 if (state.value == State.RECORDING) {
