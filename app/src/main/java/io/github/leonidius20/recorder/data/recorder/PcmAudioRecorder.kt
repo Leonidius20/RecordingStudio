@@ -7,13 +7,17 @@ import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
-import java.util.concurrent.Executors
-import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -30,16 +34,12 @@ class PcmAudioRecorder(
      * used to launch the coroutine reading bytes from mic in loop
      */
     private val coroutineScope: CoroutineScope,
+    private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : AudioRecorder {
 
 
     private lateinit var audioRecord: AudioRecord
 
-    @Volatile
-    private var isRecording = false
-
-    @Volatile
-    private var isPaused = false
 
     // @Volatile
     private lateinit var micReadingThread: Job
@@ -47,7 +47,6 @@ class PcmAudioRecorder(
     @Volatile
     private var bytesRecorded = 0
 
-    private val pauseLock = java.lang.Object()
 
     private val inputChannel = when (monoOrStereo) {
         AudioChannels.MONO -> AudioFormat.CHANNEL_IN_MONO
@@ -61,6 +60,7 @@ class PcmAudioRecorder(
     )
     val bufSize = minBufSize * 4 // why 4?
 
+    private val isPausedState = MutableStateFlow(false)
 
     @SuppressLint("MissingPermission")
     override fun start() {
@@ -73,38 +73,28 @@ class PcmAudioRecorder(
             bufSize
         )
 
-        audioRecord.startRecording(/*null*/) // todo: mediaSyncEvent
-        isRecording = true
+        audioRecord.startRecording()
 
+        // todo: synchronize maxAmp value?
 
-        // todo: redo this with coroutine
-         // also, we can use some write-priority lock synchronize maxAmp value
-        //
-
-        micReadingThread = coroutineScope.launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+        micReadingThread = coroutineScope.launch(cpuDispatcher) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
                 // leaving space for the header
                 it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
             }
 
-
-            //android.system.Os.lseek(descriptor.fileDescriptor, WAV_HEADER_LENGTH_BYTES.toLong(), OsConstants.SEEK_SET)
-            // leaving space for header
-
-            //var bytesRecorded = 0
-
-            // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
             val buffer = ByteArray(bufSize)
-            while (isRecording) { // todo: make it cooperative in case scope is cancelled
+            while (isActive) {
 
-                synchronized(pauseLock) {
-                    while(isPaused) {
-                        pauseLock.wait()
+                if (isPausedState.value == true) {
+                    // waiting either to be resumed, or to be stopped (cancelled)
+                    try {
+                        isPausedState.first { it == false }
+                    } catch (_: CancellationException) {
+                        // recording got stopped (coroutine cancelled) while waiting
+                        break // get to writing the header and closing streams
                     }
                 }
-
-                // if it was unpaused bc the recording was stopped
-                if (!isRecording) break
 
                 val bytesRead = audioRecord.read(buffer, 0, bufSize)
                 if (bytesRead == 0
@@ -120,26 +110,10 @@ class PcmAudioRecorder(
                 extractAndRecordMaxAmplitude(buffer)
             }
 
-            // going back to add header
-            //android.system.Os.lseek(descriptor.fileDescriptor, 0, OsConstants.SEEK_SET)
-            /*outStream.write(generateWavHeader(
-        numOfChannels = 1, // todo
-        sampleRateHz = sampleRate,
-    ))*/
-
-            /*outStream.channel.apply {
-        position(0) // back to start where we left 44 bytes for header
-        write(
-            ByteBuffer.wrap(
-                generateWavHeader(
-                    numOfChannels = 1, // todo
-                    sampleRateHz = sampleRate,
-                )
-            )
-        )
-    }*/
-
-            //outStream.close()
+            audioRecord.apply {
+                stop()
+                release()
+            }
 
             outStream.channel.position(0) // back to the start to fill in the header
             outStream.write(
@@ -149,55 +123,22 @@ class PcmAudioRecorder(
                     sampleRateHz = sampleRate,
                 )
             )
-            //Log.d("audio rec", "wrote header")
 
             outStream.close()
-
-
         }
 
     }
 
     override suspend fun stop() {
-        isRecording = false
-        audioRecord.stop()
-        audioRecord.release()
-
-        resume() // so that the thread can finish it's work
-
-        micReadingThread.join()
-
-
-        /*tempFile.inputStream().use { input ->
-            Log.d("audio rec", "before writing out file")
-            // val data = ByteArray(bufSize)
-            nonTempOutStream.write(
-                input.readBytes()
-            )
-            Log.d("audio rec", "after writing out file")
-        }
-
-        Log.d("audio rec", "after closing temp file")
-        nonTempOutStream.close()
-        Log.d("audio rec", "after closing perm out file")
-
-        tempFile.delete()
-        Log.d("audio rec", "after deleting temp file")*/
-
-        // micReadingJob.cancelAndJoin() // we should re-do it with coroutines and make sure ServiceScope doesn't die until all coroutines inside are finished
+        micReadingThread.cancelAndJoin()
     }
 
     override fun pause() {
-        synchronized(pauseLock) {
-            isPaused = true
-        }
+        isPausedState.value = true
     }
 
     override fun resume() {
-        synchronized(pauseLock) {
-            isPaused = false
-            pauseLock.notifyAll()
-        }
+        isPausedState.value = false
     }
 
     private fun generateWavHeader(
