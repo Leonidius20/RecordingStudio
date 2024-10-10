@@ -23,6 +23,8 @@ class RecordingsListAdapter(
      * for when the element is neither selected nor is playing right now
      */
     private val regularIcon = ContextCompat.getDrawable(context, R.drawable.ic_microphone)
+    private val playingIcon = ContextCompat.getDrawable(context, R.drawable.ic_audio_playing)
+    private val selectedIcon = ContextCompat.getDrawable(context, R.drawable.ic_selected)
 
     // todo: replace with viewModel.recordings livedata?
     private var recordings = ArrayList<RecordingUiModel>()
@@ -70,13 +72,13 @@ class RecordingsListAdapter(
 
         internal fun updateSelection(isSelected: Boolean) {
             root.invokeWhenInflated {
-                binding.leadingIcon.setImageResource(
+                binding.leadingIcon.setImageDrawable(
                     if (isSelected)
-                        R.drawable.ic_selected
+                        selectedIcon
                     else if (playingItem == position)
-                        R.drawable.ic_audio_playing
+                        playingIcon
                     else
-                        R.drawable.ic_microphone
+                        regularIcon
                 )
                 binding.root.isSelected = isSelected
             }
@@ -91,10 +93,10 @@ class RecordingsListAdapter(
                     )
                 )
 
-                binding.leadingIcon.setImageResource(
-                    if (isPlaying) R.drawable.ic_audio_playing
-                    else if (isSelected) R.drawable.ic_selected
-                    else R.drawable.ic_microphone,
+                binding.leadingIcon.setImageDrawable(
+                    if (isPlaying) playingIcon
+                    else if (isSelected) selectedIcon
+                    else regularIcon,
                 )
 
                 binding.leadingIcon.drawable.setTint(
@@ -133,7 +135,7 @@ class RecordingsListAdapter(
             this.binding.root.isSelected = recording.isSelected
 
             if (recording.isSelected) {
-                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_selected))
+                binding.leadingIcon.setImageDrawable(selectedIcon)
                // binding.leadingIcon.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_errorContainer_highContrast))
             } else {
                 binding.leadingIcon.setImageDrawable(regularIcon)
