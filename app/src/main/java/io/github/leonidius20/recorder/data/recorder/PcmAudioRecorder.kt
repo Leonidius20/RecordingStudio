@@ -7,7 +7,6 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import androidx.annotation.RequiresApi
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import kotlinx.coroutines.CancellationException
@@ -28,7 +27,6 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.time.measureTime
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
 
@@ -66,6 +64,8 @@ class PcmAudioRecorder(
     private val isPausedState = MutableStateFlow(false)
 
     private val maxAmplitudeState = MutableStateFlow(0)
+
+    private val maxAmplitudeExtractor = bitDepth.maxAmplitudeExtractorFactory()
 
     @SuppressLint("MissingPermission")
     override fun start() {
@@ -306,86 +306,13 @@ class PcmAudioRecorder(
 
     // this is happening in a non-main thread that reads bytes from mic
     private fun extractAndRecordMaxAmplitude(pcmBytes: ByteBuffer) {
-        // we need to check the bytes format, bc it could be mono or stereo
-        // if stereo, we should probably average the two
-        // http://soundfile.sapp.org/doc/WaveFormat/
+        val valueForThisBuffer = maxAmplitudeExtractor.extractFrom(
+            buffer = pcmBytes,
+            numberOfChannels = monoOrStereo.numberOfChannels()
+        )
 
-        // also the highest number can be different whether it is 8bit, 16bit, 32bit so on
-        // so it probably has to be scaled somehow
-
-        // TODO: support FLOAT values
-
-        val numberOfInstants = pcmBytes.limit() / bytesPerInstant
-
-        if (!bitDepth.isFloat) {
-            var amp = 0
-            for (offset in 0 until pcmBytes.limit() step bytesPerInstant) {
-                if (monoOrStereo.numberOfChannels() == 1) {
-                    var sample = 0
-
-                    // convert little endian number to int
-                    // most significant byte is at highest address
-                    for (position in bytesPerSample - 1 downTo 0) {
-                        sample = sample shl 8
-                        sample += pcmBytes[offset + position]
-                    }
-
-                    amp = max(amp, abs(sample))
-                } else {
-
-                    val secondSampleOffset = bytesPerSample
-
-                    var leftSample = 0
-                    for (position in bytesPerSample - 1 downTo 0) {
-                        leftSample = leftSample shl 8
-                        leftSample += pcmBytes[offset + position]
-                    }
-
-                    var rightSample = 0
-                    for (position in bytesPerSample - 1 downTo 0) {
-                        rightSample = rightSample shl 8
-                        rightSample += pcmBytes[offset + secondSampleOffset + position]
-                    }
-
-                    val leftAndRightAverage =
-                        (leftSample / 2) + (rightSample / 2) // making sure they don't overflow
-
-                    amp = max(amp, abs(leftAndRightAverage))
-                }
-            }
-
-            val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
-
-            maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
-
-        } else {
-            // we are dealing with float samples
-            var amp = 0.0f
-            val bufferAsFloats = (pcmBytes
-                .position(0) as ByteBuffer) // resetting position, otherwise .asFloatBuffer() will have its position at the limit since it was recorder to file and all
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .asFloatBuffer() // endianness should be built in
-                .limit(pcmBytes.limit() / 4) as FloatBuffer // there are 4 bytes (32bit) in float
-
-            if (monoOrStereo.numberOfChannels() == 1) {
-                // mono
-                for (index in 0 until bufferAsFloats.limit()) {
-                    amp = max(amp, abs(bufferAsFloats.get(index)))
-                }
-            } else {
-                // stereo
-                for (index in 0 until bufferAsFloats.limit() step 2) {
-                    val leftAndRightAvg =
-                        (bufferAsFloats[index] / 2) + (bufferAsFloats[index + 1] / 2)
-                    amp = max(amp, abs(leftAndRightAvg))
-                }
-            }
-
-            val ampScaled = (amp * Short.MAX_VALUE).toInt()
-
-            Log.d("amps", "value $ampScaled")
-
-            maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
+        maxAmplitudeState.update { currentValue ->
+            max(currentValue, valueForThisBuffer)
         }
     }
 
