@@ -183,8 +183,7 @@ class HomeFragment : Fragment() {
         }
 
         // bit depth selection
-        // todo: uncomment for 0.2.0
-        /*viewModel.availableBitDepths.observe(viewLifecycleOwner) { availableBitDepths ->
+        viewModel.availableBitDepths.observe(viewLifecycleOwner) { availableBitDepths ->
             if (availableBitDepths == null || availableBitDepths.isEmpty()) {
                 binding.bitDepthSettingsBlock.isVisible = false
             } else {
@@ -203,12 +202,7 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
-        }*/
-
-        // todo: remove for 0.2.0
-        /*viewModel.isCurrentEncoderPcm.observe(viewLifecycleOwner) { isTrue ->
-            binding.sampleRateSettingsBlock.isVisible = isTrue
-        }*/
+        }
 
         // todo: restoring the visualizer on screen rotation
 

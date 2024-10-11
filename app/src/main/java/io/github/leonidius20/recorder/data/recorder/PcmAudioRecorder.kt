@@ -92,50 +92,50 @@ class PcmAudioRecorder(
             while (isActive) {
                 //val time = measureTime {
 
-                    if (isPausedState.value == true) {
-                        // waiting either to be resumed, or to be stopped (cancelled)
-                        try {
-                            isPausedState.first { it == false }
-                        } catch (_: CancellationException) {
-                            // recording got stopped (coroutine cancelled) while waiting
-                            break // get to writing the header and closing streams
-                        }
+                if (isPausedState.value == true) {
+                    // waiting either to be resumed, or to be stopped (cancelled)
+                    try {
+                        isPausedState.first { it == false }
+                    } catch (_: CancellationException) {
+                        // recording got stopped (coroutine cancelled) while waiting
+                        break // get to writing the header and closing streams
                     }
+                }
 
-                    val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        audioRecord.read(
-                            buffer, bufSize,
-                            AudioRecord.READ_NON_BLOCKING,
-                        )
-                    } else {
-                        audioRecord.read(
-                            buffer, bufSize,
-                        )
-                    }
+                val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    audioRecord.read(
+                        buffer, bufSize,
+                        AudioRecord.READ_NON_BLOCKING,
+                    )
+                } else {
+                    audioRecord.read(
+                        buffer, bufSize,
+                    )
+                }
 
                 if (bytesRead == 0
-                        || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
-                        || bytesRead == AudioRecord.ERROR_BAD_VALUE
-                        || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
-                        || bytesRead == AudioRecord.ERROR
-                    ) {
-                        continue
-                    }
+                    || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
+                    || bytesRead == AudioRecord.ERROR_BAD_VALUE
+                    || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
+                    || bytesRead == AudioRecord.ERROR
+                ) {
+                    continue
+                }
 
-                    //val readBytesAsArray = buffer.capacity()//.sliceArray(0 until bytesRead)
+                //val readBytesAsArray = buffer.capacity()//.sliceArray(0 until bytesRead)
 
                 //val bb = buffer
-                    buffer.limit(bytesRead)
+                buffer.limit(bytesRead)
 
-                    outStream.channel.write(buffer)
-                    // outStream.write(readBytesAsArray)
-                    bytesRecorded += bytesRead
-                    extractAndRecordMaxAmplitude(buffer)
+                outStream.channel.write(buffer)
+                // outStream.write(readBytesAsArray)
+                bytesRecorded += bytesRead
+                extractAndRecordMaxAmplitude(buffer)
 
-                    buffer.clear()
+                buffer.clear()
                 //}
 
-               // Log.d("timing", "It took $time ms to run one iteration of loop")
+                // Log.d("timing", "It took $time ms to run one iteration of loop")
             }
 
             audioRecord.apply {
@@ -293,7 +293,8 @@ class PcmAudioRecorder(
         return header
     }
 
-    private val bitsPerSample = bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
+    private val bitsPerSample =
+        bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
 
     // bytes per one sample, if stereo that would be only left or only right channel sample
     private val bytesPerSample = (bitsPerSample / 8)
@@ -315,44 +316,72 @@ class PcmAudioRecorder(
 
         val numberOfInstants = pcmBytes.limit() / bytesPerInstant
 
-        var amp = 0
-        for (offset in 0 until pcmBytes.limit() step bytesPerInstant) {
-            if (monoOrStereo.numberOfChannels() == 1) {
-                var sample = 0
+        if (!bitDepth.isFloat) {
+            var amp = 0
+            for (offset in 0 until pcmBytes.limit() step bytesPerInstant) {
+                if (monoOrStereo.numberOfChannels() == 1) {
+                    var sample = 0
 
-                // convert little endian number to int
-                // most significant byte is at highest address
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    sample = sample shl 8
-                    sample += pcmBytes[offset + position]
+                    // convert little endian number to int
+                    // most significant byte is at highest address
+                    for (position in bytesPerSample - 1 downTo 0) {
+                        sample = sample shl 8
+                        sample += pcmBytes[offset + position]
+                    }
+
+                    amp = max(amp, abs(sample))
+                } else {
+
+                    val secondSampleOffset = bytesPerSample
+
+                    var leftSample = 0
+                    for (position in bytesPerSample - 1 downTo 0) {
+                        leftSample = leftSample shl 8
+                        leftSample += pcmBytes[offset + position]
+                    }
+
+                    var rightSample = 0
+                    for (position in bytesPerSample - 1 downTo 0) {
+                        rightSample = rightSample shl 8
+                        rightSample += pcmBytes[offset + secondSampleOffset + position]
+                    }
+
+                    val leftAndRightAverage =
+                        (leftSample / 2) + (rightSample / 2) // making sure they don't overflow
+
+                    amp = max(amp, abs(leftAndRightAverage))
                 }
-
-                amp = max(amp, abs(sample))
-            } else {
-
-                val secondSampleOffset = bytesPerSample
-
-                var leftSample = 0
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    leftSample = leftSample shl 8
-                    leftSample += pcmBytes[offset + position]
-                }
-
-                var rightSample = 0
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    rightSample = rightSample shl 8
-                    rightSample += pcmBytes[offset + secondSampleOffset + position]
-                }
-
-                val leftAndRightAverage = (leftSample / 2) + (rightSample / 2) // making sure they don't overflow
-
-                amp = max(amp, abs(leftAndRightAverage))
             }
+
+            val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
+
+            maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
+
+        } else {
+            // we are dealing with float samples
+            var amp = 0.0f
+            val bufferAsFloats = pcmBytes.asFloatBuffer() // endianness should be built in
+
+            if (monoOrStereo.numberOfChannels() == 1) {
+                // mono
+                for (index in 0 until bufferAsFloats.limit()) {
+                    amp = max(amp, abs(bufferAsFloats.get(index)))
+                }
+            } else {
+                // stereo
+                for (index in 0 until bufferAsFloats.limit() step 2) {
+                    val leftAndRightAvg =
+                        (bufferAsFloats[index] / 2) + (bufferAsFloats[index + 1] / 2)
+                    amp = max(amp, abs(leftAndRightAvg))
+                }
+            }
+
+            val ampScaled = (amp * Short.MAX_VALUE).toInt()
+
+            Log.d("amps", "value $ampScaled")
+
+            maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
         }
-
-        val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
-
-        maxAmplitudeState.update { currentValue -> max(currentValue, ampScaled) }
     }
 
     override fun maxAmplitude(): Int {

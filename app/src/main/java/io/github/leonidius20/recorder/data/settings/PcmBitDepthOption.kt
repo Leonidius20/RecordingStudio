@@ -33,6 +33,8 @@ enum class PcmBitDepthOption(
         isFloat = true,
     );
 
+    // todo: 24 and 32 bit
+
     override val valueForPref: Int
         get() = valueForAudioRecordApi
 

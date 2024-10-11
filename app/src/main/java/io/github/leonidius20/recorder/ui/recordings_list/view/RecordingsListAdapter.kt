@@ -11,7 +11,8 @@ import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 
 /**
- * this adapter supports selecting multiple items, removing and (in future) changing their titles
+ * this adapter supports selecting multiple items, removing and
+ * changing their titles
  */
 class RecordingsListAdapter(
     private val context: Context,
