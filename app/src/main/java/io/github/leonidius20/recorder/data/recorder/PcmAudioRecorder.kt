@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.time.measureTime
@@ -360,7 +361,11 @@ class PcmAudioRecorder(
         } else {
             // we are dealing with float samples
             var amp = 0.0f
-            val bufferAsFloats = pcmBytes.asFloatBuffer() // endianness should be built in
+            val bufferAsFloats = (pcmBytes
+                .position(0) as ByteBuffer) // resetting position, otherwise .asFloatBuffer() will have its position at the limit since it was recorder to file and all
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .asFloatBuffer() // endianness should be built in
+                .limit(pcmBytes.limit() / 4) as FloatBuffer // there are 4 bytes (32bit) in float
 
             if (monoOrStereo.numberOfChannels() == 1) {
                 // mono
