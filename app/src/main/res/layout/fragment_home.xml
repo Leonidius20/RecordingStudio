@@ -336,6 +336,29 @@
 
                     </LinearLayout>
 
+                    <LinearLayout
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:id="@+id/bit_rate_settings_block">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/margin_small"
+                            android:text="@string/audio_settings_title_bit_rate"
+                            android:textAppearance="?textAppearanceTitleLarge" />
+
+                        <io.github.leonidius20.recorder.ui.common.Selector
+                            android:id="@+id/audio_settings_bitrate_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/margin_normal"
+                            />
+
+                    </LinearLayout>
+
                     <!-- todo: additional settings like sample rate and bitrate -->
 
                 </LinearLayout>

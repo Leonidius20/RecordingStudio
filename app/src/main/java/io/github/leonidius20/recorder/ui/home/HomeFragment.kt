@@ -87,7 +87,8 @@ class HomeFragment : Fragment() {
         }
 
         binding.audioSourceChipGroup.setOnCheckedStateChangeListener { group, _ ->
-            val selectedSource = group.findViewById<Chip>(group.checkedChipId).tag as Settings.AudioSourceOption
+            val selectedSource =
+                group.findViewById<Chip>(group.checkedChipId).tag as Settings.AudioSourceOption
             viewModel.selectAudioSource(selectedSource.value)
             binding.audioSourceDescriptionText.text = selectedSource.description
         }
@@ -159,7 +160,8 @@ class HomeFragment : Fragment() {
         }
 
         binding.channelsChipGroup.setOnCheckedStateChangeListener { group, _ ->
-            val selectedChannels = group.findViewById<Chip>(group.checkedChipId).tag as AudioChannels
+            val selectedChannels =
+                group.findViewById<Chip>(group.checkedChipId).tag as AudioChannels
             viewModel.setChannels(selectedChannels)
         }
 
@@ -168,7 +170,8 @@ class HomeFragment : Fragment() {
             descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
 
             viewModel.supportedSampleRates.observe(viewLifecycleOwner) { values ->
-                displayedValues = null // otherwise it crashes after changing mix, max or displayedValues
+                displayedValues =
+                    null // otherwise it crashes after changing mix, max or displayedValues
 
                 minValue = 0
                 maxValue = values.size - 1
@@ -190,10 +193,12 @@ class HomeFragment : Fragment() {
                 binding.bitDepthSettingsBlock.isVisible = true
 
                 binding.audioSettingsBitDepthSlider.apply {
-                    displayedValues = null // otherwise it crashes after changing mix, max or displayedValues
+                    displayedValues =
+                        null // otherwise it crashes after changing mix, max or displayedValues
                     minValue = 0
                     maxValue = availableBitDepths.size - 1
-                    displayedValues = Array(availableBitDepths.size) { index -> availableBitDepths[index].displayName }
+                    displayedValues =
+                        Array(availableBitDepths.size) { index -> availableBitDepths[index].displayName }
                     value = availableBitDepths.indexOf(viewModel.currentBitDepth)
 
                     setOnValueChangedListener { picker, oldVal, newVal ->
@@ -203,6 +208,16 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        binding.bitRateSettingsBlock.isVisible = true
+        binding.audioSettingsBitrateSlider.setValues(
+            arrayOf(
+                "Example 1",
+                "Example 2",
+                "Example 3",
+            )
+        )
+        binding.audioSettingsBitrateSlider.setSelected(index = 1)
 
         // todo: restoring the visualizer on screen rotation
 
@@ -284,7 +299,7 @@ class HomeFragment : Fragment() {
     }
 
     fun onAudioSettingsBtnClick() {
-        with (qualityBottomSheetBehavior) {
+        with(qualityBottomSheetBehavior) {
             state = if (state == BottomSheetBehavior.STATE_HIDDEN) {
                 BottomSheetBehavior.STATE_EXPANDED
             } else BottomSheetBehavior.STATE_HIDDEN

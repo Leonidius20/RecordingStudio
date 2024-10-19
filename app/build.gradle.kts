@@ -153,5 +153,7 @@ dependencies {
 
     implementation (libs.customactivityoncrash)
 
+    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+
     // todo: if flavour = full, include AAP framework
 }

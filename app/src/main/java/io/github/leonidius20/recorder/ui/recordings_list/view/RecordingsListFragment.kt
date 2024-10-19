@@ -17,6 +17,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -45,7 +46,7 @@ class RecordingsListFragment : RecStudioFragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: RecordingsListViewModel
+    private val viewModel: RecordingsListViewModel by viewModels()
 
     private lateinit var adapter: RecordingsListAdapter
 
@@ -60,9 +61,6 @@ class RecordingsListFragment : RecStudioFragment() {
     ): View {
         _binding = FragmentRecordingsListBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
-        viewModel =
-            ViewModelProvider(this).get(RecordingsListViewModel::class.java)
 
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
 

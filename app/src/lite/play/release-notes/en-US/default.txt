@@ -1,2 +1,2 @@
-0.1.5
-- Fixed crash on starting recording if sample rate has not been changed
+0.2.0
+- Added bit depth setting for WAV recordings

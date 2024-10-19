@@ -67,4 +67,5 @@
     <string name="audio_settings_title_bit_depth">Bit Depth</string>
     <string name="selector_previous_value">Previous value</string>
     <string name="selector_next_value">Next value</string>
+    <string name="audio_settings_title_bit_rate">Bitrate</string>
 </resources>
