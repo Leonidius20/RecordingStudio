@@ -18,7 +18,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -29,7 +28,6 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
-import io.github.leonidius20.recorder.ui.common.Adapter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -214,10 +212,19 @@ class HomeFragment : Fragment() {
 
         binding.bitRateSettingsBlock.isVisible = true
 
-        val pager = root.findViewById<ViewPager2>(R.id.text_pager)
-        pager.adapter = Adapter(
-            requireContext(), arrayOf("cock", "balls")
+        // val pager = root.findViewById<ViewPager2>(R.id.text_pager)
+        //pager.adapter = Adapter(
+        //    requireContext(), arrayOf("cock", "balls")
+        //)
+        val data = arrayOf("cock", "balls")
+        binding.audioSettingsBitrateSlider.setValues(
+            data
         )
+
+        binding.audioSettingsBitrateSlider.setOnSelectionChangeListener { newPos ->
+            // if (same as in settings) don't do anything
+            Toast.makeText(requireContext(), "Selected ${data[newPos]}", Toast.LENGTH_SHORT).show()
+        }
 
         // todo: restoring the visualizer on screen rotation
 

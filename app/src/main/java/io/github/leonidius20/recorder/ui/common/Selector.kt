@@ -18,9 +18,15 @@ class Selector @JvmOverloads constructor(
     private val nextButton: ImageButton
     private val valueText: ViewPager2
 
-    private val adapter = Adapter(context, arrayOf("cock", "balls"))
+    private val adapter: SelectorViewPagerAdapter = SelectorViewPagerAdapter(context)
 
     private var listener: ((Int) -> Unit)? = null
+
+    val callback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            listener?.invoke(position)
+        }
+    }
 
     init {
         val childLinearLayout = LayoutInflater.from(context).inflate(
@@ -28,21 +34,14 @@ class Selector @JvmOverloads constructor(
             this,
             false,
         )
-        //childLinearLayout.layoutParams.width = this.layoutParams.width
-        //childLinearLayout.layoutParams.height = this.layoutParams.height
-        //inflate(context, R.layout.view_selector, this)
-
         this.addView(childLinearLayout)
 
-        // inflate(context, R.layout.view_selector, this)
-        valueText = findViewById<ViewPager2>(R.id.text_pager).apply {
-            adapter = adapter
 
-            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    listener?.invoke(position)
-                }
-            })
+        valueText = findViewById<ViewPager2>(R.id.text_pager).apply {
+
+            adapter = this@Selector.adapter
+
+            registerOnPageChangeCallback(callback)
         }
 
         prevButton = findViewById<ImageButton>(R.id.button_prev).apply {
@@ -65,12 +64,20 @@ class Selector @JvmOverloads constructor(
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+    }
+
     fun setValues(values: Array<String>) {
+        //valueText.unregisterOnPageChangeCallback(callback)
         adapter.setData(values)
+        //valueText.registerOnPageChangeCallback(callback)
     }
 
     fun setSelected(index: Int) {
+        //valueText.unregisterOnPageChangeCallback(callback)
         valueText.setCurrentItem(index, false)
+        //valueText.registerOnPageChangeCallback(callback)
     }
 
     fun setOnSelectionChangeListener(listener: (Int) -> Unit) {

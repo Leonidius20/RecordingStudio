@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import io.github.leonidius20.recorder.ui.common.Adapter.ViewHolder
+import io.github.leonidius20.recorder.ui.common.SelectorViewPagerAdapter.ViewHolder
 import io.github.leonidius20.recorder.R
 
-class Adapter(
+class SelectorViewPagerAdapter(
     private val context: Context,
-    private val startingData: Array<String>,
+    // private val startingData: Array<String>,
 ) : RecyclerView.Adapter<ViewHolder>() {
 
 
@@ -24,7 +24,7 @@ class Adapter(
 
     }
 
-    var data: Array<String> = startingData
+    var data: Array<String> = emptyArray()
         private set
 
     fun setData(data: Array<String>) {
