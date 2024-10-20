@@ -11,6 +11,7 @@
 
     <ImageButton
         style="?attr/materialIconButtonStyle"
+        android:background="@drawable/view_selector_button_ripple_left"
         android:id="@+id/button_prev"
         android:src="@drawable/ic_previous"
         android:contentDescription="@string/selector_previous_value"
@@ -26,6 +27,7 @@
 
     <ImageButton
         style="?attr/materialIconButtonStyle"
+        android:background="@drawable/view_selector_button_ripple_right"
         android:id="@+id/button_next"
         android:src="@drawable/ic_next"
         android:contentDescription="@string/selector_next_value"

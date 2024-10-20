@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:layout_gravity="center"
+    android:textAlignment="center"
     tools:text="Option 1">
 
 </TextView>
