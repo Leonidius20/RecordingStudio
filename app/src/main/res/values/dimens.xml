@@ -9,6 +9,7 @@
     <dimen name="margin_small">8dp</dimen>
 
     <dimen name="margin_large">48dp</dimen>
-    
-    <dimen name="view_selector_border_radius">20dp</dimen>
+
+    <!-- md.sys.shape.corner.large -->
+    <dimen name="view_selector_border_radius">16dp</dimen>
 </resources>
