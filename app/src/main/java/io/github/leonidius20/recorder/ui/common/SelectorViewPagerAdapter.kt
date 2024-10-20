@@ -1,50 +1,49 @@
 package io.github.leonidius20.recorder.ui.common
 
 import android.content.Context
-import android.view.Gravity
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.viewpager.widget.PagerAdapter
+import androidx.recyclerview.widget.RecyclerView
+import io.github.leonidius20.recorder.ui.common.Adapter.ViewHolder
+import io.github.leonidius20.recorder.R
 
-class SelectorViewPagerAdapter(
+class Adapter(
     private val context: Context,
-) : PagerAdapter() {
+    private val startingData: Array<String>,
+) : RecyclerView.Adapter<ViewHolder>() {
 
-    private var data: Array<String> = arrayOf()
 
-    // string - title to show, any - tag
-    fun setData(data: Array<String>) {
-        this.data = data
-    }
+    class ViewHolder(
+        private val textView: TextView,
+    ) : RecyclerView.ViewHolder(textView) {
 
-    override fun getCount() = data.size
-
-    override fun isViewFromObject(view: View, obj: Any): Boolean {
-        return view == obj
-    }
-
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val title = data[position]
-
-        val view = TextView(context).apply {
-            text = title
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT.toInt(),
-                LinearLayout.LayoutParams.WRAP_CONTENT.toInt(),
-            ).apply {
-                gravity = Gravity.CENTER
-            }
+        fun bindToText(text: String) {
+            textView.text = text
         }
 
-        container.addView(view)
-
-        return view // may return view but also any other key object really
     }
 
-    override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
-        container.removeView(obj as View)
+    var data: Array<String> = startingData
+        private set
+
+    fun setData(data: Array<String>) {
+        this.data = data
+        notifyDataSetChanged() // todo: ListAdapter
+    }
+
+    override fun getItemCount() = data.size
+
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = (LayoutInflater.from(context).inflate(R.layout.view_selector_page, parent, false) as TextView)
+
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val title = data[position]
+        holder.bindToText(title)
     }
 
 }

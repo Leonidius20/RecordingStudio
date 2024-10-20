@@ -5,16 +5,16 @@
     android:orientation="horizontal"
     tools:viewBindingIgnore="true"
     android:layout_width="match_parent"
-    android:layout_height="48dp">
+    android:layout_height="match_parent">
 
     <ImageButton
         android:id="@+id/button_prev"
-        android:src="@drawable/ic_previous"
-        android:contentDescription="@string/selector_previous_value"
+        android:src="@android:drawable/ic_media_previous"
+        android:contentDescription=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/text_pager"
         android:layout_weight="1"
         android:layout_width="0dp"
@@ -22,8 +22,8 @@
 
     <ImageButton
         android:id="@+id/button_next"
-        android:src="@drawable/ic_next"
-        android:contentDescription="@string/selector_next_value"
+        android:src="@android:drawable/ic_media_next"
+        android:contentDescription=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

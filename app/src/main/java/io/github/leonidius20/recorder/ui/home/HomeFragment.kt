@@ -20,6 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,10 +29,12 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
+import io.github.leonidius20.recorder.ui.common.Adapter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import io.github.leonidius20.recorder.R
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -210,14 +213,11 @@ class HomeFragment : Fragment() {
         }
 
         binding.bitRateSettingsBlock.isVisible = true
-        binding.audioSettingsBitrateSlider.setValues(
-            arrayOf(
-                "Example 1",
-                "Example 2",
-                "Example 3",
-            )
+
+        val pager = root.findViewById<ViewPager2>(R.id.text_pager)
+        pager.adapter = Adapter(
+            requireContext(), arrayOf("cock", "balls")
         )
-        binding.audioSettingsBitrateSlider.setSelected(index = 1)
 
         // todo: restoring the visualizer on screen rotation
 
