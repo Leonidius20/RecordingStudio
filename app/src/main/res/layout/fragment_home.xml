@@ -301,14 +301,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/margin_small"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         android:text="@string/audio_settings_hint_sample_rate"
                         android:textAppearance="?textAppearanceBodyMedium" />
 
-                    <NumberPicker
+                    <io.github.leonidius20.recorder.ui.common.Selector
                         android:id="@+id/audio_settings_sample_rate_slider"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/selector_height"
                         android:layout_marginBottom="@dimen/margin_normal"
                         />
                     </LinearLayout>
@@ -330,7 +330,7 @@
                         <io.github.leonidius20.recorder.ui.common.Selector
                             android:id="@+id/audio_settings_bit_depth_slider"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="@dimen/selector_height"
                             android:layout_marginBottom="@dimen/margin_normal"
                             />
 
@@ -353,7 +353,7 @@
                         <io.github.leonidius20.recorder.ui.common.Selector
                             android:id="@+id/audio_settings_bitrate_slider"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="@dimen/selector_height"
                             android:layout_marginBottom="@dimen/margin_normal"
                             />
 

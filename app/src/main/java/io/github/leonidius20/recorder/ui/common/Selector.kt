@@ -1,10 +1,14 @@
 package io.github.leonidius20.recorder.ui.common
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.viewpager2.widget.ViewPager2
 import io.github.leonidius20.recorder.R
 
@@ -22,9 +26,35 @@ class Selector @JvmOverloads constructor(
 
     private var listener: ((Int) -> Unit)? = null
 
+    private val buttonEnabledColor = ContextCompat.getColor(
+        context, R.color.md_theme_onSurface
+    )
+    private val buttonDisabledColor =
+        (buttonEnabledColor and 0x00FFFFFF) or 0x59000000 // 35% opacity
+
     val callback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             listener?.invoke(position)
+
+            nextButton.apply {
+                isEnabled = (position != adapter.data.size - 1)
+                ImageViewCompat.setImageTintList(
+                    this, ColorStateList.valueOf(
+                        if (isEnabled) buttonEnabledColor
+                        else buttonDisabledColor
+                    )
+                )
+            }
+
+            prevButton.apply {
+                isEnabled = (position != 0)
+                ImageViewCompat.setImageTintList(
+                    this, ColorStateList.valueOf(
+                        if (isEnabled) buttonEnabledColor
+                        else buttonDisabledColor
+                    )
+                )
+            }
         }
     }
 
@@ -69,13 +99,16 @@ class Selector @JvmOverloads constructor(
     }
 
     fun setValues(values: Array<String>) {
-        //valueText.unregisterOnPageChangeCallback(callback)
+        valueText.unregisterOnPageChangeCallback(callback)
         adapter.setData(values)
-        //valueText.registerOnPageChangeCallback(callback)
+        valueText.registerOnPageChangeCallback(callback)
     }
 
     fun setValues(list: List<String>) {
         setValues(list.toTypedArray())
+        // todo: we have a crash when changing the dataset, it runs the listener
+        // with indexes from the old dataset and we get index out of bounds, or,
+        // we get wrong values sent to the listener. We gotta fix it somehow
     }
 
     fun setSelected(index: Int) {
@@ -86,6 +119,8 @@ class Selector @JvmOverloads constructor(
 
     fun setOnSelectionChangeListener(listener: (Int) -> Unit) {
         this.listener = listener
+
     }
+
 
 }

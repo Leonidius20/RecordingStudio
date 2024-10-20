@@ -167,21 +167,29 @@ class HomeFragment : Fragment() {
         }
 
         binding.audioSettingsSampleRateSlider.apply {
-            wrapSelectorWheel = false
-            descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
 
             viewModel.supportedSampleRates.observe(viewLifecycleOwner) { values ->
-                displayedValues =
-                    null // otherwise it crashes after changing mix, max or displayedValues
+                setValues(
+                    values.map { it.toString() }
+                )
+                setSelected(values.indexOf(viewModel.currentSampleRate))
 
-                minValue = 0
-                maxValue = values.size - 1
-                displayedValues = Array(values.size) { index -> values[index].toString() }
-                value = values.indexOf(viewModel.currentSampleRate)
+                setOnSelectionChangeListener { newIndex ->
+                    val oldIndex = values.indexOf(viewModel.currentSampleRate)
 
-                setOnValueChangedListener { picker, oldVal, newVal ->
-                    val newSampleRate = values[newVal]
-                    viewModel.setSampleRate(newSampleRate)
+                    if (oldIndex != newIndex) {
+                        val newSampleRate = values[newIndex]
+
+                        Toast.makeText(
+                            requireContext(),
+                            "selected $newSampleRate",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        viewModel.setSampleRate(newSampleRate)
+                    }
+
+
                 }
             }
         }
@@ -200,12 +208,6 @@ class HomeFragment : Fragment() {
                         val prevIndex = availableBitDepths.indexOf(viewModel.currentBitDepth)
                         if (newIndex != prevIndex) {
                             val newBitDepth = availableBitDepths[newIndex]
-
-                            Toast.makeText(
-                                requireContext(),
-                                "selected ${newBitDepth.displayName}",
-                                Toast.LENGTH_SHORT
-                            ).show()
 
                             viewModel.setBitDepth(newBitDepth)
                         }
