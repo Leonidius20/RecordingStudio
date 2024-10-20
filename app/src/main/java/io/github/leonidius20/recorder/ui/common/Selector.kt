@@ -74,6 +74,10 @@ class Selector @JvmOverloads constructor(
         //valueText.registerOnPageChangeCallback(callback)
     }
 
+    fun setValues(list: List<String>) {
+        setValues(list.toTypedArray())
+    }
+
     fun setSelected(index: Int) {
         //valueText.unregisterOnPageChangeCallback(callback)
         valueText.setCurrentItem(index, false)

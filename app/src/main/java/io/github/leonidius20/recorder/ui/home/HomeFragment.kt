@@ -194,23 +194,27 @@ class HomeFragment : Fragment() {
                 binding.bitDepthSettingsBlock.isVisible = true
 
                 binding.audioSettingsBitDepthSlider.apply {
-                    displayedValues =
-                        null // otherwise it crashes after changing mix, max or displayedValues
-                    minValue = 0
-                    maxValue = availableBitDepths.size - 1
-                    displayedValues =
-                        Array(availableBitDepths.size) { index -> availableBitDepths[index].displayName }
-                    value = availableBitDepths.indexOf(viewModel.currentBitDepth)
+                    setValues(availableBitDepths.map { it.displayName })
+                    setSelected(availableBitDepths.indexOf(viewModel.currentBitDepth))
+                    setOnSelectionChangeListener { newIndex ->
+                        val prevIndex = availableBitDepths.indexOf(viewModel.currentBitDepth)
+                        if (newIndex != prevIndex) {
+                            val newBitDepth = availableBitDepths[newIndex]
 
-                    setOnValueChangedListener { picker, oldVal, newVal ->
-                        val newBitDepth = availableBitDepths[newVal]
-                        viewModel.setBitDepth(newBitDepth)
+                            Toast.makeText(
+                                requireContext(),
+                                "selected ${newBitDepth.displayName}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            viewModel.setBitDepth(newBitDepth)
+                        }
                     }
                 }
             }
         }
 
-        binding.bitRateSettingsBlock.isVisible = true
+        binding.bitRateSettingsBlock.isVisible = false // todo remove
 
         // val pager = root.findViewById<ViewPager2>(R.id.text_pager)
         //pager.adapter = Adapter(
@@ -223,7 +227,7 @@ class HomeFragment : Fragment() {
 
         binding.audioSettingsBitrateSlider.setOnSelectionChangeListener { newPos ->
             // if (same as in settings) don't do anything
-            Toast.makeText(requireContext(), "Selected ${data[newPos]}", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(requireContext(), "Selected ${data[newPos]}", Toast.LENGTH_SHORT).show()
         }
 
         // todo: restoring the visualizer on screen rotation
