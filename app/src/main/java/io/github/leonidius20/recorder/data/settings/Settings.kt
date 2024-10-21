@@ -123,12 +123,17 @@ class Settings @Inject constructor(
         val bitDepthsForCodecs = Codec.entries
             .filter { it.supportsSettingBitDepth }
             .associateWith { codec ->
-                codec.getBitDepthOptionFromPrefValue(
-                    pref.getInt(
-                        codec.bitDepthOrRateForCodecPrefKey,
-                        codec.defaultBitDepth!!.valueForPref
+                try {
+                    codec.getBitDepthOptionFromPrefValue(
+                        pref.getInt(
+                            codec.bitDepthOrRateForCodecPrefKey,
+                            codec.defaultBitDepth!!.valueForPref
+                        )
                     )
-                )
+                } catch (_: Throwable) {
+                    // couldn't find such value
+                    codec.defaultBitDepth!!
+                }
             }
 
         return SettingsState(

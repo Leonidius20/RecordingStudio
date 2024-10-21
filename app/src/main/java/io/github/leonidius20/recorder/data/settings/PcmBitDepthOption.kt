@@ -17,13 +17,14 @@ enum class PcmBitDepthOption(
     val maxAmplitudeExtractorFactory: () -> MaxAmplitudeExtractor,
 ) : BitDepthOption {
 
-    PCM_8BIT_INT(
+    // todo: fix visualization and re-enable
+    /*PCM_8BIT_INT(
         displayName = "8 bit int",
         valueForAudioRecordApi = AudioFormat.ENCODING_PCM_8BIT,
         bitsPerSample = 8,
         isFloat = false,
         maxAmplitudeExtractorFactory = { Int8BitMaxAmpExtractor() },
-    ),
+    ),*/
 
     PCM_16BIT_INT(
         displayName = "16 bit int",
