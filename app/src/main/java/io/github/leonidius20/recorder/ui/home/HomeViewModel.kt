@@ -176,10 +176,21 @@ class HomeViewModel @Inject constructor(
         settings.setBitDepth(bitDepthOption)
     }
 
-    @Deprecated("remove for 0.2.0") // todo
-    val isCurrentEncoderPcm =
-        settings.state
-            .map { it.encoder == Codec.PCM }
-            .asLiveData(viewModelScope.coroutineContext)
+    val availableBitRates = settings.state.map {
+        if (it.encoder.supportsSettingBitRate) {
+            it.encoder.bitRateOptions
+        } else emptyArray()
+    }.asLiveData(viewModelScope.coroutineContext)
+
+    val currentBitRate
+        get() = with(settings.state.value) {
+            if (encoder.supportsSettingBitRate) {
+                bitRatesForCodecs[encoder]
+            } else null
+        }
+
+    fun setBitRate(rate: Float) {
+        settings.setBitRate(rate)
+    }
 
 }

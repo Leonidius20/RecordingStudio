@@ -35,7 +35,7 @@ class Settings @Inject constructor(
         // where each instance is a codec with certain parameters set up (sample rate, bit rate)
         // and the class itself will be checking if these parameters work together?
 
-        // val bitRatesForCodecs: Map<Codec, BitRateOption>,
+        val bitRatesForCodecs: Map<Codec, Float>, // double in kbps
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -136,6 +136,15 @@ class Settings @Inject constructor(
                 }
             }
 
+        val bitRatesForCodecs = Codec.entries
+            .filter { it.supportsSettingBitRate }
+            .associateWith { codec ->
+                pref.getFloat(
+                    codec.bitDepthOrRateForCodecPrefKey,
+                    codec.defaultBitRate!!
+                )
+            }
+
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
                 context.getString(R.string.stop_on_low_battery_pref_key),
@@ -166,6 +175,7 @@ class Settings @Inject constructor(
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
             bitDepthsForCodecs = bitDepthsForCodecs,
+            bitRatesForCodecs = bitRatesForCodecs,
         )
     }
 
@@ -264,8 +274,6 @@ class Settings @Inject constructor(
 
         val currentSampleRate = state.value.sampleRate
 
-
-        // todo uncomment for 0.2.0
         if (!codec.supportsSampleRate(currentSampleRate)) {
             setSampleRate(
                 codec.supportedSampleRateClosestTo(currentSampleRate),
@@ -309,6 +317,17 @@ class Settings @Inject constructor(
         val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
 
         pref.edit().putInt(key, bitDepth.valueForPref)
+            .apply()
+
+        onSharedPreferenceChanged(key, null)
+    }
+
+    fun setBitRate(rate: Float) {
+        require(state.value.encoder.supportsSettingBitRate)
+
+        val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
+
+        pref.edit().putFloat(key, rate)
             .apply()
 
         onSharedPreferenceChanged(key, null)

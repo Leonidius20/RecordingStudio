@@ -214,21 +214,28 @@ class HomeFragment : Fragment() {
             }
         }
 
-        binding.bitRateSettingsBlock.isVisible = false // todo remove
+        // bit rate selection
+        viewModel.availableBitRates.observe(viewLifecycleOwner) { availableRates ->
+            if (availableRates == null || availableRates.isEmpty()) {
+                binding.bitRateSettingsBlock.isVisible = false
+            } else {
+                binding.bitRateSettingsBlock.isVisible = true
 
-        // val pager = root.findViewById<ViewPager2>(R.id.text_pager)
-        //pager.adapter = Adapter(
-        //    requireContext(), arrayOf("cock", "balls")
-        //)
-        val data = arrayOf("cock", "balls")
-        binding.audioSettingsBitrateSlider.setValues(
-            data,
-            0
-        )
+                binding.audioSettingsBitrateSlider.apply {
+                    setValues(
+                        list = availableRates.map { "$it kbps" },
+                        selectedIndex = availableRates.indexOf(viewModel.currentBitRate)
+                    )
 
-        binding.audioSettingsBitrateSlider.setOnSelectionChangeListener { newPos ->
-            // if (same as in settings) don't do anything
-            //Toast.makeText(requireContext(), "Selected ${data[newPos]}", Toast.LENGTH_SHORT).show()
+                    setOnSelectionChangeListener { newIndex ->
+                        val prevIndex = availableRates.indexOf(viewModel.currentBitRate)
+                        if (newIndex != prevIndex) {
+                            val newBitRate = availableRates[newIndex]
+                            viewModel.setBitRate(newBitRate)
+                        }
+                    }
+                }
+            }
         }
 
         // todo: restoring the visualizer on screen rotation

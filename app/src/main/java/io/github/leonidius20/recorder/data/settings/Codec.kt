@@ -19,6 +19,12 @@ enum class Codec(
 
     val bitDepthOptions: Array<BitDepthOption>? = null,
     val defaultBitDepth: BitDepthOption? = null,
+
+    /**
+     * in kbps (MediaRecorder asks for bps so there has to be multiplication)
+     */
+    val bitRateOptions: Array<Float>? = null,
+    val defaultBitRate: Float? = null,
 ) {
 
     // todo: check support some other way too
@@ -34,7 +40,10 @@ enum class Codec(
         MediaRecorder.AudioEncoder.AMR_WB,
         "AMR Wideband",
         true,
-        supportedSampleRates = intArrayOf(16_000)
+        supportedSampleRates = intArrayOf(16_000),
+        supportsSettingBitRate = true,
+        bitRateOptions = arrayOf(23.85f, 23.05f, 19.85f, 18.25f, 15.85f, 14.25f, 12.65f, 8.85f, 6.6f).reversedArray(),
+        defaultBitRate = 23.85f,
     ),
 
     AAC(
