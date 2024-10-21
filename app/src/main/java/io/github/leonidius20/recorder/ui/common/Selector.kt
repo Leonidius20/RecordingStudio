@@ -22,7 +22,7 @@ class Selector @JvmOverloads constructor(
     private val nextButton: ImageButton
     private val valueText: ViewPager2
 
-    private val adapter: SelectorViewPagerAdapter = SelectorViewPagerAdapter(context)
+    private var adapter: SelectorViewPagerAdapter = SelectorViewPagerAdapter(context)
 
     private var listener: ((Int) -> Unit)? = null
 
@@ -36,25 +36,7 @@ class Selector @JvmOverloads constructor(
         override fun onPageSelected(position: Int) {
             listener?.invoke(position)
 
-            nextButton.apply {
-                isEnabled = (position != adapter.data.size - 1)
-                ImageViewCompat.setImageTintList(
-                    this, ColorStateList.valueOf(
-                        if (isEnabled) buttonEnabledColor
-                        else buttonDisabledColor
-                    )
-                )
-            }
-
-            prevButton.apply {
-                isEnabled = (position != 0)
-                ImageViewCompat.setImageTintList(
-                    this, ColorStateList.valueOf(
-                        if (isEnabled) buttonEnabledColor
-                        else buttonDisabledColor
-                    )
-                )
-            }
+            updateButtonsOnSelectionChange(position)
         }
     }
 
@@ -98,17 +80,18 @@ class Selector @JvmOverloads constructor(
         super.onAttachedToWindow()
     }
 
-    fun setValues(values: Array<String>) {
+    fun setValues(values: Array<String>, selectedIndex: Int) {
         valueText.unregisterOnPageChangeCallback(callback)
         adapter.setData(values)
         valueText.registerOnPageChangeCallback(callback)
     }
 
-    fun setValues(list: List<String>) {
-        setValues(list.toTypedArray())
+    fun setValues(list: List<String>, selectedIndex: Int) {
+        setValues(list.toTypedArray(), selectedIndex)
         // todo: we have a crash when changing the dataset, it runs the listener
         // with indexes from the old dataset and we get index out of bounds, or,
         // we get wrong values sent to the listener. We gotta fix it somehow
+        updateButtonsOnSelectionChange(selectedIndex)
     }
 
     fun setSelected(index: Int) {
@@ -120,6 +103,28 @@ class Selector @JvmOverloads constructor(
     fun setOnSelectionChangeListener(listener: (Int) -> Unit) {
         this.listener = listener
 
+    }
+
+    private fun updateButtonsOnSelectionChange(position: Int) {
+        nextButton.apply {
+            isEnabled = (position != adapter.data.size - 1)
+            ImageViewCompat.setImageTintList(
+                this, ColorStateList.valueOf(
+                    if (isEnabled) buttonEnabledColor
+                    else buttonDisabledColor
+                )
+            )
+        }
+
+        prevButton.apply {
+            isEnabled = (position != 0)
+            ImageViewCompat.setImageTintList(
+                this, ColorStateList.valueOf(
+                    if (isEnabled) buttonEnabledColor
+                    else buttonDisabledColor
+                )
+            )
+        }
     }
 
 

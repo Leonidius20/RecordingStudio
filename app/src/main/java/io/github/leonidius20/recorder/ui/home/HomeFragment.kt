@@ -170,9 +170,10 @@ class HomeFragment : Fragment() {
 
             viewModel.supportedSampleRates.observe(viewLifecycleOwner) { values ->
                 setValues(
-                    values.map { it.toString() }
+                    list = values.map { it.toString() },
+                    selectedIndex = values.indexOf(viewModel.currentSampleRate)
                 )
-                setSelected(values.indexOf(viewModel.currentSampleRate))
+                // setSelected(values.indexOf(viewModel.currentSampleRate))
 
                 setOnSelectionChangeListener { newIndex ->
                     val oldIndex = values.indexOf(viewModel.currentSampleRate)
@@ -202,8 +203,11 @@ class HomeFragment : Fragment() {
                 binding.bitDepthSettingsBlock.isVisible = true
 
                 binding.audioSettingsBitDepthSlider.apply {
-                    setValues(availableBitDepths.map { it.displayName })
-                    setSelected(availableBitDepths.indexOf(viewModel.currentBitDepth))
+                    setValues(
+                        list = availableBitDepths.map { it.displayName },
+                        selectedIndex = availableBitDepths.indexOf(viewModel.currentBitDepth)
+                    )
+                    // setSelected(availableBitDepths.indexOf(viewModel.currentBitDepth))
                     setOnSelectionChangeListener { newIndex ->
                         val prevIndex = availableBitDepths.indexOf(viewModel.currentBitDepth)
                         if (newIndex != prevIndex) {
@@ -224,7 +228,8 @@ class HomeFragment : Fragment() {
         //)
         val data = arrayOf("cock", "balls")
         binding.audioSettingsBitrateSlider.setValues(
-            data
+            data,
+            0
         )
 
         binding.audioSettingsBitrateSlider.setOnSelectionChangeListener { newPos ->
