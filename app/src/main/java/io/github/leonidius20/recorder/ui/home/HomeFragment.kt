@@ -181,12 +181,6 @@ class HomeFragment : Fragment() {
                     if (oldIndex != newIndex) {
                         val newSampleRate = values[newIndex]
 
-                        Toast.makeText(
-                            requireContext(),
-                            "selected $newSampleRate",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
                         viewModel.setSampleRate(newSampleRate)
                     }
 

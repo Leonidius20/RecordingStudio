@@ -83,6 +83,7 @@ class Selector @JvmOverloads constructor(
     fun setValues(values: Array<String>, selectedIndex: Int) {
         valueText.unregisterOnPageChangeCallback(callback)
         adapter.setData(values)
+        setSelected(selectedIndex)
         valueText.registerOnPageChangeCallback(callback)
     }
 
