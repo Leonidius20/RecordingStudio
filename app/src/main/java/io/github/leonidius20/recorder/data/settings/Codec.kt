@@ -34,6 +34,9 @@ enum class Codec(
         "AMR Narrowband",
         true,
         supportedSampleRates = intArrayOf(8_000),
+        supportsSettingBitRate = true,
+        defaultBitRate = 12.20f,
+        bitRateOptions = arrayOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
     ),
 
     AMR_WB(
