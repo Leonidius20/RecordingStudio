@@ -90,8 +90,8 @@ enum class Codec(
         MediaRecorder.AudioEncoder.OPUS,
         "Opus",
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-        // todo: does it really support all these rates?
-        supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        // https://hydrogenaud.io/index.php/topic,115663.0.html
+        supportedSampleRates = intArrayOf(8000, 12000, 16000, 24000, 48000),
         bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
             min = 6f,
             max = 510f,
