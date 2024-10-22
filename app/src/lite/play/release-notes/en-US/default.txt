@@ -2,5 +2,5 @@
 - Added bit depth setting for WAV recordings (only 16 bit int and 32 bit float for now);
 - Added bit rate setting for OPUS, AMR NB and AMR WB codecs;
 - A more convenient selector for sample rate and bit rate;
-- Made audio visualizer smoother (only on Android 6.0 and higher);
+- Made audio visualizer for WAV smoother (only on Android 6.0 and higher);
 - Removed unsupported sample rate options for OPUS.

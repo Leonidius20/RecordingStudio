@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -120,10 +121,12 @@ class RecorderServiceLauncher @Inject constructor(
     }
 
     // for ERROR or IDLE state on destruction
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val serviceLifecycleObserver = UiStateUpdater { state ->
         _state.value = state
         if (state == State.IDLE || state == State.ERROR) {
             isPausingSupported = false // resetting in case the next recording is started with other params that do not support pausing
+            _amplitudes.resetReplayCache() // make sure old values are removed
         }
     }
 
