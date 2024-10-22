@@ -14,17 +14,23 @@ enum class Codec(
     val isSupportedByDevice: Boolean,
     val supportedSampleRates: IntArray,
 
-    val supportsSettingBitDepth: Boolean = false,
-    val supportsSettingBitRate: Boolean = false,
+    // val supportsStereo: Boolean = true,
 
-    val bitDepthOptions: Array<BitDepthOption>? = null,
-    val defaultBitDepth: BitDepthOption? = null,
+    val bitRateSettingType: BitRateSettingType,
+
+    //val supportsSettingBitDepth: Boolean = false,
+    //val supportsSettingBitRate: Boolean = false,
+
+    //val bitDepthOptions: Array<BitDepthOption>? = null,
+    //val defaultBitDepth: BitDepthOption? = null,
 
     /**
      * in kbps (MediaRecorder asks for bps so there has to be multiplication)
      */
-    val bitRateOptions: Array<Float>? = null,
-    val defaultBitRate: Float? = null,
+    //val bitRateOptions: Array<Float>? = null,
+   // val defaultBitRate: Float? = null,
+
+    // val isBitRateContinuous : Boolean? = null,
 ) {
 
     // todo: check support some other way too
@@ -34,9 +40,12 @@ enum class Codec(
         "AMR Narrowband",
         true,
         supportedSampleRates = intArrayOf(8_000),
-        supportsSettingBitRate = true,
-        defaultBitRate = 12.20f,
-        bitRateOptions = arrayOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
+        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+            default = 12.20f,
+            bitRateOptions = arrayOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
+        ),
+
+        //supportsStereo = false,
     ),
 
     AMR_WB(
@@ -44,9 +53,12 @@ enum class Codec(
         "AMR Wideband",
         true,
         supportedSampleRates = intArrayOf(16_000),
-        supportsSettingBitRate = true,
-        bitRateOptions = arrayOf(23.85f, 23.05f, 19.85f, 18.25f, 15.85f, 14.25f, 12.65f, 8.85f, 6.6f).reversedArray(),
-        defaultBitRate = 23.85f,
+
+        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+            bitRateOptions = arrayOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
+            default = 23.85f,
+        ),
+        //supportsStereo = false,
     ),
 
     AAC(
@@ -54,6 +66,7 @@ enum class Codec(
         "AAC-LC",
         true,
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
     ),
 
     HE_AAC(
@@ -61,6 +74,7 @@ enum class Codec(
         "HE-AAC",
         true,
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
     ),
 
     AAC_ELD(
@@ -68,6 +82,7 @@ enum class Codec(
         "AAC-ELD",
         true,
         supportedSampleRates = intArrayOf(16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
     ),
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -77,17 +92,23 @@ enum class Codec(
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
         // todo: does it really support all these rates?
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-
+        bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
+            min = 6f,
+            max = 510f,
+            default = 128f,
         ),
+    ),
+
 
     PCM(
         value = -1,
         displayName = "PCM",
         isSupportedByDevice = true,
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        supportsSettingBitDepth = true,
-        bitDepthOptions = PcmBitDepthOption.entries.map { it as BitDepthOption }.toTypedArray(),
-        defaultBitDepth = PcmBitDepthOption.PCM_16BIT_INT,
+        bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
+            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption }.toTypedArray(),
+            default = PcmBitDepthOption.PCM_16BIT_INT,
+        ),
     );
 
     val bitDepthOrRateForCodecPrefKey

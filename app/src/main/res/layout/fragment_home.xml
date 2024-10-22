@@ -351,15 +351,20 @@
                             android:textAppearance="?textAppearanceTitleLarge" />
 
                         <io.github.leonidius20.recorder.ui.common.Selector
-                            android:id="@+id/audio_settings_bitrate_slider"
+                            android:id="@+id/audio_settings_bitrate_discrete_selector"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/selector_height"
                             android:layout_marginBottom="@dimen/margin_normal"
                             />
 
-                    </LinearLayout>
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/audio_settings_bitrate_continuous_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/margin_normal"
+                            android:visibility="gone"/>
 
-                    <!-- todo: additional settings like sample rate and bitrate -->
+                    </LinearLayout>
 
                 </LinearLayout>
 

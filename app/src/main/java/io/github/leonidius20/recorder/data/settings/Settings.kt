@@ -121,27 +121,35 @@ class Settings @Inject constructor(
         }
 
         val bitDepthsForCodecs = Codec.entries
-            .filter { it.supportsSettingBitDepth }
+            .filter { it.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues }
             .associateWith { codec ->
+                val setting = codec.bitRateSettingType
+                        as BitRateSettingType.BitDepthDiscreteValues
                 try {
+
+
                     codec.getBitDepthOptionFromPrefValue(
                         pref.getInt(
                             codec.bitDepthOrRateForCodecPrefKey,
-                            codec.defaultBitDepth!!.valueForPref
+                            setting.default.valueForPref
                         )
                     )
                 } catch (_: Throwable) {
                     // couldn't find such value
-                    codec.defaultBitDepth!!
+                    setting.default
                 }
             }
 
         val bitRatesForCodecs = Codec.entries
-            .filter { it.supportsSettingBitRate }
+            .filter {
+                it.bitRateSettingType is BitRateSettingType.BitRateValues
+            }
             .associateWith { codec ->
+                val setting = codec.bitRateSettingType
+                        as BitRateSettingType.BitRateValues
                 pref.getFloat(
                     codec.bitDepthOrRateForCodecPrefKey,
-                    codec.defaultBitRate!!
+                    setting.default,
                 )
             }
 
@@ -309,10 +317,10 @@ class Settings @Inject constructor(
 
 
     fun setBitDepth(bitDepth: BitDepthOption) {
-
-        if (!state.value.encoder.supportsSettingBitDepth) {
-            throw IllegalStateException("tried changing bit depth while selected encoder doesn't support it")
-        }
+        require(
+            state.value.encoder.bitRateSettingType
+                    is BitRateSettingType.BitDepthDiscreteValues
+        )
 
         val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
 
@@ -323,7 +331,8 @@ class Settings @Inject constructor(
     }
 
     fun setBitRate(rate: Float) {
-        require(state.value.encoder.supportsSettingBitRate)
+        require(state.value.encoder.bitRateSettingType
+                is BitRateSettingType.BitRateValues)
 
         val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
 

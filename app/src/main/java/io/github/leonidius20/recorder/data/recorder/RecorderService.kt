@@ -28,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
@@ -206,7 +207,7 @@ class RecorderService : LifecycleService() {
                     channels = settingsState.numOfChannels,
                     sampleRate = settingsState.sampleRate,
                     bitRate =
-                        if (settingsState.encoder.supportsSettingBitRate)
+                        if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
                             settingsState.bitRatesForCodecs[settingsState.encoder]
                         else null
                 )

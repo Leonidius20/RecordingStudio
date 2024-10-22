@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
@@ -19,11 +19,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
+import com.google.android.material.slider.Slider
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.data.settings.AudioChannels
+import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -32,7 +33,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import io.github.leonidius20.recorder.R
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -214,25 +214,61 @@ class HomeFragment : Fragment() {
             }
         }
 
+        binding.audioSettingsBitrateContinuousSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                // Responds to when slider's touch event is being started
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                viewModel.setBitRate(slider.value)
+            }
+        })
+
         // bit rate selection
-        viewModel.availableBitRates.observe(viewLifecycleOwner) { availableRates ->
-            if (availableRates == null || availableRates.isEmpty()) {
+        viewModel.availableBitRates.observe(viewLifecycleOwner) { bitRateSettingOption ->
+            Log.d("BitRateSettingOpt", "bit rate option $bitRateSettingOption")
+            if (bitRateSettingOption == null) {
                 binding.bitRateSettingsBlock.isVisible = false
+                return@observe
             } else {
                 binding.bitRateSettingsBlock.isVisible = true
+            }
 
-                binding.audioSettingsBitrateSlider.apply {
-                    setValues(
-                        list = availableRates.map { "$it kbps" },
-                        selectedIndex = availableRates.indexOf(viewModel.currentBitRate)
-                    )
+            binding.audioSettingsBitrateDiscreteSelector.isVisible =
+                bitRateSettingOption is BitRateSettingType.BitRateDiscreteValues
 
-                    setOnSelectionChangeListener { newIndex ->
-                        val prevIndex = availableRates.indexOf(viewModel.currentBitRate)
-                        if (newIndex != prevIndex) {
-                            val newBitRate = availableRates[newIndex]
-                            viewModel.setBitRate(newBitRate)
+            binding.audioSettingsBitrateContinuousSlider.isVisible =
+                bitRateSettingOption is BitRateSettingType.BitRateContinuousRange
+
+            when(bitRateSettingOption) {
+                is BitRateSettingType.BitRateDiscreteValues -> {
+                    val availableRates = bitRateSettingOption.bitRateOptions
+
+                    if (availableRates.isEmpty()) {
+                        binding.bitRateSettingsBlock.isVisible = false
+                        return@observe
+                    }
+
+                    binding.audioSettingsBitrateDiscreteSelector.apply {
+                        setValues(
+                            list = availableRates.map { "$it kbps" },
+                            selectedIndex = availableRates.indexOf(viewModel.currentBitRate)
+                        )
+
+                        setOnSelectionChangeListener { newIndex ->
+                            val prevIndex = availableRates.indexOf(viewModel.currentBitRate)
+                            if (newIndex != prevIndex) {
+                                val newBitRate = availableRates[newIndex]
+                                viewModel.setBitRate(newBitRate)
+                            }
                         }
+                    }
+                }
+                is BitRateSettingType.BitRateContinuousRange -> {
+                    binding.audioSettingsBitrateContinuousSlider.apply {
+                        valueFrom = bitRateSettingOption.min
+                        valueTo = bitRateSettingOption.max
+                        value = viewModel.currentBitRate!!
                     }
                 }
             }

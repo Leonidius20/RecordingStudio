@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.BitDepthOption
+import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
@@ -160,14 +161,16 @@ class HomeViewModel @Inject constructor(
         get() = settings.state.value.sampleRate
 
     val availableBitDepths = settings.state.map {
-        if (it.encoder.supportsSettingBitDepth) {
-            it.encoder.bitDepthOptions
+        val bitRateSetting = it.encoder.bitRateSettingType
+        if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
+            bitRateSetting.availableOptions
         } else emptyArray()
     }.asLiveData(viewModelScope.coroutineContext)
 
     val currentBitDepth
         get() = with(settings.state.value) {
-            if (encoder.supportsSettingBitDepth) {
+            val bitRateSetting = encoder.bitRateSettingType
+            if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
                 bitDepthsForCodecs[encoder]
             } else null
         }
@@ -177,14 +180,13 @@ class HomeViewModel @Inject constructor(
     }
 
     val availableBitRates = settings.state.map {
-        if (it.encoder.supportsSettingBitRate) {
-            it.encoder.bitRateOptions
-        } else emptyArray()
+        val bitRateSetting = it.encoder.bitRateSettingType
+        bitRateSetting as? BitRateSettingType.BitRateValues
     }.asLiveData(viewModelScope.coroutineContext)
 
     val currentBitRate
         get() = with(settings.state.value) {
-            if (encoder.supportsSettingBitRate) {
+            if (encoder.bitRateSettingType is BitRateSettingType.BitRateValues) {
                 bitRatesForCodecs[encoder]
             } else null
         }
