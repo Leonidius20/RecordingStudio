@@ -361,8 +361,47 @@
                             android:id="@+id/audio_settings_bitrate_continuous_slider"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/margin_normal"
+                            android:layout_marginBottom="@dimen/margin_small"
+                            app:labelBehavior="gone"
                             android:visibility="gone"/>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/bitrate_slider_labels"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/margin_normal"
+                            android:layout_marginEnd="@dimen/margin_normal"
+                            android:layout_marginBottom="@dimen/margin_normal">
+
+                            <TextView
+                                android:id="@+id/min_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                            <TextView
+                                android:id="@+id/current_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                            <TextView
+                                android:id="@+id/max_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
 
                     </LinearLayout>
 

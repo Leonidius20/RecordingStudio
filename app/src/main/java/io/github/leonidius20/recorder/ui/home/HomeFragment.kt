@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import com.google.android.material.slider.Slider
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
@@ -224,20 +224,23 @@ class HomeFragment : Fragment() {
             }
         })
 
+        val df = java.text.DecimalFormat("#.##")
+
+        binding.audioSettingsBitrateContinuousSlider.addOnChangeListener { slider, value, fromUser ->
+            binding.currentBitrateSliderValue.text =
+                getString(R.string.value_in_kbps, df.format(value))
+        }
+
         // bit rate selection
         viewModel.availableBitRates.observe(viewLifecycleOwner) { bitRateSettingOption ->
-            Log.d("BitRateSettingOpt", "bit rate option $bitRateSettingOption")
-            if (bitRateSettingOption == null) {
-                binding.bitRateSettingsBlock.isVisible = false
-                return@observe
-            } else {
-                binding.bitRateSettingsBlock.isVisible = true
-            }
+            binding.bitRateSettingsBlock.isVisible = bitRateSettingOption != null
 
             binding.audioSettingsBitrateDiscreteSelector.isVisible =
                 bitRateSettingOption is BitRateSettingType.BitRateDiscreteValues
 
             binding.audioSettingsBitrateContinuousSlider.isVisible =
+                bitRateSettingOption is BitRateSettingType.BitRateContinuousRange
+            binding.bitrateSliderLabels.isVisible =
                 bitRateSettingOption is BitRateSettingType.BitRateContinuousRange
 
             when(bitRateSettingOption) {
@@ -270,6 +273,9 @@ class HomeFragment : Fragment() {
                         valueTo = bitRateSettingOption.max
                         value = viewModel.currentBitRate!!
                     }
+
+                    binding.maxBitrateSliderValue.text = String.format("%.0f", bitRateSettingOption.max)
+                    binding.minBitrateSliderValue.text = String.format("%.0f", bitRateSettingOption.min)
                 }
             }
         }
