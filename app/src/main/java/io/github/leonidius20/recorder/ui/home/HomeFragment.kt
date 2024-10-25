@@ -13,11 +13,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import com.google.android.material.slider.Slider
@@ -29,13 +26,12 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class HomeFragment : Fragment() {
+class HomeFragment : RecStudioFragment() {
 
     private var _binding: FragmentHomeBinding? = null
 
@@ -288,16 +284,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                // todo bug - visualizer doesn't get updated on screen rotate
-                viewModel.amplitudes.onEach { amplitude ->
-                    binding.audioVisualizer.update(amplitude)
-                }.launchIn(this)
-
-            }
+        // todo bug - visualizer doesn't get updated on screen rotate
+        viewModel.amplitudes.collectSinceStarted { amplitude ->
+            binding.audioVisualizer.update(amplitude)
         }
 
         viewModel.uiState.observe(viewLifecycleOwner) {
