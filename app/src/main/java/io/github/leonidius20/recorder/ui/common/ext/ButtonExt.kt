@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.ext
 
 import android.graphics.drawable.Drawable
 import android.widget.Button

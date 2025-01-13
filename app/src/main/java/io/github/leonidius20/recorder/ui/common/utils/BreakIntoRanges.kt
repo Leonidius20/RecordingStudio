@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.utils
 
 /**
  * given a list of unsigned integers without duplicates (unsorted), sort descending and

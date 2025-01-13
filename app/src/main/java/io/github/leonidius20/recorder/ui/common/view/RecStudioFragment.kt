@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.view
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle

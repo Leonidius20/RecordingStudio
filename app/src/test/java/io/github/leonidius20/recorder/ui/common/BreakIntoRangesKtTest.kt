@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.common
 
+import io.github.leonidius20.recorder.ui.common.utils.breakIntoRangesDescending
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 

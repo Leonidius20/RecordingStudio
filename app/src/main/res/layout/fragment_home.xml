@@ -305,7 +305,7 @@
                         android:text="@string/audio_settings_hint_sample_rate"
                         android:textAppearance="?textAppearanceBodyMedium" />
 
-                    <io.github.leonidius20.recorder.ui.common.Selector
+                    <io.github.leonidius20.recorder.ui.common.view.Selector
                         android:id="@+id/audio_settings_sample_rate_slider"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/selector_height"
@@ -327,7 +327,7 @@
                             android:text="@string/audio_settings_title_bit_depth"
                             android:textAppearance="?textAppearanceTitleLarge" />
 
-                        <io.github.leonidius20.recorder.ui.common.Selector
+                        <io.github.leonidius20.recorder.ui.common.view.Selector
                             android:id="@+id/audio_settings_bit_depth_slider"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/selector_height"
@@ -350,7 +350,7 @@
                             android:text="@string/audio_settings_title_bit_rate"
                             android:textAppearance="?textAppearanceTitleLarge" />
 
-                        <io.github.leonidius20.recorder.ui.common.Selector
+                        <io.github.leonidius20.recorder.ui.common.view.Selector
                             android:id="@+id/audio_settings_bitrate_discrete_selector"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/selector_height"

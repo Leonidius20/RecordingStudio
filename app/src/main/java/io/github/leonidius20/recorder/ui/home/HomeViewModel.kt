@@ -16,7 +16,7 @@ import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
-import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
+import io.github.leonidius20.recorder.ui.common.utils.millisecondsToStopwatchString
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 

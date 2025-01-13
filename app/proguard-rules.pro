@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# because we create binding instances using reflection
+-keepclassmembers class * implements androidx.viewbinding.ViewBinding {
+    *;
+}

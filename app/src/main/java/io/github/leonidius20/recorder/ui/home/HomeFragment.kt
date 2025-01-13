@@ -26,7 +26,8 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
-import io.github.leonidius20.recorder.ui.common.RecStudioFragment
+import io.github.leonidius20.recorder.ui.common.view.RecStudioFragment
+import io.github.leonidius20.recorder.ui.common.view.Selector
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.utils
 
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration

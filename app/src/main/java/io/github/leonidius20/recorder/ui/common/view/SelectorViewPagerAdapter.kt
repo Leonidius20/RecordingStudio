@@ -1,17 +1,16 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.view
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import io.github.leonidius20.recorder.ui.common.SelectorViewPagerAdapter.ViewHolder
 import io.github.leonidius20.recorder.R
 
 class SelectorViewPagerAdapter(
     private val context: Context,
     // private val startingData: Array<String>,
-) : RecyclerView.Adapter<ViewHolder>() {
+) : RecyclerView.Adapter<SelectorViewPagerAdapter.ViewHolder>() {
 
 
     class ViewHolder(

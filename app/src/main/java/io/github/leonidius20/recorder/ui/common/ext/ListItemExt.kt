@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.ui.common.ext
 
 import androidx.databinding.BindingAdapter
 import net.nicbell.materiallists.ListItem

@@ -18,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -32,19 +31,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
-import io.github.leonidius20.recorder.ui.common.RecStudioFragment
+import io.github.leonidius20.recorder.ui.common.view.FragmentWithBinding
+import io.github.leonidius20.recorder.ui.common.view.RecStudioFragment
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 
 @AndroidEntryPoint
-class RecordingsListFragment : RecStudioFragment() {
-
-    private var _binding: FragmentRecordingsListBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+class RecordingsListFragment : FragmentWithBinding<FragmentRecordingsListBinding>() {
 
     private val viewModel: RecordingsListViewModel by viewModels()
 
@@ -58,9 +52,8 @@ class RecordingsListFragment : RecStudioFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentRecordingsListBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+    ): View? {
+        val root = super.onCreateView(inflater, container, savedInstanceState)
 
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
 
@@ -142,12 +135,6 @@ class RecordingsListFragment : RecStudioFragment() {
 
         return root
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
 
     var actionMode: ActionMode? = null
 
