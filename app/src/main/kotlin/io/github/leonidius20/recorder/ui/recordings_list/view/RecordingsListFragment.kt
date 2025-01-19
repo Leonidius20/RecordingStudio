@@ -18,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -29,6 +28,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
@@ -152,6 +152,7 @@ class RecordingsListFragment : RecStudioFragment() {
     var actionMode: ActionMode? = null
 
     private val actionModeCallback = object : ActionMode.Callback {
+
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
 
             if (viewModel.state.value.numItemsSelected > 1) {
@@ -186,6 +187,10 @@ class RecordingsListFragment : RecStudioFragment() {
             // todo: this is temporary, remove once sharing is implemented
             menu.removeItem(R.id.recordings_list_action_share)
 
+            if (BuildConfig.FLAVOR != "full") {
+                menu.removeItem(R.id.recordings_list_action_edit)
+            }
+
             return true
         }
 
@@ -206,6 +211,14 @@ class RecordingsListFragment : RecStudioFragment() {
 
                 R.id.recordings_list_action_trash -> {
                     trash()
+                }
+                R.id.recordings_list_action_edit -> {
+                    findNavController().navigate(
+                        RecordingsListFragmentDirections
+                            .actionRecordingsListToEditRecording(
+                                viewModel.getFirstSelectedItem().uri
+                            )
+                    )
                 }
             }
             return true

@@ -69,4 +69,5 @@
     <string name="selector_next_value">Next value</string>
     <string name="audio_settings_title_bit_rate">Bitrate</string>
     <string name="value_in_kbps" translatable="false">%1$s kbps</string>
+    <string name="recordings_list_action_edit">Edit recording</string>
 </resources>

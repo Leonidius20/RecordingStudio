@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_navigation_recordings_list_to_renameDialogFragment"
             app:destination="@id/renameDialogFragment" />
+        <action
+            android:id="@+id/action_recordings_list_to_edit_recording"
+            app:destination="@id/navigation_edit_recording" />
     </fragment>
 
     <fragment
@@ -51,6 +54,16 @@
         android:name="io.github.leonidius20.recorder.ui.editing.plugins.view.PluginsListFragment"
         android:label="PluginsListFragment"
         tools:layout="@layout/fragment_plugins_list" />
+
+    <fragment
+        android:id="@+id/navigation_edit_recording"
+        android:name="io.github.leonidius20.recorder.ui.editing.main.view.EditRecordingFragment">
+
+        <argument
+            android:name="fileToEdit"
+            app:argType="android.net.Uri" />
+
+    </fragment>
 
 
 </navigation>
