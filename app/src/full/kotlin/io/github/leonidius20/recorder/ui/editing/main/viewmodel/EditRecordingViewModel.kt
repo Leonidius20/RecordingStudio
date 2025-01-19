@@ -11,9 +11,9 @@ class EditRecordingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    init {
+    //init {
         val args = EditRecordingFragmentArgs.fromSavedStateHandle(savedStateHandle)
         val uri = args.fileToEdit
-    }
+   // }
 
 }
