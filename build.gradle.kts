@@ -9,6 +9,7 @@ plugins {
 
 buildscript {
     repositories {
+        mavenLocal()
         maven("https://jitpack.io")
         google()
     }

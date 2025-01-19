@@ -102,6 +102,7 @@ android {
 
         create("full") {
             dimension = "version"
+            minSdk = 29
         }
 
     }
@@ -158,4 +159,5 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     // todo: if flavour = full, include AAP framework
+    "fullImplementation"("org.androidaudioplugin:androidaudioplugin:0.8.0")
 }
