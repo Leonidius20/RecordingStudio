@@ -4,9 +4,12 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
+import androidx.navigation.fragment.findNavController
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.Settings
 import javax.inject.Inject
@@ -30,6 +33,20 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                 this?.isEnabled = false
             }
 
+
+        }
+
+        if (BuildConfig.FLAVOR == "full") {
+            Preference(requireContext()).apply {
+                title = "View installed plugins"
+                setOnPreferenceClickListener { _ ->
+                    findNavController().navigate(
+                        SettingsFragmentDirections.actionNavSettingsToPluginsList()
+                    )
+                    true
+                }
+                preferenceScreen.addPreference(this)
+            }
 
         }
     }

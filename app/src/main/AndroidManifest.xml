@@ -22,6 +22,14 @@
     <!-- exclude access network state permission added by some library -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
 
+
+    <!-- query plugins -->
+    <queries>
+        <intent>
+            <action android:name="org.androidaudioplugin.AudioPluginService.V3" />
+        </intent>
+    </queries>
+
     <!-- todo: turn backup back on but make sure that call management permission is re-requested if "pause on call" was enabled -->
     <application
         android:name=".RecorderApp"

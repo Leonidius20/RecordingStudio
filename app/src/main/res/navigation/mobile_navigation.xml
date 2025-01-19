@@ -25,7 +25,11 @@
         android:id="@+id/navigation_settings"
         android:name="io.github.leonidius20.recorder.ui.settings.SettingsFragment"
         android:label="@string/nav_title_settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings" >
+        <action
+            android:id="@+id/action_nav_settings_to_plugins_list"
+            app:destination="@id/navigation_plugins_list"/>
+    </fragment>
 
     <dialog
         android:id="@+id/renameDialogFragment"
@@ -41,6 +45,12 @@
             android:name="id"
             app:argType="long" />
     </dialog>
+
+    <fragment
+        android:id="@+id/navigation_plugins_list"
+        android:name="io.github.leonidius20.recorder.ui.editing.plugins.view.PluginsListFragment"
+        android:label="PluginsListFragment"
+        tools:layout="@layout/fragment_plugins_list" />
 
 
 </navigation>
