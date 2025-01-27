@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.editing.plugins.view
+package io.github.leonidius20.recorder.ui.editing.plugins_list.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,9 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentPluginsListBinding
-import io.github.leonidius20.recorder.ui.editing.plugins.viewmodel.PluginsListViewModel
+import io.github.leonidius20.recorder.ui.editing.plugins_list.viewmodel.PluginsListViewModel
 
 @AndroidEntryPoint
 class PluginsListFragment : Fragment() {
@@ -30,7 +31,13 @@ class PluginsListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = PluginsListAdapter()
+        val adapter = PluginsListAdapter(onItemClick = {
+            findNavController().navigate(
+                PluginsListFragmentDirections.actionPluginsListToDetails(
+                    pluginId = it.id
+                )
+            )
+        })
         binding.pluginsList.adapter = adapter
         adapter.submitList(viewModel.get()) // todo: ui state and all
     }

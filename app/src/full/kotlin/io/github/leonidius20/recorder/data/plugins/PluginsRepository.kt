@@ -11,11 +11,18 @@ class PluginsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
-    fun getList() =
+    private val list by lazy {
         AudioPluginHostHelper.queryAudioPluginServices(context).flatMap { it.plugins }.map {
             PluginModel(
-                name = it.displayName
+                id = it.pluginId!!,
+                name = it.displayName,
+                allInfo = it,
             )
         }
+    }
+
+    fun getList() = list
+
+    fun getPluginDetails(id: String) = list.find { it.id == id }!!
 
 }

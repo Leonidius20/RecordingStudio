@@ -51,9 +51,15 @@
 
     <fragment
         android:id="@+id/navigation_plugins_list"
-        android:name="io.github.leonidius20.recorder.ui.editing.plugins.view.PluginsListFragment"
+        android:name="io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListFragment"
         android:label="PluginsListFragment"
-        tools:layout="@layout/fragment_plugins_list" />
+        tools:layout="@layout/fragment_plugins_list" >
+
+        <action
+            android:id="@+id/action_plugins_list_to_details"
+            app:destination="@id/nav_plugin_details"/>
+
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_edit_recording"
@@ -62,6 +68,16 @@
         <argument
             android:name="fileToEdit"
             app:argType="android.net.Uri" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_plugin_details"
+        android:name="io.github.leonidius20.recorder.ui.editing.plugin.view.PluginDetailsFragment">
+
+        <argument
+            android:name="pluginId"
+            app:argType="string" />
 
     </fragment>
 

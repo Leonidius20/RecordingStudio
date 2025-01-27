@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.editing.plugins.view
+package io.github.leonidius20.recorder.ui.editing.plugins_list.view
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.data.plugins.PluginModel
 import io.github.leonidius20.recorder.databinding.PluginListItemBinding
 
-class PluginsListAdapter : ListAdapter<PluginModel, PluginsListAdapter.ViewHolder>(
+class PluginsListAdapter(
+    private val onItemClick: (PluginModel) -> Unit,
+) : ListAdapter<PluginModel, PluginsListAdapter.ViewHolder>(
     DiffCallback()
 ) {
 
@@ -18,6 +20,9 @@ class PluginsListAdapter : ListAdapter<PluginModel, PluginsListAdapter.ViewHolde
 
         fun bind(plugin: PluginModel) {
             binding.plugin = plugin
+            binding.root.setOnClickListener {
+                onItemClick(plugin)
+            }
         }
 
     }
