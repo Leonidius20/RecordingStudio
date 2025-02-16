@@ -1,13 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
+        <import type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState.Connected"/>
+        <import type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState.Connecting"/>
+        <import type="android.view.View"/>
+        <variable
+            name="vm"
+            type="io.github.leonidius20.recorder.ui.editing.plugin.viewmodel.PluginDetailsViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="@{vm.uiState instanceof Connecting ? View.VISIBLE : View.GONE}" />
+
+        <androidx.constraintlayout.widget.Group
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids=""
+            android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

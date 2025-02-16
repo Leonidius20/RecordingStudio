@@ -21,8 +21,6 @@ class PluginsRepository @Inject constructor(
         }
     }
 
-    fun getList() = list
-
     fun getPluginDetails(id: String) = list.find { it.id == id }!!
 
 }
