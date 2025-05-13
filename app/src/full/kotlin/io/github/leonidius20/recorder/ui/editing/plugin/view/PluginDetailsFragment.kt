@@ -39,7 +39,9 @@ class PluginDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = PluginParamsAdapter()
+        val adapter = PluginParamsAdapter { param, newVal ->
+            viewModel.changeParam(param, newVal)
+        }
         binding.paramsList.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {

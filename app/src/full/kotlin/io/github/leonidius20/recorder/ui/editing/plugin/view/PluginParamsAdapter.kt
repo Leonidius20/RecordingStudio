@@ -6,16 +6,26 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.databinding.PluginParameterBinding
 import org.androidaudioplugin.ParameterInformation
 
-class PluginParamsAdapter() : RecyclerView.Adapter<PluginParamsAdapter.ViewHolder>() {
+class PluginParamsAdapter(
+    private val onParamChange: (paramId: UInt, newVal: Float) -> Unit,
+) : RecyclerView.Adapter<PluginParamsAdapter.ViewHolder>() {
 
     private var parameters: List<ParameterInformation> = emptyList()
 
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: PluginParameterBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(param: ParameterInformation) {
             binding.title.text = param.name
+            binding.slider.value = param.defaultValue.toFloat()
+
+            binding.slider.addOnChangeListener { slider, newVal, fromUser ->
+                if (fromUser) {
+                    onParamChange(param.id.toUInt(), newVal)
+                }
+            }
+
             if (param.enumerations.isNotEmpty()) {
 
             } else {

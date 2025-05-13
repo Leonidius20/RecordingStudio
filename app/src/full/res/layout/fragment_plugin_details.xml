@@ -28,7 +28,7 @@
         <androidx.constraintlayout.widget.Group
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids=""
+            app:constraint_referenced_ids="params_list,play_pause_btn,play_example_btn"
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
 
         <!-- todo: prob. replace w/ GridLayoutManager -->
@@ -38,6 +38,28 @@
             android:layout_height="match_parent"
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/play_pause_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:src="@drawable/media3_icon_play"
+            android:contentDescription="Start/stop processing"
+            android:onClick="@{() -> vm.toggleProcessing()}"
+            android:layout_margin="16dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/play_example_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:src="@drawable/media3_icon_feed"
+            android:contentDescription="Play example"
+            android:onClick="@{() -> vm.playExample()}"
+            android:layout_margin="16dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
+import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsScope
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
 import io.github.leonidius20.recorder.ui.editing.plugin.view.PluginDetailsFragmentArgs
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,12 +35,47 @@ class PluginDetailsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val plugin = pluginsRepository.getPluginDetails(pluginId)
-            val connection = client.connectToPluginService(plugin.allInfo.packageName)
+            val scope = PluginDetailsScope.create(plugin.allInfo, context, client)
+
             _uiState.value = PluginDetailsState.Connected(
-                connection, plugin.allInfo
+                scope, plugin.allInfo
             )
-            // todo: show the plugin ui? or at least ports
         }
     }
+
+    fun changeParam(id: UInt, value: Float) {
+        val state = uiState.value as PluginDetailsState.Connected
+        state.scope.setParameterValue(id, value)
+    }
+
+    fun toggleProcessing() {
+        val state = uiState.value as PluginDetailsState.Connected
+        if (state.scope.isProcessing) {
+            state.scope.pauseProcessing()
+        } else {
+            state.scope.startProcessing()
+        }
+    }
+
+    fun playExample() {
+        val state = uiState.value as PluginDetailsState.Connected
+        state.scope.playPreloadedAudio()
+    }
+
+    /**
+     * var isActivated by remember { mutableStateOf(false) }
+     *         Button(onClick = {
+     *             isActivated = !isActivated
+     *             if (isActivated)
+     *                 scope.startProcessing()
+     *             else
+     *                 scope.pauseProcessing()
+     *         }) {
+     *             Text(text = if (isActivated) "Pause" else "Start")
+     *         }
+     *         Button(onClick = { scope.playPreloadedAudio() }) {
+     *             Text(text = "Play Audio")
+     *         }
+     */
 
 }

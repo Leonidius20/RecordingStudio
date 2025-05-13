@@ -8,7 +8,8 @@ sealed interface PluginDetailsState {
     data object Connecting : PluginDetailsState
 
     data class Connected(
-        val connection: PluginServiceConnection,
+       // val connection: PluginServiceConnection,
+        val scope: PluginDetailsScope,
         val info: PluginInformation,
     ) : PluginDetailsState
 
