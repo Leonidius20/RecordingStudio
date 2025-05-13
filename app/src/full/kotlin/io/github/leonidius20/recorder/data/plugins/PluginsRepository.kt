@@ -11,7 +11,7 @@ class PluginsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
-    private val list by lazy {
+    val list by lazy {
         AudioPluginHostHelper.queryAudioPluginServices(context).flatMap { it.plugins }.map {
             PluginModel(
                 id = it.pluginId!!,

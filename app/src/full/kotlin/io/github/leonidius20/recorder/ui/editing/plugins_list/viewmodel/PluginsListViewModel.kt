@@ -10,6 +10,6 @@ class PluginsListViewModel @Inject constructor(
     private val repo: PluginsRepository,
 ) : ViewModel() {
 
-    fun get() = repo.getList()
+    fun get() = repo.list
 
 }

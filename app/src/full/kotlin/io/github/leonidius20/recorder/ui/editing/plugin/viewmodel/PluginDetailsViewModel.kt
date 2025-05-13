@@ -36,7 +36,7 @@ class PluginDetailsViewModel @Inject constructor(
             val plugin = pluginsRepository.getPluginDetails(pluginId)
             val connection = client.connectToPluginService(plugin.allInfo.packageName)
             _uiState.value = PluginDetailsState.Connected(
-                connection
+                connection, plugin.allInfo
             )
             // todo: show the plugin ui? or at least ports
         }

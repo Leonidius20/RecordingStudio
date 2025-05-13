@@ -39,11 +39,14 @@ class PluginDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val adapter = PluginParamsAdapter()
+        binding.paramsList.adapter = adapter
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     if (state is PluginDetailsState.Connected) {
-
+                        adapter.submitList(state.info.parameters)
                     }
                 }
             }

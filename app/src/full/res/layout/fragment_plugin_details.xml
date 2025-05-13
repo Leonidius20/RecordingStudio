@@ -31,7 +31,13 @@
             app:constraint_referenced_ids=""
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
 
-
+        <!-- todo: prob. replace w/ GridLayoutManager -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/params_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
