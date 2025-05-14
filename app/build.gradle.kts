@@ -159,6 +159,6 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     // todo: if flavour = full, include AAP framework
-    "fullImplementation"("org.androidaudioplugin:androidaudioplugin:0.8.0")
-    "fullImplementation"("org.androidaudioplugin:androidaudioplugin-manager:0.8.0")
+    "fullImplementation"("org.androidaudioplugin:androidaudioplugin:0.8.1")
+    "fullImplementation"("org.androidaudioplugin:androidaudioplugin-manager:0.8.1")
 }
