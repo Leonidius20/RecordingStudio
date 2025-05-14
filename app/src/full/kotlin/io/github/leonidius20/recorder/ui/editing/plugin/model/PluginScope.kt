@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 import android.content.Context
 import android.media.AudioManager
 import android.widget.Toast
+import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.PluginInformation
 import org.androidaudioplugin.hosting.AudioPluginClientBase
 import org.androidaudioplugin.hosting.AudioPluginMidiSettings
@@ -94,6 +95,14 @@ class PluginDetailsScope private constructor(
 
         if (ins != null)
             pluginPlayer.setParameterValue(id, value)
+    }
+
+    fun getParameters(): Array<ParameterInformation> {
+        val count = instance!!.getParameterCount()
+        val params = Array(count) { index ->
+            instance!!.getParameter(index)
+        }
+        return params
     }
 
     /*fun processExpression(origin: DiatonicKeyboardNoteExpressionOrigin, note: Int, value: Float) {

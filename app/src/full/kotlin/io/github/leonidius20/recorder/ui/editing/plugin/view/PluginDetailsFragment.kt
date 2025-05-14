@@ -48,7 +48,7 @@ class PluginDetailsFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     if (state is PluginDetailsState.Connected) {
-                        adapter.submitList(state.info.parameters)
+                        adapter.submitList(state.scope.getParameters().toList())
                     }
                 }
             }
