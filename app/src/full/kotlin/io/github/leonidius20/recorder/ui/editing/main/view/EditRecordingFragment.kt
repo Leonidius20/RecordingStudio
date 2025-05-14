@@ -6,9 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentEditRecordingBinding
 import io.github.leonidius20.recorder.ui.editing.main.viewmodel.EditRecordingViewModel
+import io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListAdapter
+import io.github.leonidius20.recorder.ui.editing.plugins_list.viewmodel.PluginsListViewModel
 
 @AndroidEntryPoint
 class EditRecordingFragment : Fragment() {
@@ -17,6 +20,7 @@ class EditRecordingFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EditRecordingViewModel by viewModels()
+    private val pluginListViewModel: PluginsListViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,7 +34,19 @@ class EditRecordingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.recordingName.text = "Editing file"
+        binding.recordingName.text = viewModel.fileName
+
+        val adapter = PluginsListAdapter(onItemClick = {
+            findNavController().navigate(
+                EditRecordingFragmentDirections.actionEditRecordingToPluginDetails(
+                    pluginId = it.id,
+                    fileUri = viewModel.uri,
+                    fileName = viewModel.fileName,
+                )
+            )
+        })
+        binding.pluginsList.adapter = adapter
+        adapter.submitList(pluginListViewModel.get()) // todo: ui state and all
     }
 
     override fun onDestroyView() {

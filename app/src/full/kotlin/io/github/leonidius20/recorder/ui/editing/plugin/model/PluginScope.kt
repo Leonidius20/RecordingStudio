@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 
 import android.content.Context
 import android.media.AudioManager
+import android.net.Uri
 import android.widget.Toast
 import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.PluginInformation
@@ -17,10 +18,13 @@ class PluginDetailsScope private constructor(
     val pluginInfo: PluginInformation,
     val context: Context,
     val client: AudioPluginClientBase,
+    // file descriptor here
+    val file: Uri,
+    val fileName: String,
 ) : AutoCloseable {
     companion object {
-        suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase): PluginDetailsScope {
-            val scope = PluginDetailsScope(pluginInfo, context, client)
+        suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String): PluginDetailsScope {
+            val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName)
             scope.instantiatePlugin()
             return scope
         }
@@ -37,11 +41,18 @@ class PluginDetailsScope private constructor(
         val channelCount = 2
         PluginPlayer.create(sampleRate, frames, channelCount).apply {
             setPlugin(instance!!)
-            context.assets.open(PluginPlayer.sample_audio_filename).use {
-                val bytes = ByteArray(it.available())
-                it.read(bytes)
-                loadAudioResource(bytes, PluginPlayer.sample_audio_filename)
+            // todo: replace file name here
+
+            // todo: handle errpr
+            val bytes = context.contentResolver.openInputStream(file)!!.use {
+                it.readBytes()
             }
+
+           // context.assets.open(PluginPlayer.sample_audio_filename).use {
+           //     val bytes = ByteArray(it.available())
+            //    it.read(bytes)
+                loadAudioResource(bytes, fileName)
+            //}
         }
     }
 

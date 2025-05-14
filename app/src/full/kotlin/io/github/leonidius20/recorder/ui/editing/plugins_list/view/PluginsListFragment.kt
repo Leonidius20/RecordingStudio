@@ -32,11 +32,12 @@ class PluginsListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = PluginsListAdapter(onItemClick = {
-            findNavController().navigate(
+            /*findNavController().navigate(
                 PluginsListFragmentDirections.actionPluginsListToDetails(
-                    pluginId = it.id
+                    pluginId = it.id,
+
                 )
-            )
+            )*/
         })
         binding.pluginsList.adapter = adapter
         adapter.submitList(viewModel.get()) // todo: ui state and all

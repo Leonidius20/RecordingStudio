@@ -213,10 +213,11 @@ class RecordingsListFragment : RecStudioFragment() {
                     trash()
                 }
                 R.id.recordings_list_action_edit -> {
+                    val item = viewModel.getFirstSelectedItem()
                     findNavController().navigate(
                         RecordingsListFragmentDirections
                             .actionRecordingsListToEditRecording(
-                                viewModel.getFirstSelectedItem().uri
+                                item.uri, item.name,
                             )
                     )
                 }

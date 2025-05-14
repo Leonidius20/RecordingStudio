@@ -23,8 +23,13 @@ class PluginDetailsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
-    private val pluginId = PluginDetailsFragmentArgs
-        .fromSavedStateHandle(savedStateHandle).pluginId
+    private val args = PluginDetailsFragmentArgs
+        .fromSavedStateHandle(savedStateHandle)
+
+    private val pluginId = args.pluginId
+
+    private val fileName = args.fileName
+    private val fileUri = args.fileUri
 
     private val client = AudioPluginClientBase(context)
 
@@ -35,7 +40,8 @@ class PluginDetailsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val plugin = pluginsRepository.getPluginDetails(pluginId)
-            val scope = PluginDetailsScope.create(plugin.allInfo, context, client)
+            val scope = PluginDetailsScope.create(plugin.allInfo, context, client,
+                fileUri, fileName)
 
             _uiState.value = PluginDetailsState.Connected(
                 scope, plugin.allInfo

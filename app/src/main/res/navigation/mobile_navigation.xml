@@ -69,6 +69,14 @@
             android:name="fileToEdit"
             app:argType="android.net.Uri" />
 
+        <argument
+            android:name="fileName"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_edit_recording_to_plugin_details"
+            app:destination="@id/nav_plugin_details"/>
+
     </fragment>
 
     <fragment
@@ -77,6 +85,14 @@
 
         <argument
             android:name="pluginId"
+            app:argType="string" />
+
+        <argument
+            android:name="fileUri"
+            app:argType="android.net.Uri" />
+
+        <argument
+            android:name="fileName"
             app:argType="string" />
 
     </fragment>
