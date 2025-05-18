@@ -1,9 +1,12 @@
 package io.github.leonidius20.recorder.ui.settings
 
+import android.content.ContentValues
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -11,6 +14,7 @@ import androidx.preference.SwitchPreferenceCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Settings
 import javax.inject.Inject
 
@@ -19,6 +23,24 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 
     @Inject
     lateinit var settings: Settings
+
+    @Inject
+    lateinit var recordingsListRepository: RecordingsListRepository // todo: remove
+
+    val launchFileSelector = registerForActivityResult(ActivityResultContracts.OpenDocument()) { selectedUri ->
+        if (selectedUri == null) return@registerForActivityResult
+        val resolver = requireContext().contentResolver
+        val mime = resolver.getType(selectedUri) ?: "audio/ogg"
+        val copyUri = recordingsListRepository.createRecordingFile("imported_file", mime)
+        val bytesCopied = resolver.openOutputStream(copyUri, "rw")!!.use { out ->
+            resolver.openInputStream(selectedUri)!!.use { input ->
+                input.copyTo(out)
+            }
+        }
+        resolver.update(copyUri, ContentValues().apply {
+            put(MediaStore.MediaColumns.SIZE, bytesCopied)
+        }, null, null)
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
@@ -43,6 +65,14 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                     findNavController().navigate(
                         SettingsFragmentDirections.actionNavSettingsToPluginsList()
                     )
+                    true
+                }
+                preferenceScreen.addPreference(this)
+            }
+            Preference(requireContext()).apply {
+                title = "Import file"
+                setOnPreferenceClickListener { _ ->
+                    launchFileSelector.launch(arrayOf("audio/*"))
                     true
                 }
                 preferenceScreen.addPreference(this)

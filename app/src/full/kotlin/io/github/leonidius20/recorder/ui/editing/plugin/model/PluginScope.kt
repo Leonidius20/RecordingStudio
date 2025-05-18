@@ -44,14 +44,17 @@ class PluginDetailsScope private constructor(
             // todo: replace file name here
 
             // todo: handle errpr
-            val bytes = context.contentResolver.openInputStream(file)!!.use {
-                it.readBytes()
+            context.contentResolver.openInputStream(file)!!.use {
+                val bytes = ByteArray(it.available())
+                it.read(bytes)
+                // replace with "filename"
+                loadAudioResource(bytes, PluginPlayer.sample_audio_filename)
             }
 
-           // context.assets.open(PluginPlayer.sample_audio_filename).use {
-           //     val bytes = ByteArray(it.available())
+            //context.assets.open(PluginPlayer.sample_audio_filename).use {
+            //    val bytes = ByteArray(it.available())
             //    it.read(bytes)
-                loadAudioResource(bytes, fileName)
+            //    loadAudioResource(bytes, fileName)
             //}
         }
     }
