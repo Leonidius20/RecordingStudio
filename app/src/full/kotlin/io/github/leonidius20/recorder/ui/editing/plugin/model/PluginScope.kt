@@ -38,7 +38,7 @@ class PluginDetailsScope private constructor(
         // It is for the audio processor's callback
         // FIXME: make them configurable?
         val frames = 1024 //audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
-        val channelCount = 2
+        val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
         PluginPlayer.create(sampleRate, frames, channelCount).apply {
             setPlugin(instance!!)
             // todo: replace file name here
