@@ -21,10 +21,11 @@ class PluginDetailsScope private constructor(
     // file descriptor here
     val file: Uri,
     val fileName: String,
+    private val outFileDescriptor: Int,
 ) : AutoCloseable {
     companion object {
-        suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String): PluginDetailsScope {
-            val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName)
+        suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String, outFileDescriptor: Int): PluginDetailsScope {
+            val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName, outFileDescriptor)
             scope.instantiatePlugin()
             return scope
         }
@@ -39,7 +40,7 @@ class PluginDetailsScope private constructor(
         // FIXME: make them configurable?
         val frames = 1024 //audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
         val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
-        PluginPlayer.create(sampleRate, frames, channelCount).apply {
+        PluginPlayer.create(sampleRate, frames, channelCount, outFileDescriptor).apply {
             setPlugin(instance!!)
             // todo: replace file name here
 

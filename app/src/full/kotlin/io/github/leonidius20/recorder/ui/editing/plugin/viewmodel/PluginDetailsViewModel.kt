@@ -1,12 +1,15 @@
 package io.github.leonidius20.recorder.ui.editing.plugin.viewmodel
 
 import android.content.Context
+import android.os.ParcelFileDescriptor
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
+import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsScope
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
 import io.github.leonidius20.recorder.ui.editing.plugin.view.PluginDetailsFragmentArgs
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.androidaudioplugin.hosting.AudioPluginClientBase
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,6 +25,7 @@ class PluginDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val pluginsRepository: PluginsRepository,
     @ApplicationContext private val context: Context,
+    private val recordingsRepo: RecordingsListRepository,
 ) : ViewModel() {
 
     private val args = PluginDetailsFragmentArgs
@@ -37,11 +42,22 @@ class PluginDetailsViewModel @Inject constructor(
         PluginDetailsState.Connecting)
     val uiState = _uiState.asStateFlow()
 
+    private lateinit var descriptor: ParcelFileDescriptor
+
     init {
         viewModelScope.launch {
+            val outFile = recordingsRepo.createRecordingFile(
+                System.currentTimeMillis().toString(),
+                Container.WAV.mimeType
+            )
+
+            descriptor = context.contentResolver.openFileDescriptor(
+                outFile, "w"
+            )!!
+
             val plugin = pluginsRepository.getPluginDetails(pluginId)
             val scope = PluginDetailsScope.create(plugin.allInfo, context, client,
-                fileUri, fileName)
+                fileUri, fileName, descriptor.fd) // todo: should we use detachFd()?
 
             _uiState.value = PluginDetailsState.Connected(
                 scope, plugin.allInfo
@@ -58,6 +74,7 @@ class PluginDetailsViewModel @Inject constructor(
         val state = uiState.value as PluginDetailsState.Connected
         if (state.scope.isProcessing) {
             state.scope.pauseProcessing()
+            descriptor.close()
         } else {
             state.scope.startProcessing()
         }
