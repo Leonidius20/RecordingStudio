@@ -1,19 +1,26 @@
 #include <unistd.h>
 #include <jni.h>
+#include "fdstream.h"
 
 bool copyFile(int inputFd, int outputFd) {
+    auto out = createOstreamFromFd(outputFd);
+
     const size_t bufferSize = 8192;
     char buffer[bufferSize];
     ssize_t bytesRead;
+
+
+
     while ((bytesRead = read(inputFd, buffer, bufferSize)) > 0) {
-        ssize_t bytesWritten = 0;
-        while (bytesWritten < bytesRead) {
-            ssize_t result = write(outputFd, buffer + bytesWritten, bytesRead - bytesWritten);
-            if (result < 0) return false;
-            bytesWritten += result;
-        }
+        out->write(buffer, bytesRead);
+        //ssize_t bytesWritten = 0;
+        //while (bytesWritten < bytesRead) {
+        //    ssize_t result = write(outputFd, buffer + bytesWritten, bytesRead - bytesWritten);
+        //    if (result < 0) return false;
+        //    bytesWritten += result;
+        //}
     }
-    return bytesRead == 0;
+    return true; //bytesRead == 0;
 }
 
 extern "C"
