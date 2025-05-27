@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.viewmodel
 
 import android.content.Context
 import android.os.ParcelFileDescriptor
+import android.widget.Toast
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.androidaudioplugin.hosting.AudioPluginClientBase
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -76,7 +76,12 @@ class PluginDetailsViewModel @Inject constructor(
             state.scope.pauseProcessing()
             descriptor.close()
         } else {
+            // should move this to BG thread. startProcessing()
+            // processes the whole file on the main thead
+            state.scope.playPreloadedAudio()
             state.scope.startProcessing()
+
+            Toast.makeText(context, "Done (startProcessing() existed)", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -50,16 +50,5 @@
             android:onClick="@{() -> vm.toggleProcessing()}"
             android:layout_margin="16dp" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/play_example_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:src="@drawable/media3_icon_feed"
-            android:contentDescription="Play example"
-            android:onClick="@{() -> vm.playExample()}"
-            android:layout_margin="16dp" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
