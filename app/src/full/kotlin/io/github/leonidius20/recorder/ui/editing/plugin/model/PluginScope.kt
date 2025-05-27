@@ -2,14 +2,17 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 
 import android.content.Context
 import android.media.AudioManager
+import android.media.MediaFormat
 import android.net.Uri
 import android.widget.Toast
+import androidx.media3.exoplayer.MediaExtractorCompat
 import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.PluginInformation
 import org.androidaudioplugin.hosting.AudioPluginClientBase
 import org.androidaudioplugin.hosting.AudioPluginMidiSettings
 import org.androidaudioplugin.hosting.NativeRemotePluginInstance
 import org.androidaudioplugin.manager.PluginPlayer
+import timber.log.Timber
 
 /**
  * taken from example app with almost no changes
@@ -34,8 +37,13 @@ class PluginDetailsScope private constructor(
     var instance: NativeRemotePluginInstance? = null
 
     private val pluginPlayer by lazy {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val sampleRate = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
+        // val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        //val sampleRate =
+        //    audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
+
+        val sampleRate = getSampleRate(file)
+        // todo: get sample rate from file
+
         // It is for the audio processor's callback
         // FIXME: make them configurable?
         val frames = 1024 //audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
@@ -48,7 +56,7 @@ class PluginDetailsScope private constructor(
             context.contentResolver.openInputStream(file)!!.use {
                 val bytes = ByteArray(it.available())
                 it.read(bytes)
-                // replace with "filename"
+                // replace with "filename". (Maybe MediaStore returns it w/o extension??)
                 loadAudioResource(bytes, PluginPlayer.sample_audio_filename)
             }
 
@@ -131,4 +139,15 @@ class PluginDetailsScope private constructor(
     fun setNoteState(note: Int, isNoteOn: Boolean) {
         pluginPlayer.setNoteState(note, 0xF800, isNoteOn)
     }
+
+    private fun getSampleRate(uri: Uri): Int {
+        // todo: i suppose you could do it with MediaStore??
+
+        val extractor = MediaExtractorCompat(context)
+        extractor.setDataSource(uri, 0)
+        return extractor.getTrackFormat(0).getInteger(MediaFormat.KEY_SAMPLE_RATE).also {
+            Timber.d("Detected sample rate as $it")
+        }
+    }
+
 }

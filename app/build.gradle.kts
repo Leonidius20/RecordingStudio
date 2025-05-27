@@ -178,4 +178,6 @@ dependencies {
 
     "fullImplementation"(libs.androidAudioPlugin)
     "fullImplementation"(libs.androidAudioPlugin.manager)
+
+    implementation(libs.timber)
 }

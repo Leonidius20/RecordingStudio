@@ -23,8 +23,9 @@ audioRecordView = "1.0.5"
 preference = "1.2.1"
 permissionx = "1.8.0"
 androidx-media3 = "1.4.0"
-aap = "0.8.3.2"
+aap = "0.8.3.3"
 ndk = "26.1.10909125"
+timber = "5.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +56,7 @@ androidx-media3-common = { group = "androidx.media3", name = "media3-common", ve
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
 androidAudioPlugin = { group = "org.androidaudioplugin", name = "androidaudioplugin", version.ref = "aap" }
 androidAudioPlugin-manager = { group = "org.androidaudioplugin", name = "androidaudioplugin-manager", version.ref = "aap" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
