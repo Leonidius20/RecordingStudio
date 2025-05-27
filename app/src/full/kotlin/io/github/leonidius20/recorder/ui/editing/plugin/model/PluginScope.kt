@@ -1,7 +1,6 @@
 package io.github.leonidius20.recorder.ui.editing.plugin.model
 
 import android.content.Context
-import android.media.AudioManager
 import android.media.MediaFormat
 import android.net.Uri
 import android.widget.Toast
@@ -41,23 +40,26 @@ class PluginDetailsScope private constructor(
         //val sampleRate =
         //    audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
 
-        val sampleRate = getSampleRate(file)
+        val fileMetadata = getSampleRateAndChannelCount(file)
         // todo: get sample rate from file
 
         // It is for the audio processor's callback
         // FIXME: make them configurable?
-        val frames = 1024 //audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
-        val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
-        PluginPlayer.create(sampleRate, frames, channelCount, outFileDescriptor).apply {
+        val framesPerCallback = 1024 //audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER).toInt()
+        // val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
+        PluginPlayer.create(fileMetadata.sampleRate,
+            framesPerCallback, fileMetadata.channelCount, outFileDescriptor).apply {
             setPlugin(instance!!)
-            // todo: replace file name here
 
             // todo: handle errpr
             context.contentResolver.openInputStream(file)!!.use {
                 val bytes = ByteArray(it.available())
                 it.read(bytes)
-                // replace with "filename". (Maybe MediaStore returns it w/o extension??)
-                loadAudioResource(bytes, PluginPlayer.sample_audio_filename)
+                loadAudioResource(
+                    bytes,
+                    fileName.also {
+                        Timber.d("Filename is '$it'")
+                    })
             }
 
             //context.assets.open(PluginPlayer.sample_audio_filename).use {
@@ -140,13 +142,23 @@ class PluginDetailsScope private constructor(
         pluginPlayer.setNoteState(note, 0xF800, isNoteOn)
     }
 
-    private fun getSampleRate(uri: Uri): Int {
+    data class FileDetails(
+        val sampleRate: Int,
+        val channelCount: Int,
+    )
+
+    private fun getSampleRateAndChannelCount(uri: Uri): FileDetails {
         // todo: i suppose you could do it with MediaStore??
 
         val extractor = MediaExtractorCompat(context)
         extractor.setDataSource(uri, 0)
-        return extractor.getTrackFormat(0).getInteger(MediaFormat.KEY_SAMPLE_RATE).also {
-            Timber.d("Detected sample rate as $it")
+        val trackFormat = extractor.getTrackFormat(0)
+
+        return FileDetails(
+            sampleRate = trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+            channelCount = trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT),
+        ).also {
+            Timber.d("Detected sample rate as ${it.sampleRate}, ${it.channelCount} channels")
         }
     }
 

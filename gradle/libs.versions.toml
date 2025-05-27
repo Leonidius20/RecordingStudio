@@ -23,7 +23,7 @@ audioRecordView = "1.0.5"
 preference = "1.2.1"
 permissionx = "1.8.0"
 androidx-media3 = "1.4.0"
-aap = "0.8.3.4"
+aap = "0.8.3.6"
 ndk = "26.1.10909125"
 timber = "5.0.1"
 
