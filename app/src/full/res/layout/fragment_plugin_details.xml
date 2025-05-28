@@ -28,7 +28,7 @@
         <androidx.constraintlayout.widget.Group
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="params_list,play_pause_btn,play_example_btn"
+            app:constraint_referenced_ids="params_list,play_pause_btn"
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
 
         <!-- todo: prob. replace w/ GridLayoutManager -->
@@ -46,8 +46,21 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:src="@drawable/media3_icon_play"
+            android:visibility="@{vm.uiState.playBtnVisibility()}"
             android:contentDescription="Start/stop processing"
             android:onClick="@{() -> vm.toggleProcessing()}"
+            android:layout_margin="16dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/save_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:src="@drawable/ic_save"
+            android:visibility="@{vm.uiState.saveBtnVisibility()}"
+            android:contentDescription="Start/stop processing"
+            android:onClick="@{() -> vm.saveFile()}"
             android:layout_margin="16dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

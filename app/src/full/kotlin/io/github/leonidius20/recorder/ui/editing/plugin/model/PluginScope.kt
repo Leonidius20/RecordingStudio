@@ -3,7 +3,6 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 import android.content.Context
 import android.media.MediaFormat
 import android.net.Uri
-import android.widget.Toast
 import androidx.media3.exoplayer.MediaExtractorCompat
 import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.PluginInformation
@@ -98,13 +97,11 @@ class PluginDetailsScope private constructor(
     fun startProcessing() {
         pluginPlayer.startProcessing()
         isProcessing = true
-        Toast.makeText(context, "started processing", Toast.LENGTH_SHORT).show()
     }
 
     fun pauseProcessing() {
         pluginPlayer.pauseProcessing()
         isProcessing = false
-        Toast.makeText(context, "paused processing", Toast.LENGTH_SHORT).show()
     }
 
     fun playPreloadedAudio() {
