@@ -29,7 +29,7 @@ class PluginDetailsScope private constructor(
     companion object {
         suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String, outFileDescriptor: Int): PluginDetailsScope {
             val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName, outFileDescriptor)
-            val instance = scope.instantiatePlugin(pluginInfo)
+            val instance = scope.instantiatePlugin(pluginInfo, client)
             scope.instances.add(instance)
             return scope
         }
@@ -77,15 +77,15 @@ class PluginDetailsScope private constructor(
         pluginPlayer.close()
     }
 
-    suspend fun instantiatePlugin(pluginInfo: PluginInformation): NativeRemotePluginInstance {
+    suspend fun instantiatePlugin(pluginInfo: PluginInformation, client: AudioPluginClientBase): NativeRemotePluginInstance {
         //if (!manager.connections.any { it.serviceInfo.packageName == pluginInfo.packageName })
             client.connectToPluginService(pluginInfo.packageName)
         val instance = client.instantiateNativePlugin(pluginInfo)
         return instance
     }
 
-    suspend fun addPlugin(pluginInfo: PluginInformation) {
-        val instance = instantiatePlugin(pluginInfo)
+    suspend fun addPlugin(pluginInfo: PluginInformation, client: AudioPluginClientBase = this.client) {
+        val instance = instantiatePlugin(pluginInfo, client)
         instances.add(instance)
         pluginPlayer.addPlugin(instance)
     }
