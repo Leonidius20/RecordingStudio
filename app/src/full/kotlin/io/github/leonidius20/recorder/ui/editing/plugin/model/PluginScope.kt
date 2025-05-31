@@ -50,7 +50,7 @@ class PluginDetailsScope private constructor(
         // val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
         PluginPlayer.create(fileMetadata.sampleRate,
             framesPerCallback, fileMetadata.channelCount, outFileDescriptor).apply {
-            setPlugin(instance!!)
+            addPlugin(instance!!)
 
             // todo: handle errpr
             context.contentResolver.openInputStream(file)!!.use {
