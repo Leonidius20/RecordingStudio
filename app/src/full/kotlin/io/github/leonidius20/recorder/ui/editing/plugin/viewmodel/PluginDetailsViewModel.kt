@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.recorder.data.plugins.PluginModel
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Container
@@ -144,6 +145,15 @@ class PluginDetailsViewModel @Inject constructor(
         } catch (e: IOException) {
             Timber.e(e, "Failed to close descriptor when clearing vm")
         }
+    }
+
+    fun addPlugin(pluginInfo: PluginModel) = viewModelScope.launch {
+        val state = uiState.value as PluginDetailsState.Connected
+        state.scope.addPlugin(pluginInfo.allInfo)
+
+        Toast.makeText(context, "added plugin ${pluginInfo.name}", Toast.LENGTH_SHORT).show()
+
+        // todo: update ui state to reflect this new plugin appearting
     }
 
 }

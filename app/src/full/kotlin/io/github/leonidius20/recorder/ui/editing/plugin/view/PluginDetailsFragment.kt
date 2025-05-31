@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentPluginDetailsBinding
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
 import io.github.leonidius20.recorder.ui.editing.plugin.viewmodel.PluginDetailsViewModel
+import io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListFragment
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -43,6 +44,10 @@ class PluginDetailsFragment : Fragment() {
             viewModel.changeParam(param, newVal)
         }
         binding.paramsList.adapter = adapter
+
+        binding.addPluginBtn.setOnClickListener {
+            PluginsListFragment().show(childFragmentManager, "plugin-selector-dialog")
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

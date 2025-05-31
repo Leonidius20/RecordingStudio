@@ -106,6 +106,8 @@ android {
 
             packaging.jniLibs.keepDebugSymbols.add("**.so")
 
+            resValue("string", "aap_version", libs.versions.aap.get())
+
             externalNativeBuild {
                 cmake {
                     arguments("-DANDROID_STL=c++_shared")

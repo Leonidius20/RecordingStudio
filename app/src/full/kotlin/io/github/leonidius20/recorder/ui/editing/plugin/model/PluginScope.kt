@@ -18,7 +18,7 @@ import timber.log.Timber
  * taken from example app with almost no changes
  */
 class PluginDetailsScope private constructor(
-    val pluginInfo: PluginInformation,
+    val pluginInfo: PluginInformation, // todo: remove, this is for 1st plugin only
     val context: Context,
     val client: AudioPluginClientBase,
     // file descriptor here
@@ -29,12 +29,14 @@ class PluginDetailsScope private constructor(
     companion object {
         suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String, outFileDescriptor: Int): PluginDetailsScope {
             val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName, outFileDescriptor)
-            scope.instantiatePlugin()
+            val instance = scope.instantiatePlugin(pluginInfo)
+            scope.instances.add(instance)
             return scope
         }
     }
 
-    var instance: NativeRemotePluginInstance? = null
+    //var instance: NativeRemotePluginInstance? = null
+    private val instances = mutableListOf<NativeRemotePluginInstance>()
 
     private val pluginPlayer by lazy {
         // val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -50,7 +52,7 @@ class PluginDetailsScope private constructor(
         // val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
         PluginPlayer.create(fileMetadata.sampleRate,
             framesPerCallback, fileMetadata.channelCount, outFileDescriptor).apply {
-            addPlugin(instance!!)
+            addPlugin(instances[0]!!)
 
             // todo: handle errpr
             context.contentResolver.openInputStream(file)!!.use {
@@ -75,10 +77,17 @@ class PluginDetailsScope private constructor(
         pluginPlayer.close()
     }
 
-    suspend fun instantiatePlugin() {
+    suspend fun instantiatePlugin(pluginInfo: PluginInformation): NativeRemotePluginInstance {
         //if (!manager.connections.any { it.serviceInfo.packageName == pluginInfo.packageName })
             client.connectToPluginService(pluginInfo.packageName)
-        instance = client.instantiateNativePlugin(pluginInfo)
+        val instance = client.instantiateNativePlugin(pluginInfo)
+        return instance
+    }
+
+    suspend fun addPlugin(pluginInfo: PluginInformation) {
+        val instance = instantiatePlugin(pluginInfo)
+        instances.add(instance)
+        pluginPlayer.addPlugin(instance)
     }
 
     fun setNewMidiMappingFlags(pluginId: String, newFlags: Int) {
@@ -114,14 +123,16 @@ class PluginDetailsScope private constructor(
         pluginPlayer.setPresetIndex(index)
     }
 
-    fun setParameterValue(id: UInt, value: Float) {
-        val ins = instance
+    // todo: other indicies
+    fun setParameterValue(id: UInt, value: Float, pluginIndex: Int = 0) {
+        val ins = instances[pluginIndex]
 
         if (ins != null)
             pluginPlayer.setParameterValue(id, value)
     }
 
-    fun getParameters(): Array<ParameterInformation> {
+    fun getParameters(pluginIndex: Int = 0): Array<ParameterInformation> {
+        val instance = instances[pluginIndex]!!
         val count = instance!!.getParameterCount()
         val params = Array(count) { index ->
             instance!!.getParameter(index)
