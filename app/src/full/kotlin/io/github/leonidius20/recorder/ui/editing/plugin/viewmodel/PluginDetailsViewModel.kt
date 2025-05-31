@@ -97,7 +97,11 @@ class PluginDetailsViewModel @Inject constructor(
             _uiState.value = state.copy(isProcessing = true)
 
             // clear out file
-            FileOutputStream(cacheOutFile).close()
+            // todo: recreate and set new file descriptor
+            //FileOutputStream(cacheOutFile, false).channel.apply {
+            //    truncate(0)
+            //    position(0)
+            //}
 
             process(state)
 

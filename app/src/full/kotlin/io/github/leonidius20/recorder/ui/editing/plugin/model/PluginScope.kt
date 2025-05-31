@@ -3,6 +3,8 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 import android.content.Context
 import android.media.MediaFormat
 import android.net.Uri
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.MediaExtractorCompat
 import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.PluginInformation
@@ -144,6 +146,7 @@ class PluginDetailsScope private constructor(
         val channelCount: Int,
     )
 
+    @OptIn(UnstableApi::class)
     private fun getSampleRateAndChannelCount(uri: Uri): FileDetails {
         // todo: i suppose you could do it with MediaStore??
 
