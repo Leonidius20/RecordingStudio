@@ -20,7 +20,8 @@ data class PluginChainItem(
     fun expandContractBtnIcon() = if (isExpanded)
         R.drawable.ic_contract else R.drawable.ic_expand
 
-    fun paramsListVisibility() = if (isExpanded && isConnected)
-        View.VISIBLE else View.GONE
+    // todo: re-enable expaand-contract functionality
+    fun paramsListVisibility() = //if (isExpanded && isConnected)
+        View.VISIBLE //else View.GONE
 
 }

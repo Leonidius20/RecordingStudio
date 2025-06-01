@@ -34,6 +34,7 @@
                 android:text="@{item.pluginName()}"
                 tools:text="Plugin name" />
 
+            <!-- temprarily hiding -->
             <ImageButton
                 android:id="@+id/expand_or_close_plugin_params"
                 android:layout_width="@dimen/icon_btn_dimension"
@@ -45,6 +46,7 @@
                 tools:src="@drawable/ic_expand"
                 app:layout_constraintBottom_toBottomOf="@id/plugin_name"
                 app:layout_constraintEnd_toEndOf="parent"
+                android:visibility="gone"
                 app:layout_constraintTop_toTopOf="@id/plugin_name" />
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
