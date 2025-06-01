@@ -13,6 +13,9 @@ import io.github.leonidius20.recorder.ui.editing.main.viewmodel.EditRecordingVie
 import io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListAdapter
 import io.github.leonidius20.recorder.ui.editing.plugins_list.viewmodel.PluginsListViewModel
 
+// todo: delete this file altogether, its unused
+// just move name display to the plugin chain scrren
+@Deprecated(message = "todo: delete this file altogether, its unused")
 @AndroidEntryPoint
 class EditRecordingFragment : Fragment() {
 
@@ -34,16 +37,19 @@ class EditRecordingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.recordingName.text = viewModel.fileName
+        // binding.recordingName.text = viewModel.fileName
 
         val adapter = PluginsListAdapter(onItemClick = {
-            findNavController().navigate(
+
+
+
+            /*findNavController().navigate(
                 EditRecordingFragmentDirections.actionEditRecordingToPluginDetails(
                     pluginId = it.id,
                     fileUri = viewModel.uri,
                     fileName = viewModel.fileName,
                 )
-            )
+            )*/
         })
         binding.pluginsList.adapter = adapter
         adapter.submitList(pluginListViewModel.get()) // todo: ui state and all

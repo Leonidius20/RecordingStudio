@@ -29,7 +29,7 @@
         <androidx.constraintlayout.widget.Group
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="params_list,play_pause_btn"
+            app:constraint_referenced_ids="plugin_chain_list,play_pause_btn,add_plugin_btn"
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
 
         <com.google.android.material.button.MaterialButton

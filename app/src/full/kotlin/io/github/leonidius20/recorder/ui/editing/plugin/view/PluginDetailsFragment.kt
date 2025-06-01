@@ -57,7 +57,7 @@ class PluginDetailsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.pluginChain.collect { chain ->
-                    adapter.submitList(chain)
+                    adapter.submitList(chain, binding.pluginChainList)
                 }
             }
         }

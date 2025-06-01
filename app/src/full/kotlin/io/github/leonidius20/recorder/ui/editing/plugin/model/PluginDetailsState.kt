@@ -10,7 +10,7 @@ sealed interface PluginDetailsState {
     data class Connected(
        // val connection: PluginServiceConnection,
         val scope: PluginDetailsScope,
-        val info: PluginInformation,
+       // val info: PluginInformation,
         /**
          * Processing in progress. Lock UI
          */

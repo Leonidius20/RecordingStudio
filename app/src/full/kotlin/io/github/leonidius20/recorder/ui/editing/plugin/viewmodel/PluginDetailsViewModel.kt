@@ -45,7 +45,7 @@ class PluginDetailsViewModel @Inject constructor(
     private val args = PluginDetailsFragmentArgs
         .fromSavedStateHandle(savedStateHandle)
 
-    private val pluginId = args.pluginId
+    //private val pluginId = args.pluginId
 
     private val fileName = args.fileName
     private val fileUri = args.fileUri
@@ -79,22 +79,22 @@ class PluginDetailsViewModel @Inject constructor(
                 outFile, "rw"
             )!!
 
-            val plugin = pluginsRepository.getPluginDetails(pluginId)
-            scope = PluginDetailsScope.create(plugin.allInfo, context, client,
+            //val plugin = pluginsRepository.getPluginDetails(pluginId)
+            scope = PluginDetailsScope.create(/*plugin.allInfo,*/ context, client,
                 fileUri, fileName, descriptor.fd) // todo: should we use detachFd()?
 
             _uiState.value = PluginDetailsState.Connected(
-                scope, plugin.allInfo
+                scope, //plugin.allInfo
             )
 
-            _pluginChain.value = pluginChain.value.toMutableList().apply {
+            /*_pluginChain.value = pluginChain.value.toMutableList().apply {
                 add(PluginChainItem(
                     isConnected = true,
                     isExpanded = true,
                     info = plugin.allInfo,
                     params = scope.getParameters(pluginIndex = 0).toList(),
                 ))
-            }
+            }*/
         }
     }
 
@@ -102,6 +102,12 @@ class PluginDetailsViewModel @Inject constructor(
         val state = uiState.value as PluginDetailsState.Connected
         state.scope.setParameterValue(id, value, pluginIndex)
         _uiState.value = state.copy(isFileReady = false)
+
+       // _pluginChain.value = pluginChain.value.toMutableList().apply {
+       //     this[pluginIndex] = this[pluginIndex].copy(
+       //         params = scope.getParameters(pluginIndex).toList()
+       //     )
+       // }
     }
 
     fun toggleProcessing() = viewModelScope.launch {

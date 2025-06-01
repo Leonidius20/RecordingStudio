@@ -21,7 +21,7 @@
             app:destination="@id/renameDialogFragment" />
         <action
             android:id="@+id/action_recordings_list_to_edit_recording"
-            app:destination="@id/navigation_edit_recording" />
+            app:destination="@id/nav_plugin_details" />
     </fragment>
 
     <fragment
@@ -49,43 +49,18 @@
             app:argType="long" />
     </dialog>
 
-    <fragment
+    <!--todo open dialog using nav library instead of manually  -->
+    <dialog
         android:id="@+id/navigation_plugins_list"
         android:name="io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListFragment"
         android:label="PluginsListFragment"
         tools:layout="@layout/fragment_plugins_list" >
 
-        <action
-            android:id="@+id/action_plugins_list_to_details"
-            app:destination="@id/nav_plugin_details"/>
-
-    </fragment>
-
-    <fragment
-        android:id="@+id/navigation_edit_recording"
-        android:name="io.github.leonidius20.recorder.ui.editing.main.view.EditRecordingFragment">
-
-        <argument
-            android:name="fileToEdit"
-            app:argType="android.net.Uri" />
-
-        <argument
-            android:name="fileName"
-            app:argType="string" />
-
-        <action
-            android:id="@+id/action_edit_recording_to_plugin_details"
-            app:destination="@id/nav_plugin_details"/>
-
-    </fragment>
+    </dialog>
 
     <fragment
         android:id="@+id/nav_plugin_details"
         android:name="io.github.leonidius20.recorder.ui.editing.plugin.view.PluginDetailsFragment">
-
-        <argument
-            android:name="pluginId"
-            app:argType="string" />
 
         <argument
             android:name="fileUri"

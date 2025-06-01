@@ -34,9 +34,11 @@ class PluginsChainAdapter(
 
     override fun getItemCount() = chain.size
 
-    fun submitList(newChain: List<PluginChainItem>) {
+    fun submitList(newChain: List<PluginChainItem>, view: RecyclerView) {
         chain = newChain
-        notifyDataSetChanged()
+        view.post {
+            notifyDataSetChanged()
+        }
     }
 
     inner class ViewHolder(

@@ -19,7 +19,7 @@ import timber.log.Timber
  * taken from example app with almost no changes
  */
 class PluginDetailsScope private constructor(
-    val pluginInfo: PluginInformation, // todo: remove, this is for 1st plugin only
+    // val pluginInfo: PluginInformation, // todo: remove, this is for 1st plugin only
     val context: Context,
     val client: AudioPluginClientBase,
     // file descriptor here
@@ -28,11 +28,11 @@ class PluginDetailsScope private constructor(
     private val outFileDescriptor: Int,
 ) : AutoCloseable {
     companion object {
-        suspend fun create(pluginInfo: PluginInformation, context: Context, client: AudioPluginClientBase, file: Uri, fileName: String, outFileDescriptor: Int): PluginDetailsScope {
-            val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName, outFileDescriptor)
-            val instance = scope.instantiatePlugin(pluginInfo, client)
-            scope.instances.add(instance)
-            Toast.makeText(context, "instance id ${instance.instanceId}", Toast.LENGTH_SHORT).show()
+        suspend fun create(/*pluginInfo: PluginInformation,*/ context: Context, client: AudioPluginClientBase, file: Uri, fileName: String, outFileDescriptor: Int): PluginDetailsScope {
+            val scope = PluginDetailsScope(/*pluginInfo,*/ context, client, file, fileName, outFileDescriptor)
+            //val instance = scope.instantiatePlugin(pluginInfo, client)
+            //scope.instances.add(instance)
+            //Toast.makeText(context, "instance id ${instance.instanceId}", Toast.LENGTH_SHORT).show()
             return scope
         }
     }
@@ -40,7 +40,7 @@ class PluginDetailsScope private constructor(
     //var instance: NativeRemotePluginInstance? = null
     private val instances = mutableListOf<NativeRemotePluginInstance>()
 
-    private val pluginPlayer by lazy {
+    private val pluginPlayer = run {
         // val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         //val sampleRate =
         //    audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE).toInt()
@@ -54,7 +54,7 @@ class PluginDetailsScope private constructor(
         // val channelCount = 2 // todo: should depend in the file, could be mono or stereo, we should query that. Or is this for output, not input? Check the details of the example file (sample rate, num channels)
         PluginPlayer.create(fileMetadata.sampleRate,
             framesPerCallback, fileMetadata.channelCount, outFileDescriptor).apply {
-            addPlugin(instances[0]!!)
+            //addPlugin(instances[0]!!)
 
             // todo: handle errpr
             context.contentResolver.openInputStream(file)!!.use {
