@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.model
 import android.content.Context
 import android.media.MediaFormat
 import android.net.Uri
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.MediaExtractorCompat
@@ -31,6 +32,7 @@ class PluginDetailsScope private constructor(
             val scope = PluginDetailsScope(pluginInfo, context, client, file, fileName, outFileDescriptor)
             val instance = scope.instantiatePlugin(pluginInfo, client)
             scope.instances.add(instance)
+            Toast.makeText(context, "instance id ${instance.instanceId}", Toast.LENGTH_SHORT).show()
             return scope
         }
     }
@@ -84,10 +86,14 @@ class PluginDetailsScope private constructor(
         return instance
     }
 
-    suspend fun addPlugin(pluginInfo: PluginInformation, client: AudioPluginClientBase = this.client) {
+    /** @return index of the newly inserted plugin **/
+    suspend fun addPlugin(pluginInfo: PluginInformation, client: AudioPluginClientBase = this.client): Int {
+        val sizeBefore = instances.size
         val instance = instantiatePlugin(pluginInfo, client)
         instances.add(instance)
         pluginPlayer.addPlugin(instance)
+        Toast.makeText(context, "instance id ${instance.instanceId}", Toast.LENGTH_SHORT).show()
+        return sizeBefore
     }
 
     fun setNewMidiMappingFlags(pluginId: String, newFlags: Int) {
@@ -131,7 +137,7 @@ class PluginDetailsScope private constructor(
             pluginPlayer.setParameterValue(id, value)
     }
 
-    fun getParameters(pluginIndex: Int = 0): Array<ParameterInformation> {
+    fun getParameters(pluginIndex: Int): Array<ParameterInformation> {
         val instance = instances[pluginIndex]!!
         val count = instance!!.getParameterCount()
         val params = Array(count) { index ->

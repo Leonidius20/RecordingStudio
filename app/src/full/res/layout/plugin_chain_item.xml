@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="item"
+            type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginChainItem" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        style="?attr/materialCardViewFilledStyle"
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/margin_small"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/plugin_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/margin_normal"
+                android:layout_marginStart="@dimen/margin_normal"
+                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                app:layout_constraintBottom_toTopOf="@id/plugin_params_list"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:text="@{item.pluginName()}"
+                tools:text="Plugin name" />
+
+            <ImageButton
+                android:id="@+id/expand_or_close_plugin_params"
+                android:layout_width="@dimen/icon_btn_dimension"
+                android:layout_height="@dimen/icon_btn_dimension"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:background="@drawable/circle_btn_ripple"
+                android:contentDescription="Expand or close plugin parameters"
+                android:src="@{item.expandContractBtnIcon()}"
+                tools:src="@drawable/ic_expand"
+                app:layout_constraintBottom_toBottomOf="@id/plugin_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/plugin_name" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@id/plugin_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/plugin_name"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:visibility="@{item.progressBarVisibility()}"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/plugin_params_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_normal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/plugin_name"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:visibility="@{item.paramsListVisibility()}"
+                tools:visibility="visible"
+                tools:itemCount="3"
+                tools:listitem="@layout/plugin_parameter" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+</layout>

@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentPluginDetailsBinding
-import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
 import io.github.leonidius20.recorder.ui.editing.plugin.viewmodel.PluginDetailsViewModel
 import io.github.leonidius20.recorder.ui.editing.plugins_list.view.PluginsListFragment
 import kotlinx.coroutines.launch
@@ -40,10 +39,16 @@ class PluginDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = PluginParamsAdapter { param, newVal ->
-            viewModel.changeParam(param, newVal)
-        }
-        binding.paramsList.adapter = adapter
+        val adapter = PluginsChainAdapter(
+            toggleParamsVisibility = { pluginIndex ->
+                viewModel.togglePluginExpandedState(pluginIndex)
+            },
+            changePluginParam = { pluginIndex, paramIndex, newVal ->
+                viewModel.changeParam(paramIndex, newVal, pluginIndex)
+            }
+        )
+
+        binding.pluginChainList.adapter = adapter
 
         binding.addPluginBtn.setOnClickListener {
             PluginsListFragment().show(childFragmentManager, "plugin-selector-dialog")
@@ -51,10 +56,8 @@ class PluginDetailsFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    if (state is PluginDetailsState.Connected) {
-                        adapter.submitList(state.scope.getParameters().toList())
-                    }
+                viewModel.pluginChain.collect { chain ->
+                    adapter.submitList(chain)
                 }
             }
         }

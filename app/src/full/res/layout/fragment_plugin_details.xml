@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState.Connected"/>
@@ -44,9 +45,10 @@
         <!-- todo: prob. replace w/ GridLayoutManager -->
         <!-- todo: use Groupie or some other lib to create list of params for multiple plugins -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/params_list"
+            android:id="@+id/plugin_chain_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            tools:listitem="@layout/plugin_chain_item"
             app:layout_constraintTop_toBottomOf="@id/add_plugin_btn"
             app:layout_constraintBottom_toBottomOf="parent"
             android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}"

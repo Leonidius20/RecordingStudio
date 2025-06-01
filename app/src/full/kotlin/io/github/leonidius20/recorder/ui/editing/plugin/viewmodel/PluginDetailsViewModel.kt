@@ -13,6 +13,7 @@ import io.github.leonidius20.recorder.data.plugins.PluginModel
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginChainItem
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsScope
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
 import io.github.leonidius20.recorder.ui.editing.plugin.view.PluginDetailsFragmentArgs
@@ -38,6 +39,9 @@ class PluginDetailsViewModel @Inject constructor(
     @Named("cpu") private val defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
+    // todo: expose flow of PluginChainItem-s. Also update parameter lists in them
+    // when parameter is changed
+
     private val args = PluginDetailsFragmentArgs
         .fromSavedStateHandle(savedStateHandle)
 
@@ -52,8 +56,13 @@ class PluginDetailsViewModel @Inject constructor(
         PluginDetailsState.Connecting)
     val uiState = _uiState.asStateFlow()
 
+    private val _pluginChain = MutableStateFlow<List<PluginChainItem>>(emptyList())
+    val pluginChain = _pluginChain.asStateFlow()
+
     private lateinit var descriptor: ParcelFileDescriptor
     private lateinit var cacheOutFile: File
+
+    private lateinit var scope: PluginDetailsScope
 
     init {
         viewModelScope.launch {
@@ -71,18 +80,27 @@ class PluginDetailsViewModel @Inject constructor(
             )!!
 
             val plugin = pluginsRepository.getPluginDetails(pluginId)
-            val scope = PluginDetailsScope.create(plugin.allInfo, context, client,
+            scope = PluginDetailsScope.create(plugin.allInfo, context, client,
                 fileUri, fileName, descriptor.fd) // todo: should we use detachFd()?
 
             _uiState.value = PluginDetailsState.Connected(
                 scope, plugin.allInfo
             )
+
+            _pluginChain.value = pluginChain.value.toMutableList().apply {
+                add(PluginChainItem(
+                    isConnected = true,
+                    isExpanded = true,
+                    info = plugin.allInfo,
+                    params = scope.getParameters(pluginIndex = 0).toList(),
+                ))
+            }
         }
     }
 
-    fun changeParam(id: UInt, value: Float) {
+    fun changeParam(id: UInt, value: Float, pluginIndex: Int) {
         val state = uiState.value as PluginDetailsState.Connected
-        state.scope.setParameterValue(id, value)
+        state.scope.setParameterValue(id, value, pluginIndex)
         _uiState.value = state.copy(isFileReady = false)
     }
 
@@ -109,6 +127,14 @@ class PluginDetailsViewModel @Inject constructor(
             _uiState.value = state.copy(isProcessing = false, isFileReady = true)
 
             startPlayingFile()
+        }
+    }
+
+    fun togglePluginExpandedState(pluginIndex: Int) {
+        _pluginChain.value = pluginChain.value.toMutableList().apply {
+            this[pluginIndex] = this[pluginIndex].copy(
+                isExpanded = !this[pluginIndex].isExpanded
+            )
         }
     }
 
@@ -149,11 +175,18 @@ class PluginDetailsViewModel @Inject constructor(
 
     fun addPlugin(pluginInfo: PluginModel) = viewModelScope.launch {
         val state = uiState.value as PluginDetailsState.Connected
-        state.scope.addPlugin(pluginInfo.allInfo)
+        val index = state.scope.addPlugin(pluginInfo.allInfo)
 
-        Toast.makeText(context, "added plugin ${pluginInfo.name}", Toast.LENGTH_SHORT).show()
+        _pluginChain.value = pluginChain.value.toMutableList().apply {
+            add(PluginChainItem(
+                isConnected = true,
+                isExpanded = false,
+                info = pluginInfo.allInfo,
+                params = scope.getParameters(pluginIndex = index).toList(),
+            ))
+        }
 
-        // todo: update ui state to reflect this new plugin appearting
+        Toast.makeText(context, "added plugin ${pluginInfo.name} index $index" , Toast.LENGTH_SHORT).show()
     }
 
 }
