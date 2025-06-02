@@ -29,6 +29,7 @@ class PluginsListFragment : DialogFragment() {
     ): View {
         _binding = FragmentPluginsListBinding
             .inflate(inflater, container, false)
+        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
         return binding.root
     }
 

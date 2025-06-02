@@ -24,12 +24,13 @@
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
             tools:text="Plugin Name" />
 
+        <!--
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:text="@{plugin.id}"
-            tools:text="Plugin URI" />
+            tools:text="Plugin URI" /> -->
 
     </LinearLayout>
 </layout>

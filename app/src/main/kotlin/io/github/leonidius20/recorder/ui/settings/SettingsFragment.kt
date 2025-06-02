@@ -78,7 +78,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         }
 
         if (BuildConfig.FLAVOR == "full") {
-            Preference(requireContext()).apply {
+            /*Preference(requireContext()).apply {
                 title = "View installed plugins"
                 setOnPreferenceClickListener { _ ->
                     findNavController().navigate(
@@ -87,7 +87,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                     true
                 }
                 preferenceScreen.addPreference(this)
-            }
+            }*/
             Preference(requireContext()).apply {
                 title = "Import file"
                 setOnPreferenceClickListener { _ ->
