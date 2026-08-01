@@ -158,4 +158,10 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     // todo: if flavour = full, include AAP framework
+
+    implementation(libs.mviKotlin)
+    implementation(libs.mviKotlin.main)
+    implementation(libs.mviKotlin.logging)
+    implementation(libs.mviKotlin.timetravel)
+    implementation(libs.mviKotlin.extensions.coroutines)
 }
