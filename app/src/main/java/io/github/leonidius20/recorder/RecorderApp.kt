@@ -8,6 +8,14 @@ import io.github.leonidius20.recorder.ui.crash.CrashActivity
 @HiltAndroidApp
 class RecorderApp: Application() {
 
+    companion object {
+        lateinit var instance: RecorderApp
+    }
+
+    init {
+        instance = this
+    }
+
     override fun onCreate() {
         super.onCreate()
         CaocConfig.Builder

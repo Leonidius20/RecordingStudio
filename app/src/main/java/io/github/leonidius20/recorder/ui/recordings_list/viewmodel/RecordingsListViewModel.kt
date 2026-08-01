@@ -8,11 +8,20 @@ import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.arkivanov.mvikotlin.core.store.Store
+import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.arkivanov.mvikotlin.extensions.coroutines.coroutineBootstrapper
+import com.arkivanov.mvikotlin.extensions.coroutines.coroutineExecutorFactory
+import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
+import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -28,7 +37,13 @@ class RecordingsListViewModel @Inject constructor(
     private val repository: RecordingsListRepository,
     @ApplicationContext private val context: Context,
     @Named("io") private val ioDispatcher: CoroutineDispatcher,
+    private val storeFactory: CalculatorStoreFactory,
 ) : ViewModel() {
+
+    private val store = storeFactory.create()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val storeState = store.stateFlow // todo: use stateFlow(viewModelScope)??
 
     private val dateFormat =
         DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault())

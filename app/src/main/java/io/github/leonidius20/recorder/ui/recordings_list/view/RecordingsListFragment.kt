@@ -25,17 +25,20 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.findNavController
+import com.arkivanov.essenty.lifecycle.essentyLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.playback.PlaybackService
+import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class RecordingsListFragment : RecStudioFragment() {
@@ -54,6 +57,11 @@ class RecordingsListFragment : RecStudioFragment() {
 
     private lateinit var deleteRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
 
+    private lateinit var controller: RecordingsListController
+
+    @Inject
+    lateinit var repository: RecordingsListRepository
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -65,7 +73,9 @@ class RecordingsListFragment : RecStudioFragment() {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
 
 
-        val onItemClick: (Int) -> Unit = { position: Int ->
+        // todo migrate logic
+
+        /*val onItemClick: (Int) -> Unit = { position: Int ->
             if (actionMode != null) {
                 viewModel.toggleSelection(position)
             } else {
@@ -95,7 +105,20 @@ class RecordingsListFragment : RecStudioFragment() {
             //binding.recordingList.scrollToPosition(0)
 
             binding.emptyListText.isVisible = state.recordings.isEmpty()
-        }
+        }*/
+
+
+        controller =
+            RecordingsListController(
+                //storeFactory = storeFactory,
+                //database = database,
+                lifecycle = essentyLifecycle(),
+                //instanceKeeper = instanceKeeper(),
+                //dispatchers = dispatchers,
+                //onItemSelected = onItemSelected,
+                repository = repository, // todo: remove
+            )
+
 
         viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
             val shouldShowActionMode = numItemsSelected > 0
@@ -146,6 +169,13 @@ class RecordingsListFragment : RecStudioFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        controller.onViewCreated(RecordingsListViewImpl(binding),
+            viewLifecycleOwner.essentyLifecycle())
     }
 
 

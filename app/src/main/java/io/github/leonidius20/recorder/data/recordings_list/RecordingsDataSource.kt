@@ -2,7 +2,7 @@ package io.github.leonidius20.recorder.data.recordings_list
 
 import android.database.Cursor
 import android.net.Uri
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository.Recording
+import io.github.leonidius20.recorder.domain.recordings_list.Recording
 
 interface RecordingsDataSource {
 
