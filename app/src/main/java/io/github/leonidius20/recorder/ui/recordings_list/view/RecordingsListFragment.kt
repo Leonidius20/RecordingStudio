@@ -1,7 +1,6 @@
 package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.app.Activity
-import android.content.ComponentName
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,23 +12,13 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.viewModels
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.findNavController
 import com.arkivanov.essenty.lifecycle.essentyLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -198,14 +187,14 @@ class RecordingsListFragment : RecStudioFragment() {
         )
     }
 
-    private var mediaController: MediaController? = null
-    private var controllerFuture: ListenableFuture<MediaController>? = null
+   // private var mediaController: MediaController? = null
+   // private var controllerFuture: ListenableFuture<MediaController>? = null
 
     // todo: handle labels
 
     override fun onStart() {
         super.onStart()
-        val context = requireContext()
+        /*val context = requireContext()
         val sessionToken =
             SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val factory = MediaController.Builder(context, sessionToken).buildAsync()
@@ -260,23 +249,23 @@ class RecordingsListFragment : RecStudioFragment() {
             mediaController?.prepare()
 
 
-        }, MoreExecutors.directExecutor())
+        }, MoreExecutors.directExecutor())*/
     }
     //todo: replace with lifecycle aware component
 
     override fun onStop() {
         super.onStop()
-        MediaController.releaseFuture(controllerFuture!!)
+        /*MediaController.releaseFuture(controllerFuture!!)
         controllerFuture = null
-        mediaController = null
+        mediaController = null*/
     }
 
 
-    private fun setPlayingFile(position: Int) {
+    /*private fun setPlayingFile(position: Int) {
         with(mediaController!!) {
             seekTo(position, 0L)
             if (!isPlaying) play()
         }
-    }
+    }*/
 
 }

@@ -28,15 +28,27 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
         // if selection mode is off, play recording, else toggle selection
         data class PlayOrToggleSelection(
+            val index: Int,
             val id: Long,
         ) : Intent
+
+        data object ConnectPlayer : Intent
+
+        data object DisconnectPlayer : Intent
+
+        data class OnPlayingRecordingChanged(
+            val id: Long
+        ) : Intent
+
+        data object OnRecordingsPlaybackFinished : Intent
 
     }
 
     data class State(
-        // todo: lift out
         val recordings: List<Recording> = emptyList(),
         val selectedItems: Set<Long> = emptySet(), // use LongSet or SparseBoolArray??
+        val currentlyPlaying: Long? = null,
+        val playerConnected: Boolean = false,
     ) {
 
         val inSelectionMode get() = selectedItems.isNotEmpty()
@@ -47,7 +59,9 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
 sealed interface Label {
 
-    //
+    data class UpdatePlayerItems(val recordings: List<Recording>) : Label
+
+    data class Play(val position: Int) : Label
 
 }
 
@@ -79,6 +93,11 @@ class RecordingsListStoreFactory @Inject constructor(
                 is Msg.SelectionCleared -> copy(
                     selectedItems = emptySet()
                 )
+                is Msg.PlayerConnected -> copy(playerConnected = true)
+                is Msg.PlayerDisconnected -> copy(playerConnected = false)
+                is Msg.NowPlaying -> copy(
+                    currentlyPlaying = msg.id
+                )
             }
         }
     ) {}
@@ -105,6 +124,12 @@ class RecordingsListStoreFactory @Inject constructor(
 
         data object SelectionCleared : Msg
 
+        data object PlayerConnected : Msg
+
+        data object PlayerDisconnected : Msg
+
+        data class NowPlaying(val id: Long?) : Msg
+
     }
 
     class ExecutorImpl @Inject constructor(
@@ -120,11 +145,25 @@ class RecordingsListStoreFactory @Inject constructor(
                     if (state().inSelectionMode) {
                         executeAction(Action.ToggleSelection(intent.id))
                     } else {
-                        // todo: set currently played, side-effect to call player
+                        dispatch(Msg.NowPlaying(intent.id))
+                        publish(Label.Play(intent.index))
                     }
                 }
                 is Intent.ToggleSelection -> {
                     executeAction(Action.ToggleSelection(intent.id))
+                }
+                is Intent.ConnectPlayer -> {
+                    dispatch(Msg.PlayerConnected)
+                    publish(Label.UpdatePlayerItems(state().recordings))
+                }
+                is Intent.DisconnectPlayer -> {
+                    dispatch(Msg.PlayerDisconnected)
+                }
+                is Intent.OnPlayingRecordingChanged -> {
+                    dispatch(Msg.NowPlaying(intent.id))
+                }
+                is Intent.OnRecordingsPlaybackFinished -> {
+                    dispatch(Msg.NowPlaying(null))
                 }
             }
         }
@@ -135,6 +174,10 @@ class RecordingsListStoreFactory @Inject constructor(
                     scope.launch {
                         repository.recordings.collect {
                             dispatch(Msg.ListUpdated(it))
+
+                            if (state().playerConnected) {
+                                publish(Label.UpdatePlayerItems(it))
+                            }
                         }
                     }
                 }

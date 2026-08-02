@@ -16,7 +16,7 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
  */
 class RecordingsListAdapter(
     private val context: Context,
-    private val onItemClicked: (id: Long) -> Unit,
+    private val onItemClicked: (id: Long, index: Int) -> Unit,
     private val onItemLongClicked: (id: Long) -> Unit,
 ) : ListAdapter<RecordingUiModel, RecordingsListAdapter.ViewHolder>(
     RecordingsDiffUtilCallback()
@@ -107,7 +107,7 @@ class RecordingsListAdapter(
             // we have to do it here because it doesn't work when we
             // add those listeners to the wrapper
             binding.root.setOnClickListener {
-                onItemClicked(recording.id)
+                onItemClicked(recording.id, position)
             }
             binding.root.setOnLongClickListener {
                 onItemLongClicked(recording.id)

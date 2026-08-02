@@ -2,12 +2,20 @@ package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
 import android.text.format.Formatter
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.doOnStart
+import com.arkivanov.essenty.lifecycle.doOnStop
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
 import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
@@ -17,11 +25,14 @@ import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.states
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.RecorderApp
+import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import io.github.leonidius20.recorder.ui.recordings_list.view.RecordingsListView.Event
@@ -32,10 +43,13 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 import kotlinx.coroutines.flow.map
+import kotlin.collections.map
 
 interface RecordingsListView : MviView<Model, Event> {
 
     data class Model(
+        // todo: add a Loading state. show a progress bar or those cool
+        //  list loading visualizations. maybe in the player too.
         val recordings: ArrayList<RecordingUiModel>,
         val numberSelected: Int,
     )
@@ -46,13 +60,28 @@ interface RecordingsListView : MviView<Model, Event> {
         //  best not to use indices as they may change on list update from backend
         data class RecordingLongPressed(val id: Long) : Event
 
-        data class RecordingClicked(val id: Long) : Event
+        data class RecordingClicked(val id: Long, val index: Int) : Event
 
         data object DisableSelectionMode : Event
+
+        data object MediaControllerConnected : Event
+
+        data object MediaControllerDisconnected : Event
+
+        data class OtherRecordingStartedPlaying(
+            val id: Long,
+            val index: Int,
+        ) : Event
+
+        data object PlaybackEnded : Event
 
     }
 
     fun handleLabel(label: Label)
+
+    fun connectToMediaPlayer() // todo: remove?
+
+    fun disconnectFromMediaPlayer()
 
 }
 
@@ -61,10 +90,15 @@ class RecordingsListViewImpl(
     val requireActivity: () -> Activity,
 ) : BaseMviView<Model, Event>(), RecordingsListView {
 
+    private val context get() = binding.root.context
+
+    private var controllerFuture: ListenableFuture<MediaController>? = null
+    private var mediaController: MediaController? = null
+
     private var adapter: RecordingsListAdapter = RecordingsListAdapter(
-        binding.root.context,
-        onItemClicked = { id ->
-            dispatch(Event.RecordingClicked(id))
+        context,
+        onItemClicked = { id, position ->
+            dispatch(Event.RecordingClicked(id, position))
         }, onItemLongClicked = { id ->
             dispatch(Event.RecordingLongPressed(id))
         }
@@ -158,7 +192,7 @@ class RecordingsListViewImpl(
                     actionMode = requireActivity().startActionMode(actionModeCallback)
                 }
 
-                actionMode?.title = binding.root.context.getString(R.string.recs_list_action_mode_num_selected,
+                actionMode?.title = context.getString(R.string.recs_list_action_mode_num_selected,
                     numberSelected)
                 actionMode?.invalidate()
             } else {
@@ -170,17 +204,89 @@ class RecordingsListViewImpl(
     }
 
     override fun handleLabel(label: Label) {
-        /*when(label) {
-            is Label.EnableSelectionMode -> {
-                actionMode = requireActivity().startActionMode(actionModeCallback)
+        when (label) {
+            is Label.UpdatePlayerItems -> {
+                mediaController?.replaceMediaItems(
+                    0, mediaController!!.mediaItemCount,
+                    label.recordings.map { recording ->
+                        MediaItem.Builder()
+                            .setUri(recording.uri)
+                            .setMediaId(recording.id.toString())
+                            .setMediaMetadata(
+                                MediaMetadata.Builder().setDisplayTitle(recording.name).build()
+                            ).build()
+                    }
+                )
             }
-            is Label.DisableSelectionMode -> {
-                actionMode?.finish()
-                actionMode = null
-                isMultiSelection = false
+            is Label.Play -> {
+                mediaController?.run {
+                    seekTo(label.position, 0L)
+                    if (!isPlaying) play()
+                }
+            }
+        }
+    }
+
+    override fun connectToMediaPlayer() {
+        val sessionToken =
+            SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        val factory = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture = factory
+        factory.addListener({
+            mediaController = factory.let {
+                if (it.isDone)
+                    it.get()
+                else
+                    null
             }
 
-        }*/
+            binding.playerView.player = mediaController
+
+            dispatch(Event.MediaControllerConnected)
+
+            mediaController?.addListener(object : Player.Listener {
+
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    mediaItem?.let {
+                        dispatch(Event.OtherRecordingStartedPlaying(
+                            id = mediaItem.mediaId.toLong(),
+                            index = mediaController!!.currentMediaItemIndex,
+                        ))
+                    } ?: dispatch(Event.PlaybackEnded)
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) {
+                        val index = mediaController!!.currentMediaItemIndex
+                        val item = mediaController!!.currentMediaItem!!
+                        dispatch(Event.OtherRecordingStartedPlaying(
+                            id = item.mediaId.toLong(),
+                            index = index,
+                        ))
+                    }
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        dispatch(Event.PlaybackEnded)
+                    }
+                }
+
+            })
+
+            mediaController?.prepare()
+
+
+        }, MoreExecutors.directExecutor())
+    }
+
+    override fun disconnectFromMediaPlayer() {
+        controllerFuture?.let {
+            MediaController.releaseFuture(it)
+        }
+        controllerFuture = null
+        mediaController = null
+        dispatch(Event.MediaControllerDisconnected)
     }
 
 }
@@ -199,7 +305,7 @@ internal val stateToModel: State.() -> Model = {
                 //it.mimeType,
                 // todo: also inplement selection here
                 isSelected = selectedItems.contains(it.id),
-                isPlaying = false,
+                isPlaying = currentlyPlaying == it.id,
             )
         }),
         numberSelected = selectedItems.size,
@@ -209,7 +315,7 @@ internal val stateToModel: State.() -> Model = {
 internal val eventToIntent: Event.() -> Intent = {
     when(this) {
         is Event.RecordingClicked -> {
-            Intent.PlayOrToggleSelection(this.id)
+            Intent.PlayOrToggleSelection(this.index, this.id)
         }
         is Event.RecordingLongPressed -> {
             Intent.ToggleSelection(this.id)
@@ -217,6 +323,14 @@ internal val eventToIntent: Event.() -> Intent = {
         is Event.DisableSelectionMode -> {
             Intent.ClearSelection
         }
+        is Event.MediaControllerConnected -> {
+            Intent.ConnectPlayer
+        }
+        is Event.MediaControllerDisconnected -> Intent.DisconnectPlayer
+        is Event.OtherRecordingStartedPlaying -> {
+            Intent.OnPlayingRecordingChanged(id)
+        }
+        is Event.PlaybackEnded -> Intent.OnRecordingsPlaybackFinished
     }
 }
 
@@ -241,6 +355,10 @@ class RecordingsListController @AssistedInject constructor(
             view.events.map(eventToIntent) bindTo store
             store.labels bindTo view::handleLabel
         }
+
+        viewLifecycle.doOnStart { view.connectToMediaPlayer() }
+
+        viewLifecycle.doOnStop { view.disconnectFromMediaPlayer() }
     }
 
 }
