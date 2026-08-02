@@ -7,6 +7,7 @@ import android.text.format.Formatter
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.view.isVisible
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -52,7 +53,9 @@ interface RecordingsListView : MviView<Model, Event> {
         //  list loading visualizations. maybe in the player too.
         val recordings: ArrayList<RecordingUiModel>,
         val numberSelected: Int,
-    )
+    ) {
+        val showEmptyListText get() = recordings.isEmpty()
+    }
 
     sealed interface Event {
 
@@ -178,11 +181,16 @@ class RecordingsListViewImpl(
     }
 
     init {
+        binding.recordingList.setHasFixedSize(true) // supposedly improves performance
         binding.recordingList.adapter = adapter
     }
 
     override val renderer: ViewRenderer<Model> = diff {
         diff(Model::recordings, set = adapter::setData)
+
+        diff(Model::showEmptyListText, set = {
+            binding.emptyListText.isVisible = it
+        })
 
         diff(Model::numberSelected, set = { numberSelected ->
             if (numberSelected > 0) {
