@@ -61,7 +61,7 @@ class RecordingsListFragment : RecStudioFragment() {
     private lateinit var controller: RecordingsListController
 
     @Inject
-    lateinit var repository: RecordingsListRepository
+    lateinit var controllerFactory: RecordingsListController.Factory
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -111,14 +111,13 @@ class RecordingsListFragment : RecStudioFragment() {
 
 
         controller =
-            RecordingsListController(
+            controllerFactory.create(
                 //storeFactory = storeFactory,
                 //database = database,
                 lifecycle = essentyLifecycle(),
                 //instanceKeeper = instanceKeeper(),
                 //dispatchers = dispatchers,
                 //onItemSelected = onItemSelected,
-                repository = repository, // todo: remove
             )
 
 

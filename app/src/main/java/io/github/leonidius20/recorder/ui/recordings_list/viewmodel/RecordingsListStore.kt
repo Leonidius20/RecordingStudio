@@ -4,8 +4,6 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.arkivanov.mvikotlin.extensions.coroutines.coroutineBootstrapper
-import com.arkivanov.mvikotlin.extensions.coroutines.coroutineExecutorFactory
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import dagger.hilt.android.scopes.ViewModelScoped
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
@@ -16,6 +14,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 interface RecordingsListStore : Store<Intent, State, Nothing> {
 
@@ -39,10 +38,10 @@ internal sealed interface Label {
     // ...
 }
 
-@ViewModelScoped
-class CalculatorStoreFactory @Inject constructor(
+class RecordingsListStoreFactory @Inject constructor(
     //private val storeFactory: StoreFactory,
-    private val repository: RecordingsListRepository,
+    private val executorProvider: Provider<ExecutorImpl>,
+    // todo: maybe inject provider<Executor> and then @Bind ExecutorImpl
 ) {
 
     // todo inject
@@ -53,8 +52,7 @@ class CalculatorStoreFactory @Inject constructor(
         initialState = State(),
         bootstrapper = SimpleBootstrapper(Action.SubscribeToRecordingsList),
         executorFactory = {
-            Timber.d("called executor factory")
-            ExecutorImpl(repository)
+            executorProvider.get()
         },
         reducer = { msg: Msg ->
             when(msg) {
@@ -63,11 +61,11 @@ class CalculatorStoreFactory @Inject constructor(
         }
     ) {}
 
-    private sealed interface Action {
+    sealed interface Action {
         object SubscribeToRecordingsList : Action
     }
 
-    private sealed interface Msg {
+    sealed interface Msg {
 
         data class UpdateList(
             val newList: List<Recording>
@@ -75,7 +73,7 @@ class CalculatorStoreFactory @Inject constructor(
 
     }
 
-    private class ExecutorImpl(
+    class ExecutorImpl @Inject constructor(
         private val repository: RecordingsListRepository,
     ) : CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 

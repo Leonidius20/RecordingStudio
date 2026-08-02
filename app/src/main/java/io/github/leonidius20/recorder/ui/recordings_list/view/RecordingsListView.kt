@@ -9,18 +9,21 @@ import com.arkivanov.mvikotlin.core.view.MviView
 import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
 import com.arkivanov.mvikotlin.extensions.coroutines.states
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import io.github.leonidius20.recorder.RecorderApp
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import io.github.leonidius20.recorder.ui.recordings_list.view.RecordingsListView.Event
 import io.github.leonidius20.recorder.ui.recordings_list.view.RecordingsListView.Model
-import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.CalculatorStoreFactory
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
+import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
+
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -100,16 +103,20 @@ internal val eventToIntent: Event.() -> Intent = {
     }
 }
 
-class RecordingsListController(
-    private val repository: RecordingsListRepository,
-    lifecycle: Lifecycle,
+class RecordingsListController @AssistedInject constructor(
+    private val storeFactory: RecordingsListStoreFactory,
+    @Assisted lifecycle: Lifecycle,
 ) {
-    private val store = CalculatorStoreFactory(repository).create()
+    private val store = storeFactory.create()
 
     init {
         lifecycle.doOnDestroy(store::dispose)
     }
 
+    @AssistedFactory
+    interface Factory {
+        fun create(lifecycle: Lifecycle): RecordingsListController
+    }
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
         Timber.d("OnViewCreated called..")
