@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.arkivanov.essenty.instancekeeper.instanceKeeper
 import com.arkivanov.essenty.lifecycle.essentyLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
@@ -37,7 +38,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 //storeFactory = storeFactory,
                 //database = database,
                 lifecycle = essentyLifecycle(),
-                //instanceKeeper = instanceKeeper(),
+                instanceKeeper = instanceKeeper(),
                 //dispatchers = dispatchers,
                 //onItemSelected = onItemSelected,
             )

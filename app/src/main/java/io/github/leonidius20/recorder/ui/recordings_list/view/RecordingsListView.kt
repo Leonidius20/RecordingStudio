@@ -12,19 +12,22 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.findNavController
+import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.lifecycle.Lifecycle
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStart
 import com.arkivanov.essenty.lifecycle.doOnStop
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
+import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.MviView
@@ -52,7 +55,6 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
-import kotlin.collections.map
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -104,7 +106,7 @@ interface RecordingsListView : MviView<Model, Event> {
 
 }
 
-class RecordingsListViewImpl(
+class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
     val binding: FragmentRecordingsListBinding,
     val fragment: Fragment,
     val requireActivity: () -> Activity = { fragment.requireActivity() },
@@ -214,6 +216,8 @@ class RecordingsListViewImpl(
     init {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
         binding.recordingList.adapter = adapter
+
+        binding.playerView.showController()
     }
 
     override val renderer: ViewRenderer<Model> = diff {
@@ -433,19 +437,22 @@ internal val eventToIntent: Event.() -> Intent = {
 class RecordingsListController @AssistedInject constructor(
     private val storeFactory: RecordingsListStoreFactory,
     @Assisted lifecycle: Lifecycle,
+    @Assisted instanceKeeper: InstanceKeeper,
 ) {
-    private val store = storeFactory.create()
-
-    init {
-        lifecycle.doOnDestroy(store::dispose)
+    private val store = instanceKeeper.getStore {
+        storeFactory.create()
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(lifecycle: Lifecycle): RecordingsListController
+        fun create(
+            lifecycle: Lifecycle,
+            instanceKeeper: InstanceKeeper,
+        ): RecordingsListController
     }
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
+        Timber.d("Controller onViewCreated")
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
             store.states.map(stateToModel) bindTo view
             view.events.map(eventToIntent) bindTo store
