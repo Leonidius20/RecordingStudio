@@ -16,8 +16,8 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
  */
 class RecordingsListAdapter(
     private val context: Context,
-    private val onItemClicked: (Int) -> Unit,
-    private val onItemLongClicked: (Int) -> Unit,
+    private val onItemClicked: (id: Long) -> Unit,
+    private val onItemLongClicked: (id: Long) -> Unit,
 ) : ListAdapter<RecordingUiModel, RecordingsListAdapter.ViewHolder>(
     RecordingsDiffUtilCallback()
 ) {
@@ -42,18 +42,7 @@ class RecordingsListAdapter(
 
     inner class ViewHolder(
         val root: RecordingListItemWrapper,
-        val onItemClicked: (Int) -> Unit,
-        val onItemLongClicked: (Int) -> Unit,
-    ) : RecyclerView.ViewHolder(root), View.OnClickListener, View.OnLongClickListener {
-
-        override fun onClick(v: View) {
-            onItemClicked(position)
-        }
-
-        override fun onLongClick(v: View): Boolean {
-            onItemLongClicked(position)
-            return true
-        }
+    ) : RecyclerView.ViewHolder(root) {
 
         internal fun updateName(newName: String) {
             root.invokeWhenInflated {
@@ -109,7 +98,7 @@ class RecordingsListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)
         root.inflateAsync(R.layout.recording_list_item2)
-        return ViewHolder(root, onItemClicked, onItemLongClicked)
+        return ViewHolder(root)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -117,8 +106,13 @@ class RecordingsListAdapter(
             val recording = getItem(position)
             // we have to do it here because it doesn't work when we
             // add those listeners to the wrapper
-            binding.root.setOnClickListener(holder)
-            binding.root.setOnLongClickListener(holder)
+            binding.root.setOnClickListener {
+                onItemClicked(recording.id)
+            }
+            binding.root.setOnLongClickListener {
+                onItemLongClicked(recording.id)
+                true
+            }
 
             this.binding.recording = recording
             this.binding.root.isSelected = recording.isSelected

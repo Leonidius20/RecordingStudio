@@ -52,7 +52,7 @@ class RecordingsListFragment : RecStudioFragment() {
 
     private val viewModel: RecordingsListViewModel by viewModels()
 
-    private lateinit var adapter: RecordingsListAdapter
+    // private lateinit var adapter: RecordingsListAdapter
 
     private lateinit var trashRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
 
@@ -121,7 +121,7 @@ class RecordingsListFragment : RecStudioFragment() {
             )
 
 
-        viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
+        /*viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
             val shouldShowActionMode = numItemsSelected > 0
 
             // if should show actionMode, but it is not being shown yet
@@ -139,7 +139,7 @@ class RecordingsListFragment : RecStudioFragment() {
                     invalidate()
                 }
             }
-        }
+        }*/
 
         trashRecordingsIntentLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -148,7 +148,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 } else {
                     Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
                 }
-                actionMode?.finish()
+                //actionMode?.finish() todo migrate
             }
 
         deleteRecordingsIntentLauncher =
@@ -158,7 +158,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 } else {
                     Toast.makeText(requireContext(), "failure", Toast.LENGTH_SHORT).show()
                 }
-                actionMode?.finish()
+                //actionMode?.finish() todo migrate
             }
 
 
@@ -176,14 +176,14 @@ class RecordingsListFragment : RecStudioFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         Timber.d("OnViewCreated calling..")
-        controller.onViewCreated(RecordingsListViewImpl(binding),
+        controller.onViewCreated(RecordingsListViewImpl(binding, ::requireActivity),
             viewLifecycleOwner.essentyLifecycle())
     }
 
 
-    var actionMode: ActionMode? = null
+    // var actionMode: ActionMode? = null
 
-    private val actionModeCallback = object : ActionMode.Callback {
+    /*private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
 
             if (viewModel.state.value.numItemsSelected > 1) {
@@ -249,7 +249,7 @@ class RecordingsListFragment : RecStudioFragment() {
         }
 
 
-    }
+    }*/
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun trash() {
@@ -275,7 +275,7 @@ class RecordingsListFragment : RecStudioFragment() {
                 .setMessage("Do you confirm deleting ${viewModel.state.value.numItemsSelected} selected file(s)?")
                 .setPositiveButton(android.R.string.yes) { _, _ ->
                     viewModel.legacyDeleteSelectedWithoutConfirmation()
-                    actionMode?.finish()
+                    // actionMode?.finish() todo migrate
                 }
                 .setNegativeButton(android.R.string.no) { dialog, _ ->
                     dialog.dismiss()
@@ -288,7 +288,7 @@ class RecordingsListFragment : RecStudioFragment() {
     fun rename() {
         val selectedItem = viewModel.getFirstSelectedItem()
 
-        actionMode?.finish()
+        // actionMode?.finish() todo migrate
 
         findNavController().navigate(
             RecordingsListFragmentDirections.actionNavigationRecordingsListToRenameDialogFragment(
@@ -302,6 +302,7 @@ class RecordingsListFragment : RecStudioFragment() {
     private var mediaController: MediaController? = null
     private var controllerFuture: ListenableFuture<MediaController>? = null
 
+    // todo: handle labels
 
     override fun onStart() {
         super.onStart()
@@ -340,18 +341,18 @@ class RecordingsListFragment : RecStudioFragment() {
             mediaController?.addListener(object : Player.Listener {
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    adapter.setPlaying(mediaController!!.currentMediaItemIndex)
+                    // adapter.setPlaying(mediaController!!.currentMediaItemIndex) todo migrate to diffing approach
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
-                        adapter.setPlaying(mediaController!!.currentMediaItemIndex)
+                        // adapter.setPlaying(mediaController!!.currentMediaItemIndex) todo migrate to diffing approach
                     }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_ENDED) {
-                        adapter.resetPlayingItemHighlighting()
+                        // adapter.resetPlayingItemHighlighting() todo migrate to diffing approach
                     }
                 }
 
