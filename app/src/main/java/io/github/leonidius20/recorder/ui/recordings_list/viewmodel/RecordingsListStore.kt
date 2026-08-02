@@ -12,6 +12,7 @@ import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 interface RecordingsListStore : Store<Intent, State, Nothing> {
 
@@ -35,10 +36,14 @@ internal sealed interface Label {
     // ...
 }
 
-class CalculatorStoreFactory(
-    private val storeFactory: StoreFactory,
+@ViewModelScoped
+class CalculatorStoreFactory @Inject constructor(
+    //private val storeFactory: StoreFactory,
     private val repository: RecordingsListRepository,
 ) {
+
+    // todo inject
+    private val storeFactory: StoreFactory = DefaultStoreFactory()
 
     fun create(): RecordingsListStore = object : RecordingsListStore, Store<Intent, State, Nothing> by storeFactory.create(
         name = "RecordingsListStore",

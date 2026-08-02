@@ -104,8 +104,7 @@ class RecordingsListController(
     private val repository: RecordingsListRepository,
     lifecycle: Lifecycle,
 ) {
-    private val store = CalculatorStoreFactory(DefaultStoreFactory(), repository).create()
-    private var binder: Binder? = null
+    private val store = CalculatorStoreFactory(repository).create()
 
     init {
         lifecycle.doOnDestroy(store::dispose)
