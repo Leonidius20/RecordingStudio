@@ -37,13 +37,7 @@ class RecordingsListViewModel @Inject constructor(
     private val repository: RecordingsListRepository,
     @ApplicationContext private val context: Context,
     @Named("io") private val ioDispatcher: CoroutineDispatcher,
-    private val storeFactory: CalculatorStoreFactory,
 ) : ViewModel() {
-
-    private val store = storeFactory.create()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val storeState = store.stateFlow // todo: use stateFlow(viewModelScope)??
 
     private val dateFormat =
         DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault())

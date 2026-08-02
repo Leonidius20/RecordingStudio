@@ -1,5 +1,6 @@
 package io.github.leonidius20.recorder.ui.recordings_list.viewmodel
 
+import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
@@ -11,7 +12,9 @@ import io.github.leonidius20.recorder.data.recordings_list.RecordingsListReposit
 import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 interface RecordingsListStore : Store<Intent, State, Nothing> {
@@ -48,16 +51,14 @@ class CalculatorStoreFactory @Inject constructor(
     fun create(): RecordingsListStore = object : RecordingsListStore, Store<Intent, State, Nothing> by storeFactory.create(
         name = "RecordingsListStore",
         initialState = State(),
-        bootstrapper = coroutineBootstrapper {
-            dispatch(Action.SubscribeToRecordingsList)
-        },
-        executorFactory = coroutineExecutorFactory {
+        bootstrapper = SimpleBootstrapper(Action.SubscribeToRecordingsList),
+        executorFactory = {
+            Timber.d("called executor factory")
             ExecutorImpl(repository)
         },
-        reducer = { msg ->
+        reducer = { msg: Msg ->
             when(msg) {
                 is Msg.UpdateList -> copy(recordings = msg.newList) // todo: arrow-kt
-                else -> copy() // todo: why? it's sealed??
             }
         }
     ) {}
@@ -78,6 +79,10 @@ class CalculatorStoreFactory @Inject constructor(
         private val repository: RecordingsListRepository,
     ) : CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 
+        init {
+            Timber.d("created executor")
+        }
+
         override fun executeIntent(intent: Intent) {
             when(intent) {
                 is Intent.ClearSelection -> {
@@ -87,12 +92,17 @@ class CalculatorStoreFactory @Inject constructor(
         }
 
         override fun executeAction(action: Action) {
+            Timber.d("Executing action $action")
             when(action) {
                 is Action.SubscribeToRecordingsList -> {
                     // todo: find out how to tie the lifecycle of this
                     //  to viewmodel lifecycle
+
+                    Timber.d("we start listening in scope active = ${scope.isActive}")
                     scope.launch {
+                        Timber.d("Subscribing to recordings list")
                         repository.recordings.collect {
+                            Timber.d("Updating recordings: $it")
                             dispatch(Msg.UpdateList(it))
                         }
                     }

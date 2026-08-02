@@ -38,6 +38,7 @@ import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -99,6 +100,7 @@ class RecordingsListFragment : RecStudioFragment() {
         )
         binding.recordingList.adapter = adapter
 
+        // todo also toggle visibility of the empty rec text
         viewModel.state.collectSinceStarted { state ->
 
             adapter.setData(ArrayList(state.recordings))
@@ -174,6 +176,7 @@ class RecordingsListFragment : RecStudioFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Timber.d("OnViewCreated calling..")
         controller.onViewCreated(RecordingsListViewImpl(binding),
             viewLifecycleOwner.essentyLifecycle())
     }

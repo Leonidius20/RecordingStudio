@@ -3,15 +3,12 @@ package io.github.leonidius20.recorder.ui.recordings_list.view
 import android.text.format.Formatter
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.doOnDestroy
-import com.arkivanov.mvikotlin.core.binder.Binder
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.MviView
 import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
 import com.arkivanov.mvikotlin.extensions.coroutines.states
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import dagger.hilt.android.scopes.ViewModelScoped
 import io.github.leonidius20.recorder.RecorderApp
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
@@ -23,6 +20,7 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -56,12 +54,14 @@ class RecordingsListViewImpl(
     )
 
     init {
+        Timber.d("Created ViewImpl")
         binding.recordingList.adapter = adapter
     }
 
     override fun render(model: Model) {
         super.render(model)
 
+        Timber.d("rendering model $model")
         adapter.setData(model.recordings)
     }
 
@@ -88,7 +88,7 @@ internal val stateToModel: State.() -> Model = {
 }
 
 // todo: is it legal to use state here???
-internal val eventToIntent: Event.(state: State) -> Intent = {
+internal val eventToIntent: Event.() -> Intent = {
     when(this) {
         // todo: could be select, could be deselect - who knows??? depends on state
         is Event.RecordingClicked -> {
@@ -112,10 +112,12 @@ class RecordingsListController(
 
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
+        Timber.d("OnViewCreated called..")
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
+            Timber.d("Binding builder calling..")
             store.states.map(stateToModel) bindTo view
             // Use store.labels to bind Labels to a consumer
-            view.events.map { it.eventToIntent(store.state) } bindTo store
+            view.events.map(eventToIntent) bindTo store
         }
     }
 
