@@ -9,9 +9,7 @@ import io.github.leonidius20.recorder.data.recordings_list.RecordingsListReposit
 import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -47,18 +45,9 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
 }
 
-
-
 sealed interface Label {
 
-    // todo: can be removed once we migrate to compose
-    /*data object EnableSelectionMode : Label
-
-    data object DisableSelectionMode : Label
-
-    data object SwitchToMultipleSelectionMenu : Label
-
-    data object SwitchToSingleSelectionMenu : Label*/
+    //
 
 }
 
@@ -122,11 +111,6 @@ class RecordingsListStoreFactory @Inject constructor(
         private val repository: RecordingsListRepository,
     ) : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
 
-        init {
-            Timber.d("created executor")
-
-        }
-
         override fun executeIntent(intent: Intent) {
             when(intent) {
                 is Intent.ClearSelection -> {
@@ -146,26 +130,16 @@ class RecordingsListStoreFactory @Inject constructor(
         }
 
         override fun executeAction(action: Action) {
-            Timber.d("Executing action $action")
             when(action) {
                 is Action.SubscribeToRecordingsList -> {
-                    // todo: find out how to tie the lifecycle of this
-                    //  to viewmodel lifecycle
-
-                    Timber.d("we start listening in scope active = ${scope.isActive}")
                     scope.launch {
-                        Timber.d("Subscribing to recordings list")
                         repository.recordings.collect {
-                            Timber.d("Updating recordings: $it")
                             dispatch(Msg.ListUpdated(it))
                         }
                     }
                 }
 
                 is Action.ToggleSelection -> {
-                    //val selectionModeBefore = state().inSelectionMode
-                    //val numSelectedBefore = state().selectedItems.size
-
                     val wasSelected = state().selectedItems.contains(action.id)
                     val newValue = !wasSelected
 
@@ -173,23 +147,9 @@ class RecordingsListStoreFactory @Inject constructor(
                         if (newValue) Msg.ItemSelected(action.id)
                         else Msg.ItemDeselected(action.id)
                     )
-
-                    /*val selectionModeAfter = if (selectionModeBefore) {
-                        !(numSelectedBefore == 1 && !newValue)
-                    } else if (newValue) true else false*/
-
-                    /*if (selectionModeBefore != selectionModeAfter) {
-                        publish(
-                            if (selectionModeAfter)
-                                Label.EnableSelectionMode else Label.DisableSelectionMode
-                        )
-                    }*/
-
-                    // todo: update count and switch menu
                 }
             }
         }
     }
 
 }
-

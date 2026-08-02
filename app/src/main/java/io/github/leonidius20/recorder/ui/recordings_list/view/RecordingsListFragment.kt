@@ -1,14 +1,10 @@
 package io.github.leonidius20.recorder.ui.recordings_list.view
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
 import android.os.Build
 import android.os.Bundle
-import android.view.ActionMode
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -16,9 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -30,9 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.playback.PlaybackService
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
@@ -51,8 +43,6 @@ class RecordingsListFragment : RecStudioFragment() {
     private val binding get() = _binding!!
 
     private val viewModel: RecordingsListViewModel by viewModels()
-
-    // private lateinit var adapter: RecordingsListAdapter
 
     private lateinit var trashRecordingsIntentLauncher: ActivityResultLauncher<IntentSenderRequest>
 
@@ -121,26 +111,6 @@ class RecordingsListFragment : RecStudioFragment() {
             )
 
 
-        /*viewModel.state.collectDistinctSinceStarted({ it.numItemsSelected }) { numItemsSelected ->
-            val shouldShowActionMode = numItemsSelected > 0
-
-            // if should show actionMode, but it is not being shown yet
-            if (shouldShowActionMode && actionMode == null) {
-                actionMode = requireActivity().startActionMode(actionModeCallback)
-            } else if (!shouldShowActionMode && actionMode != null) {
-                // if should not show action mode but it is being shown
-                actionMode!!.finish()
-                actionMode = null
-            }
-
-            if (shouldShowActionMode) {
-                actionMode!!.apply {
-                    title = getString(R.string.recs_list_action_mode_num_selected, numItemsSelected)
-                    invalidate()
-                }
-            }
-        }*/
-
         trashRecordingsIntentLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
@@ -179,77 +149,6 @@ class RecordingsListFragment : RecStudioFragment() {
         controller.onViewCreated(RecordingsListViewImpl(binding, ::requireActivity),
             viewLifecycleOwner.essentyLifecycle())
     }
-
-
-    // var actionMode: ActionMode? = null
-
-    /*private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-
-            if (viewModel.state.value.numItemsSelected > 1) {
-                mode.menuInflater.inflate(
-                    R.menu.recordings_list_multiple_recordings_context_menu,
-                    menu
-                )
-            } else {
-                mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
-            }
-
-            // todo: this is temporary, remove once sharing is implemented
-            menu.removeItem(R.id.recordings_list_action_share)
-
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            // todo: invalidation happends on each toggling of selection
-            // so we can add or remove menu elements here based on if it is
-            // 1 element selected or multiple
-            menu.clear()
-            if (viewModel.state.value.numItemsSelected > 1) {
-                mode.menuInflater.inflate(
-                    R.menu.recordings_list_multiple_recordings_context_menu,
-                    menu
-                )
-            } else {
-                mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
-            }
-
-            // todo: this is temporary, remove once sharing is implemented
-            menu.removeItem(R.id.recordings_list_action_share)
-
-            return true
-        }
-
-        @SuppressLint("NewApi") // the "trash" option requires api 30 but it isn't shown in the menu on lower apis
-        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
-            when (item.itemId) {
-                R.id.recordings_list_action_rename -> {
-                    rename()
-                }
-
-                R.id.recordings_list_action_delete_forever -> {
-                    delete()
-                }
-
-                R.id.recordings_list_action_share -> {
-                    // todo
-                }
-
-                R.id.recordings_list_action_trash -> {
-                    trash()
-                }
-            }
-            return true
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode?) {
-            viewModel.clearSelection()
-            actionMode = null
-        }
-
-
-    }*/
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun trash() {

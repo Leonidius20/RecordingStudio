@@ -9,8 +9,10 @@ import android.view.MenuItem
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
+import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.MviView
+import com.arkivanov.mvikotlin.core.view.ViewRenderer
 import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
@@ -30,8 +32,6 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 import kotlinx.coroutines.flow.map
-import timber.log.Timber
-
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -144,33 +144,29 @@ class RecordingsListViewImpl(
     }
 
     init {
-        Timber.d("Created ViewImpl")
         binding.recordingList.adapter = adapter
     }
 
-    override fun render(model: Model) {
-        super.render(model)
+    override val renderer: ViewRenderer<Model> = diff {
+        diff(Model::recordings, set = adapter::setData)
 
-        Timber.d("rendering model $model")
-        adapter.setData(model.recordings)
+        diff(Model::numberSelected, set = { numberSelected ->
+            if (numberSelected > 0) {
+                isMultiSelection = numberSelected > 1
 
-        // todo: add diffing on this count
-        if (model.numberSelected > 0) {
-            // update
-            isMultiSelection = model.numberSelected > 1
+                if (actionMode == null) {
+                    actionMode = requireActivity().startActionMode(actionModeCallback)
+                }
 
-            if (actionMode == null) {
-                actionMode = requireActivity().startActionMode(actionModeCallback)
+                actionMode?.title = binding.root.context.getString(R.string.recs_list_action_mode_num_selected,
+                    numberSelected)
+                actionMode?.invalidate()
+            } else {
+                actionMode?.finish()
+                actionMode = null
+                isMultiSelection = false
             }
-
-            actionMode?.title = binding.root.context.getString(R.string.recs_list_action_mode_num_selected,
-                model.numberSelected)
-            actionMode?.invalidate()
-        } else {
-            actionMode?.finish()
-            actionMode = null
-            isMultiSelection = false
-        }
+        })
     }
 
     override fun handleLabel(label: Label) {
@@ -210,7 +206,6 @@ internal val stateToModel: State.() -> Model = {
     )
 }
 
-// todo: is it legal to use state here???
 internal val eventToIntent: Event.() -> Intent = {
     when(this) {
         is Event.RecordingClicked -> {
@@ -241,13 +236,9 @@ class RecordingsListController @AssistedInject constructor(
     }
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
-        Timber.d("OnViewCreated called..")
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
-            Timber.d("Binding builder calling..")
             store.states.map(stateToModel) bindTo view
-            // Use store.labels to bind Labels to a consumer
             view.events.map(eventToIntent) bindTo store
-
             store.labels bindTo view::handleLabel
         }
     }
