@@ -10,6 +10,7 @@ import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -42,6 +43,14 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
         data object OnRecordingsPlaybackFinished : Intent
 
+        data object TrashSelected : Intent
+
+        data object DeleteSelected : Intent
+
+        data object RenameSelected : Intent
+
+        data object ShareSelected : Intent
+
     }
 
     data class State(
@@ -62,6 +71,14 @@ sealed interface Label {
     data class UpdatePlayerItems(val recordings: List<Recording>) : Label
 
     data class Play(val position: Int) : Label
+
+    data class Trash(val recs: List<Recording>) : Label
+
+    data class Delete(val recs: List<Recording>) : Label
+
+    data class Rename(val rec: Recording) : Label
+
+    data class Share(val recs: List<Recording>) : Label
 
 }
 
@@ -154,9 +171,11 @@ class RecordingsListStoreFactory @Inject constructor(
                 }
                 is Intent.ConnectPlayer -> {
                     dispatch(Msg.PlayerConnected)
+                    Timber.d("Player was connected")
                     publish(Label.UpdatePlayerItems(state().recordings))
                 }
                 is Intent.DisconnectPlayer -> {
+                    Timber.d("Player was disconnected")
                     dispatch(Msg.PlayerDisconnected)
                 }
                 is Intent.OnPlayingRecordingChanged -> {
@@ -165,7 +184,27 @@ class RecordingsListStoreFactory @Inject constructor(
                 is Intent.OnRecordingsPlaybackFinished -> {
                     dispatch(Msg.NowPlaying(null))
                 }
+                is Intent.TrashSelected -> {
+                    publish(Label.Trash(currentlySelectedRecordings()))
+                }
+                is Intent.DeleteSelected -> {
+                    publish(Label.Delete(currentlySelectedRecordings()))
+                }
+                is Intent.RenameSelected -> {
+                    publish(Label.Rename(singleSelectedRecording()))
+                }
+                is Intent.ShareSelected -> {
+                    publish(Label.Share(currentlySelectedRecordings()))
+                }
             }
+        }
+
+        private fun currentlySelectedRecordings() = state().run {
+            recordings.filter { selectedItems.contains(it.id) }
+        }
+
+        private fun singleSelectedRecording() = state().run {
+            recordings.first { selectedItems.contains(it.id) }
         }
 
         override fun executeAction(action: Action) {
@@ -175,7 +214,9 @@ class RecordingsListStoreFactory @Inject constructor(
                         repository.recordings.collect {
                             dispatch(Msg.ListUpdated(it))
 
-                            if (state().playerConnected) {
+                            val playerConnected = state().playerConnected
+                            Timber.d("Updated rec list. Player connected = $playerConnected")
+                            if (playerConnected) {
                                 publish(Label.UpdatePlayerItems(it))
                             }
                         }

@@ -3,16 +3,23 @@ package io.github.leonidius20.recorder.ui.recordings_list.view
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
+import android.os.Build
+import android.provider.MediaStore
 import android.text.format.Formatter
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.navigation.fragment.findNavController
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStart
@@ -26,6 +33,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.states
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.assisted.Assisted
@@ -42,8 +50,8 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.Label
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
-import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import kotlin.collections.map
 
 interface RecordingsListView : MviView<Model, Event> {
@@ -78,6 +86,14 @@ interface RecordingsListView : MviView<Model, Event> {
 
         data object PlaybackEnded : Event
 
+        data object TrashSelectedClicked : Event
+
+        data object DeleteSelectedClicked : Event
+
+        data object RenameSelectedClicked : Event
+
+        data object ShareSelectedClicked : Event
+
     }
 
     fun handleLabel(label: Label)
@@ -90,7 +106,8 @@ interface RecordingsListView : MviView<Model, Event> {
 
 class RecordingsListViewImpl(
     val binding: FragmentRecordingsListBinding,
-    val requireActivity: () -> Activity,
+    val fragment: Fragment,
+    val requireActivity: () -> Activity = { fragment.requireActivity() },
 ) : BaseMviView<Model, Event>(), RecordingsListView {
 
     private val context get() = binding.root.context
@@ -123,9 +140,6 @@ class RecordingsListViewImpl(
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
 
-            // todo: this is temporary, remove once sharing is implemented
-            menu.removeItem(R.id.recordings_list_action_share)
-
             return true
         }
 
@@ -143,9 +157,6 @@ class RecordingsListViewImpl(
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
             }
 
-            // todo: this is temporary, remove once sharing is implemented
-            menu.removeItem(R.id.recordings_list_action_share)
-
             return true
         }
 
@@ -153,20 +164,19 @@ class RecordingsListViewImpl(
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
             when (item.itemId) {
                 R.id.recordings_list_action_rename -> {
-                    // todo:
-                    //rename()
+                    dispatch(Event.RenameSelectedClicked)
                 }
 
                 R.id.recordings_list_action_delete_forever -> {
-                    //delete()
+                    dispatch(Event.DeleteSelectedClicked)
                 }
 
                 R.id.recordings_list_action_share -> {
-                    // todo
+                    dispatch(Event.ShareSelectedClicked)
                 }
 
                 R.id.recordings_list_action_trash -> {
-                    //trash()
+                    dispatch(Event.TrashSelectedClicked)
                 }
             }
             return true
@@ -179,6 +189,27 @@ class RecordingsListViewImpl(
 
 
     }
+
+    private val trashRecordingsIntentLauncher = fragment.registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            dispatch(Event.DisableSelectionMode)
+        } else {
+            // todo: localized error message, send as Label, (succuess/failure),
+            //  also clear selection
+            Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val deleteRecordingsIntentLauncher =
+        fragment.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                dispatch(Event.DisableSelectionMode)
+            } else {
+                // todo: localized error message, send as Label
+                Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     init {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
@@ -214,6 +245,7 @@ class RecordingsListViewImpl(
     override fun handleLabel(label: Label) {
         when (label) {
             is Label.UpdatePlayerItems -> {
+                Timber.d("Updating player items, new count is ${label.recordings.size}")
                 mediaController?.replaceMediaItems(
                     0, mediaController!!.mediaItemCount,
                     label.recordings.map { recording ->
@@ -231,6 +263,58 @@ class RecordingsListViewImpl(
                     seekTo(label.position, 0L)
                     if (!isPlaying) play()
                 }
+            }
+            is Label.Trash -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val uris = label.recs.map { it.uri }
+                    val intent = MediaStore.createTrashRequest(
+                        context.contentResolver, uris, true)
+                    trashRecordingsIntentLauncher.launch(
+                        IntentSenderRequest.Builder(intent).build()
+                    )
+                }
+            }
+            is Label.Delete -> {
+                val uris = label.recs.map { it.uri }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val intent = MediaStore.createDeleteRequest(context.contentResolver, uris)
+                    deleteRecordingsIntentLauncher.launch(
+                        IntentSenderRequest.Builder(intent).build()
+                    )
+                } else {
+                    // todo: dialogFragment, lift strings
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("Deleting files")
+                        .setMessage("Do you confirm deleting ${uris.size} selected file(s)?")
+                        .setPositiveButton(android.R.string.yes) { _, _ ->
+                            // todo: move this logic somewhere
+                            uris.forEach { uri ->
+                                context.contentResolver.delete(
+                                    uri, null, null
+                                )
+                            }
+                            dispatch(Event.DisableSelectionMode)
+                        }
+                        .setNegativeButton(android.R.string.no) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            }
+            is Label.Rename -> {
+                fragment.findNavController().navigate(
+                    RecordingsListFragmentDirections
+                        .actionNavigationRecordingsListToRenameDialogFragment(
+                            fileToRename = label.rec.uri,
+                            currentFileName = label.rec.name,
+                            id = label.rec.id,
+                        )
+                )
+                dispatch(Event.DisableSelectionMode)
+            }
+            is Label.Share -> {
+                val uris = label.recs.map { it.uri }
             }
         }
     }
@@ -339,6 +423,10 @@ internal val eventToIntent: Event.() -> Intent = {
             Intent.OnPlayingRecordingChanged(id)
         }
         is Event.PlaybackEnded -> Intent.OnRecordingsPlaybackFinished
+        is Event.TrashSelectedClicked -> Intent.TrashSelected
+        is Event.DeleteSelectedClicked -> Intent.DeleteSelected
+        is Event.RenameSelectedClicked -> Intent.RenameSelected
+        is Event.ShareSelectedClicked -> Intent.ShareSelected
     }
 }
 
