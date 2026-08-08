@@ -64,8 +64,8 @@
             android:textColor="?colorOnSurface"
             app:firstBaselineToTopHeight="@dimen/list_item_headline_first_baseline_to_top"
             app:lastBaselineToBottomHeight="@dimen/list_item_headline_last_baseline_to_bottom"
-            app:layout_constraintBottom_toTopOf="@+id/txt_support"
-            app:layout_constraintEnd_toStartOf="@id/trailing_text"
+            app:layout_constraintBottom_toTopOf="@+id/size_text"
+            app:layout_constraintEnd_toStartOf="@id/duration_text"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toEndOf="@id/leading_icon"
             app:layout_constraintTop_toTopOf="parent"
@@ -73,7 +73,7 @@
             tools:text="Headline text" />
 
         <TextView
-            android:id="@+id/txt_support"
+            android:id="@+id/size_text"
 
             android:text="@{recording.size}"
 
@@ -94,7 +94,7 @@
             tools:text="Support text" />
 
         <TextView
-            android:id="@+id/trailing_text"
+            android:id="@+id/duration_text"
 
             android:text="@{recording.duration}"
 

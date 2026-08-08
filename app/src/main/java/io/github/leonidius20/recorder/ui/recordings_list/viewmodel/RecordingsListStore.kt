@@ -99,6 +99,7 @@ class RecordingsListStoreFactory @Inject constructor(
             executorProvider.get()
         },
         reducer = { msg: Msg ->
+            Timber.d("Got message $msg")
             when(msg) {
                 is Msg.ListUpdated -> copy(recordings = msg.newList) // todo: arrow-kt
                 is Msg.ItemSelected -> copy(
