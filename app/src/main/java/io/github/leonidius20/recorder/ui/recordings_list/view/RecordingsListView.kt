@@ -58,12 +58,13 @@ import kotlinx.coroutines.flow.map
 interface RecordingsListView : MviView<Model, Event> {
 
     data class Model(
-        // todo: add a Loading state. show a progress bar or those cool
+        // todo: maybe show those cool
         //  list loading visualizations. maybe in the player too.
         val recordings: ArrayList<RecordingUiModel>,
         val numberSelected: Int,
+        val loading: Boolean,
     ) {
-        val showEmptyListText get() = recordings.isEmpty()
+        val showEmptyListText get() = !loading && recordings.isEmpty()
     }
 
     sealed interface Event {
@@ -398,6 +399,7 @@ internal val stateToModel: State.() -> Model = {
             )
         }),
         numberSelected = selectedItems.size,
+        loading = isLoading,
     )
 }
 

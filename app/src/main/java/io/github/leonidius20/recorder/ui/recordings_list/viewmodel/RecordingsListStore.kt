@@ -58,6 +58,7 @@ interface RecordingsListStore : Store<Intent, State, Label> {
         val selectedItems: Set<Long> = emptySet(), // use LongSet or SparseBoolArray??
         val currentlyPlaying: Long? = null,
         val playerConnected: Boolean = false,
+        val isLoading: Boolean = true,
     ) {
 
         val inSelectionMode get() = selectedItems.isNotEmpty()
@@ -101,7 +102,10 @@ class RecordingsListStoreFactory @Inject constructor(
         reducer = { msg: Msg ->
             Timber.d("Got message $msg")
             when(msg) {
-                is Msg.ListUpdated -> copy(recordings = msg.newList) // todo: arrow-kt
+                is Msg.ListUpdated -> copy(
+                    recordings = msg.newList,
+                    isLoading = false,
+                ) // todo: arrow-kt
                 is Msg.ItemSelected -> copy(
                     selectedItems = selectedItems + msg.id
                 )
