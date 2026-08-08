@@ -54,7 +54,6 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsLis
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
 import kotlinx.coroutines.flow.map
-import timber.log.Timber
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -69,8 +68,6 @@ interface RecordingsListView : MviView<Model, Event> {
 
     sealed interface Event {
 
-        // todo: which recording? probably indexed or ui model supplied
-        //  best not to use indices as they may change on list update from backend
         data class RecordingLongPressed(val id: Long) : Event
 
         data class RecordingClicked(val id: Long, val index: Int) : Event
@@ -100,7 +97,7 @@ interface RecordingsListView : MviView<Model, Event> {
 
     fun handleLabel(label: Label)
 
-    fun connectToMediaPlayer() // todo: remove?
+    fun connectToMediaPlayer()
 
     fun disconnectFromMediaPlayer()
 
@@ -146,7 +143,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
         }
 
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            // todo: invalidation happends on each toggling of selection
+            // todo: invalidation happens on each toggling of selection
             // so we can add or remove menu elements here based on if it is
             // 1 element selected or multiple
             menu.clear()
@@ -249,7 +246,6 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
     override fun handleLabel(label: Label) {
         when (label) {
             is Label.UpdatePlayerItems -> {
-                Timber.d("Updating player items, new count is ${label.recordings.size}")
                 mediaController?.replaceMediaItems(
                     0, mediaController!!.mediaItemCount,
                     label.recordings.map { recording ->
@@ -319,6 +315,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
             }
             is Label.Share -> {
                 val uris = label.recs.map { it.uri }
+                // todo
             }
         }
     }
@@ -396,10 +393,6 @@ internal val stateToModel: State.() -> Model = {
                 millisecondsToStopwatchString(it.duration),
                 // todo: remove context here
                 Formatter.formatFileSize(RecorderApp.instance, it.size.toLong()),
-                // dateFormat.format(Date(it.dateTaken)),
-                it.uri,// todo: think about how we can go about removing fields that have nothing to do with UI, like mime type
-                //it.mimeType,
-                // todo: also inplement selection here
                 isSelected = selectedItems.contains(it.id),
                 isPlaying = currentlyPlaying == it.id,
             )
@@ -452,7 +445,6 @@ class RecordingsListController @AssistedInject constructor(
     }
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
-        Timber.d("Controller onViewCreated")
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
             store.states.map(stateToModel) bindTo view
             view.events.map(eventToIntent) bindTo store

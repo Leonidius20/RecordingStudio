@@ -35,12 +35,8 @@ class RecordingsListFragment : RecStudioFragment() {
 
         controller =
             controllerFactory.create(
-                //storeFactory = storeFactory,
-                //database = database,
                 lifecycle = essentyLifecycle(),
                 instanceKeeper = instanceKeeper(),
-                //dispatchers = dispatchers,
-                //onItemSelected = onItemSelected,
             )
 
         return root

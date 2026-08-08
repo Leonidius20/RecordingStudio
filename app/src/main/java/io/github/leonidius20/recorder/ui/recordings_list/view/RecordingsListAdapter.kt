@@ -123,8 +123,6 @@ class RecordingsListAdapter(
                 updateTitleColor()
                 updateLeadIcon()
                 updateLeadIconTint()
-
-                // binding.executePendingBindings()
             }
         }
 
