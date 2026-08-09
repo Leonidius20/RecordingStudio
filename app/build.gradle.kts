@@ -161,8 +161,8 @@ dependencies {
 
     implementation(libs.mviKotlin)
     implementation(libs.mviKotlin.main)
-    implementation(libs.mviKotlin.logging)
-    implementation(libs.mviKotlin.timetravel)
+    //debugImplementation(libs.mviKotlin.logging)
+    //debugImplementation(libs.mviKotlin.timetravel)
     implementation(libs.mviKotlin.extensions.coroutines)
 
     implementation(libs.timber)
