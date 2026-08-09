@@ -301,14 +301,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/margin_small"
+                        android:layout_marginBottom="@dimen/margin_normal"
                         android:text="@string/audio_settings_hint_sample_rate"
                         android:textAppearance="?textAppearanceBodyMedium" />
 
-                    <NumberPicker
+                    <io.github.leonidius20.recorder.ui.common.Selector
                         android:id="@+id/audio_settings_sample_rate_slider"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/selector_height"
                         android:layout_marginBottom="@dimen/margin_normal"
                         />
                     </LinearLayout>
@@ -323,20 +323,87 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/margin_small"
+                            android:layout_marginBottom="@dimen/margin_normal"
                             android:text="@string/audio_settings_title_bit_depth"
                             android:textAppearance="?textAppearanceTitleLarge" />
 
-                        <NumberPicker
+                        <io.github.leonidius20.recorder.ui.common.Selector
                             android:id="@+id/audio_settings_bit_depth_slider"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="@dimen/selector_height"
                             android:layout_marginBottom="@dimen/margin_normal"
                             />
 
                     </LinearLayout>
 
-                    <!-- todo: additional settings like sample rate and bitrate -->
+                    <LinearLayout
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:id="@+id/bit_rate_settings_block">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/margin_normal"
+                            android:text="@string/audio_settings_title_bit_rate"
+                            android:textAppearance="?textAppearanceTitleLarge" />
+
+                        <io.github.leonidius20.recorder.ui.common.Selector
+                            android:id="@+id/audio_settings_bitrate_discrete_selector"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/selector_height"
+                            android:layout_marginBottom="@dimen/margin_normal"
+                            />
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/audio_settings_bitrate_continuous_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/margin_small"
+                            app:labelBehavior="gone"
+                            android:visibility="gone"/>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/bitrate_slider_labels"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/margin_normal"
+                            android:layout_marginEnd="@dimen/margin_normal"
+                            android:layout_marginBottom="@dimen/margin_normal">
+
+                            <TextView
+                                android:id="@+id/min_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                            <TextView
+                                android:id="@+id/current_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                            <TextView
+                                android:id="@+id/max_bitrate_slider_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:textAppearance="?textAppearanceLabelMedium"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 

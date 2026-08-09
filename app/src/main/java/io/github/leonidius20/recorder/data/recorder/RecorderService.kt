@@ -28,21 +28,28 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
+import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.time.measureTime
 
 private const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.inprogress"
 private const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.stopped"
@@ -93,8 +100,6 @@ class RecorderService : LifecycleService() {
 
     private lateinit var stopwatch: Stopwatch
 
-    //private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
-
     @Inject
     lateinit var settings: Settings
 
@@ -108,6 +113,8 @@ class RecorderService : LifecycleService() {
     private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
+
+    private lateinit var amplitudeVizUpdateJob: Job
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -126,7 +133,8 @@ class RecorderService : LifecycleService() {
 
             ContextCompat.registerReceiver(
                 this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
+                intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
 
         lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
@@ -139,7 +147,8 @@ class RecorderService : LifecycleService() {
             val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
             ContextCompat.registerReceiver(
                 this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_EXPORTED)
+                intentFilter, ContextCompat.RECEIVER_EXPORTED
+            )
         }
 
         lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
@@ -150,7 +159,8 @@ class RecorderService : LifecycleService() {
             val intentFilter = IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW)
             ContextCompat.registerReceiver(
                 this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_EXPORTED)
+                intentFilter, ContextCompat.RECEIVER_EXPORTED
+            )
         }
 
         callBroadcastReceiver = IncomingCallBroadcastReceiver {
@@ -169,7 +179,8 @@ class RecorderService : LifecycleService() {
         val fileName = dateFormat.format(Date(System.currentTimeMillis()))
 
         // http://androidxref.com/4.4.4_r1/xref/frameworks/base/media/java/android/media/MediaFile.java#174
-        fileUri = recordingsListRepository.createRecordingFile(fileName,
+        fileUri = recordingsListRepository.createRecordingFile(
+            fileName,
             fileFormat.mimeType
         )
         descriptor = applicationContext.contentResolver.openFileDescriptor(fileUri, "rw")!!
@@ -182,8 +193,8 @@ class RecorderService : LifecycleService() {
                 audioSource = settingsState.audioSource,
                 sampleRate = settingsState.sampleRate,
                 monoOrStereo = settingsState.numOfChannels,
-                // todo: uncomment for 0.2.0
-                // bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
+                bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
+                coroutineScope = lifecycleScope,
             )
         } else {
 
@@ -195,6 +206,10 @@ class RecorderService : LifecycleService() {
                     encoder = settingsState.encoder,
                     channels = settingsState.numOfChannels,
                     sampleRate = settingsState.sampleRate,
+                    bitRate =
+                        if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
+                            settingsState.bitRatesForCodecs[settingsState.encoder]
+                        else null
                 )
             } catch (e: IOException) {
                 Log.e("Recorder", "prepare() failed", e)
@@ -237,13 +252,16 @@ class RecorderService : LifecycleService() {
         stopwatch.start()
 
 
-        lifecycleScope.launch {
+        amplitudeVizUpdateJob = lifecycleScope.launch(Dispatchers.Default) {
             // every 100ms, emit maxAmplitude
-            while(true) {
+            while (isActive) {
                 if (state.value == State.RECORDING) {
                     _amplitudes.emit(recorder.maxAmplitude())
+                    delay(100)
+                } else {
+                    // first() supposed to be cancellable?
+                    state.first { it == State.RECORDING }
                 }
-                delay(100)
             }
         }
 
@@ -258,11 +276,11 @@ class RecorderService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         // ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-        stopwatch.stop()
+        //stopwatch.stop()
         //recorder.stop()
         //recorder.release()
 
-        recorder.stop()
+        // recorder.stop()
 
 
         contentResolver.update(fileUri, ContentValues().apply {
@@ -287,13 +305,15 @@ class RecorderService : LifecycleService() {
      */
     @RequiresApi(Build.VERSION_CODES.N)
     fun toggleRecPause(): State {
-        when(state.value) {
+        when (state.value) {
             State.RECORDING -> {
                 pause()
             }
+
             State.PAUSED -> {
                 resume()
             }
+
             else -> throw IllegalStateException()
         }
         return state.value
@@ -309,13 +329,13 @@ class RecorderService : LifecycleService() {
     }
 
     private fun buildPersistentNotification(): Notification {
-        val titleText = when(state.value) {
+        val titleText = when (state.value) {
             State.RECORDING -> getString(R.string.notif_recording_in_progress)
             State.PAUSED -> getString(R.string.notif_recording_paused)
             else -> ""
         }
 
-        val recPauseToggleActionText = when(state.value) {
+        val recPauseToggleActionText = when (state.value) {
             State.RECORDING -> getString(R.string.notif_action_pause)
             State.PAUSED -> getString(R.string.notif_action_resume)
             else -> ""
@@ -331,26 +351,52 @@ class RecorderService : LifecycleService() {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSilent(true)
             .setOnlyAlertOnce(true)
-            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, MainActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
 
         // todo: make it always once we re-implement recording with a lower-level api
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val toggleRecPauseIntent = Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
-            notificationB.addAction(R.drawable.ic_pause, recPauseToggleActionText, PendingIntent.getBroadcast(this, 0, toggleRecPauseIntent, PendingIntent.FLAG_IMMUTABLE))
+            val toggleRecPauseIntent =
+                Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
+            notificationB.addAction(
+                R.drawable.ic_pause,
+                recPauseToggleActionText,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    toggleRecPauseIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
         }
 
         val stopIntent = Intent(RecordingControlBroadcastReceiver.ACTION_STOP)
-        notificationB.addAction(R.drawable.ic_stop,
-            getString(R.string.notif_action_stop), PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE))
+        notificationB.addAction(
+            R.drawable.ic_stop,
+            getString(R.string.notif_action_stop),
+            PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
+        )
 
         return notificationB.build()
     }
 
     fun stop() {
-        stopSelf()
+        amplitudeVizUpdateJob.cancel()
+        stopwatch.stop()
+
+        lifecycleScope.launch {
+            recorder.stop()
+            stopSelf()
+        }
     }
 
-    inner class Binder: android.os.Binder() {
+    inner class Binder : android.os.Binder() {
 
         val service = this@RecorderService
 
@@ -388,10 +434,18 @@ class RecorderService : LifecycleService() {
                 .setContentTitle("Recording stopped")
                 .setContentText(explanation)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+                .setContentIntent(
+                    PendingIntent.getActivity(
+                        this,
+                        0,
+                        Intent(this, MainActivity::class.java),
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
+                )
                 .setAutoCancel(true)
                 .build().also { notification ->
-                    NotificationManagerCompat.from(this).notify(REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID, notification)
+                    NotificationManagerCompat.from(this)
+                        .notify(REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID, notification)
                 }
         }
 
@@ -427,7 +481,8 @@ class RecorderService : LifecycleService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel.
             val name = "Recording stopped abruptly"
-            val descriptionText = "Sent if a recording was stopped because the device was running out of battery or storage"
+            val descriptionText =
+                "Sent if a recording was stopped because the device was running out of battery or storage"
             val importance = NotificationManager.IMPORTANCE_HIGH
             val mChannel = NotificationChannel(REC_ABRUPT_STOP_CHANNEL_ID, name, importance)
             mChannel.description = descriptionText
@@ -445,10 +500,18 @@ class RecorderService : LifecycleService() {
                 .setContentTitle("Recording paused")
                 .setContentText("Incoming phone call")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+                .setContentIntent(
+                    PendingIntent.getActivity(
+                        this,
+                        0,
+                        Intent(this, MainActivity::class.java),
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
+                )
                 .setAutoCancel(true)
                 .build().also { notification ->
-                    NotificationManagerCompat.from(this).notify(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID, notification)
+                    NotificationManagerCompat.from(this)
+                        .notify(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID, notification)
                 }
         }
     }

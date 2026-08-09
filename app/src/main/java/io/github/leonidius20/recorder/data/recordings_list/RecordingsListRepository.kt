@@ -27,16 +27,6 @@ class RecordingsListRepository @Inject constructor(
     private val dataSource: RecordingsDataSource,
 ) {
 
-    data class Recording(
-        val id: Long,
-        val uri: Uri,
-        val name: String,
-        val duration: Int,
-        val size: Int,
-        val dateTaken: Long,
-        val mimeType: String,
-    )
-
     val recordings = callbackFlow {
 
         val cursor = dataSource.getCursorForRecordingsFolder()

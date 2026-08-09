@@ -1,30 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     tools:viewBindingIgnore="true"
+    android:background="@drawable/view_selector_border_bg"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
     <ImageButton
+        style="?attr/materialIconButtonStyle"
+        android:background="@drawable/view_selector_button_ripple_left"
         android:id="@+id/button_prev"
         android:src="@drawable/ic_previous"
         android:contentDescription="@string/selector_previous_value"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"
+        app:tint="@color/md_theme_onSurface" />
 
-    <TextView
-        android:id="@+id/value_text"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/text_pager"
         android:layout_weight="1"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"/>
 
     <ImageButton
+        style="?attr/materialIconButtonStyle"
+        android:background="@drawable/view_selector_button_ripple_right"
         android:id="@+id/button_next"
         android:src="@drawable/ic_next"
         android:contentDescription="@string/selector_next_value"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:tint="@color/md_theme_onSurface"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

@@ -4,11 +4,27 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.util.Log
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.io.FileOutputStream
-import kotlin.concurrent.thread
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -20,24 +36,18 @@ class PcmAudioRecorder(
     private val sampleRate: Int,
     private val monoOrStereo: AudioChannels = AudioChannels.MONO,
     private val bitDepth: PcmBitDepthOption = PcmBitDepthOption.PCM_16BIT_INT,
+
+    /**
+     * used to launch the coroutine reading bytes from mic in loop
+     */
+    private val coroutineScope: CoroutineScope,
+    private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : AudioRecorder {
 
 
     private lateinit var audioRecord: AudioRecord
 
-    @Volatile
-    private var isRecording = false
-
-    @Volatile
-    private var isPaused = false
-
-    @Volatile
-    private lateinit var micReadingThread: Thread
-
-    @Volatile
-    private var bytesRecorded = 0
-
-    private val pauseLock = java.lang.Object()
+    private lateinit var micReadingThread: Job
 
     private val inputChannel = when (monoOrStereo) {
         AudioChannels.MONO -> AudioFormat.CHANNEL_IN_MONO
@@ -51,6 +61,11 @@ class PcmAudioRecorder(
     )
     val bufSize = minBufSize * 4 // why 4?
 
+    private val isPausedState = MutableStateFlow(false)
+
+    private val maxAmplitudeState = MutableStateFlow(0)
+
+    private val maxAmplitudeExtractor = bitDepth.maxAmplitudeExtractorFactory()
 
     @SuppressLint("MissingPermission")
     override fun start() {
@@ -63,40 +78,42 @@ class PcmAudioRecorder(
             bufSize
         )
 
-        audioRecord.startRecording(/*null*/) // todo: mediaSyncEvent
-        isRecording = true
+        audioRecord.startRecording()
 
-
-        // todo: redo this with coroutine
-         // also, we can use some write-priority lock synchronize maxAmp value
-        //
-
-        micReadingThread = thread(start = true) {
+        micReadingThread = coroutineScope.launch(cpuDispatcher) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
                 // leaving space for the header
                 it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
             }
 
+            val buffer = ByteBuffer.allocateDirect(bufSize).order(ByteOrder.LITTLE_ENDIAN)
 
-            //android.system.Os.lseek(descriptor.fileDescriptor, WAV_HEADER_LENGTH_BYTES.toLong(), OsConstants.SEEK_SET)
-            // leaving space for header
+            var bytesRecorded = 0
 
-            //var bytesRecorded = 0
+            while (isActive) {
+                //val time = measureTime {
 
-            // outStream.write(ByteArray(WAV_HEADER_LENGTH_BYTES)) // placeholder for wav header
-            val buffer = ByteArray(bufSize)
-            while (isRecording) {
-
-                synchronized(pauseLock) {
-                    while(isPaused) {
-                        pauseLock.wait()
+                if (isPausedState.value == true) {
+                    // waiting either to be resumed, or to be stopped (cancelled)
+                    try {
+                        isPausedState.first { it == false }
+                    } catch (_: CancellationException) {
+                        // recording got stopped (coroutine cancelled) while waiting
+                        break // get to writing the header and closing streams
                     }
                 }
 
-                // if it was unpaused bc the recording was stopped
-                if (!isRecording) break
+                val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    audioRecord.read(
+                        buffer, bufSize,
+                        AudioRecord.READ_NON_BLOCKING,
+                    )
+                } else {
+                    audioRecord.read(
+                        buffer, bufSize,
+                    )
+                }
 
-                val bytesRead = audioRecord.read(buffer, 0, bufSize)
                 if (bytesRead == 0
                     || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
                     || bytesRead == AudioRecord.ERROR_BAD_VALUE
@@ -105,31 +122,27 @@ class PcmAudioRecorder(
                 ) {
                     continue
                 }
-                outStream.write(buffer.sliceArray(0 until bytesRead))
+
+                //val readBytesAsArray = buffer.capacity()//.sliceArray(0 until bytesRead)
+
+                //val bb = buffer
+                buffer.limit(bytesRead)
+
+                outStream.channel.write(buffer)
+                // outStream.write(readBytesAsArray)
                 bytesRecorded += bytesRead
                 extractAndRecordMaxAmplitude(buffer)
+
+                buffer.clear()
+                //}
+
+                // Log.d("timing", "It took $time ms to run one iteration of loop")
             }
 
-            // going back to add header
-            //android.system.Os.lseek(descriptor.fileDescriptor, 0, OsConstants.SEEK_SET)
-            /*outStream.write(generateWavHeader(
-        numOfChannels = 1, // todo
-        sampleRateHz = sampleRate,
-    ))*/
-
-            /*outStream.channel.apply {
-        position(0) // back to start where we left 44 bytes for header
-        write(
-            ByteBuffer.wrap(
-                generateWavHeader(
-                    numOfChannels = 1, // todo
-                    sampleRateHz = sampleRate,
-                )
-            )
-        )
-    }*/
-
-            //outStream.close()
+            audioRecord.apply {
+                stop()
+                release()
+            }
 
             outStream.channel.position(0) // back to the start to fill in the header
             outStream.write(
@@ -139,55 +152,22 @@ class PcmAudioRecorder(
                     sampleRateHz = sampleRate,
                 )
             )
-            //Log.d("audio rec", "wrote header")
 
             outStream.close()
-
-
         }
 
     }
 
-    override fun stop() {
-        isRecording = false
-        audioRecord.stop()
-        audioRecord.release()
-
-        resume() // so that the thread can finish it's work
-
-        // micReadingThread.join()
-
-
-        /*tempFile.inputStream().use { input ->
-            Log.d("audio rec", "before writing out file")
-            // val data = ByteArray(bufSize)
-            nonTempOutStream.write(
-                input.readBytes()
-            )
-            Log.d("audio rec", "after writing out file")
-        }
-
-        Log.d("audio rec", "after closing temp file")
-        nonTempOutStream.close()
-        Log.d("audio rec", "after closing perm out file")
-
-        tempFile.delete()
-        Log.d("audio rec", "after deleting temp file")*/
-
-        // micReadingJob.cancelAndJoin() // we should re-do it with coroutines and make sure ServiceScope doesn't die until all coroutines inside are finished
+    override suspend fun stop() {
+        micReadingThread.cancelAndJoin()
     }
 
     override fun pause() {
-        synchronized(pauseLock) {
-            isPaused = true
-        }
+        isPausedState.value = true
     }
 
     override fun resume() {
-        synchronized(pauseLock) {
-            isPaused = false
-            pauseLock.notifyAll()
-        }
+        isPausedState.value = false
     }
 
     private fun generateWavHeader(
@@ -314,10 +294,8 @@ class PcmAudioRecorder(
         return header
     }
 
-    @Volatile
-    private var maxAmplitude = 0
-
-    private val bitsPerSample = bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
+    private val bitsPerSample =
+        bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
 
     // bytes per one sample, if stereo that would be only left or only right channel sample
     private val bytesPerSample = (bitsPerSample / 8)
@@ -327,70 +305,20 @@ class PcmAudioRecorder(
 
 
     // this is happening in a non-main thread that reads bytes from mic
-    private fun extractAndRecordMaxAmplitude(pcmBytes: ByteArray) {
-        // we need to check the bytes format, bc it could be mono or stereo
-        // if stereo, we should probably average the two
-        // http://soundfile.sapp.org/doc/WaveFormat/
+    private fun extractAndRecordMaxAmplitude(pcmBytes: ByteBuffer) {
+        val valueForThisBuffer = maxAmplitudeExtractor.extractFrom(
+            buffer = pcmBytes,
+            numberOfChannels = monoOrStereo.numberOfChannels()
+        )
 
-        // also the highest number can be different whether it is 8bit, 16bit, 32bit so on
-        // so it probably has to be scaled somehow
-
-        // TODO: support FLOAT values
-
-        val numberOfInstants = pcmBytes.size / bytesPerInstant
-
-        var amp = 0
-        for (offset in 0 until pcmBytes.size step bytesPerInstant) {
-            if (monoOrStereo.numberOfChannels() == 1) {
-                var sample = 0
-
-                // convert little endian number to int
-                // most significant byte is at highest address
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    sample = sample shl 8
-                    sample += pcmBytes[offset + position]
-                }
-
-                amp = max(amp, abs(sample))
-            } else {
-
-                val secondSampleOffset = bytesPerSample
-
-                var leftSample = 0
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    leftSample = leftSample shl 8
-                    leftSample += pcmBytes[offset + position]
-                }
-
-                var rightSample = 0
-                for (position in bytesPerSample - 1 downTo 0 ) {
-                    rightSample = rightSample shl 8
-                    rightSample += pcmBytes[offset + secondSampleOffset + position]
-                }
-
-                val leftAndRightAverage = (leftSample / 2) + (rightSample / 2) // making sure they don't overflow
-
-                amp = max(amp, abs(leftAndRightAverage))
-            }
-        }
-
-        val ampScaled = amp // todo: scale to +-32000 smth (16bit signed?)
-
-        synchronized(maxAmplitude) {
-            maxAmplitude = max(maxAmplitude, ampScaled)
+        maxAmplitudeState.update { currentValue ->
+            max(currentValue, valueForThisBuffer)
         }
     }
 
     override fun maxAmplitude(): Int {
-       // val ampToReturn = maxAmplitude
-       //// maxAmplitude = 0 // reset so that we get fresh value on next call
-        //return ampToReturn
-
-        return synchronized(maxAmplitude) {
-            val ampToReturn = maxAmplitude
-            maxAmplitude = 0 // reset so that we get fresh value on next call
-            return ampToReturn
-        }
+        // return old value and set new value to 0
+        return maxAmplitudeState.getAndUpdate { 0 }
     }
 
     override fun supportsPausing() = true

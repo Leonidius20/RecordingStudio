@@ -35,7 +35,7 @@ class Settings @Inject constructor(
         // where each instance is a codec with certain parameters set up (sample rate, bit rate)
         // and the class itself will be checking if these parameters work together?
 
-        // val bitRatesForCodecs: Map<Codec, BitRateOption>,
+        val bitRatesForCodecs: Map<Codec, Float>, // double in kbps
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -121,13 +121,35 @@ class Settings @Inject constructor(
         }
 
         val bitDepthsForCodecs = Codec.entries
-            .filter { it.supportsSettingBitDepth }
+            .filter { it.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues }
             .associateWith { codec ->
-                codec.getBitDepthOptionFromPrefValue(
-                    pref.getInt(
-                        codec.bitDepthOrRateForCodecPrefKey,
-                        codec.defaultBitDepth!!.valueForPref
+                val setting = codec.bitRateSettingType
+                        as BitRateSettingType.BitDepthDiscreteValues
+                try {
+
+
+                    codec.getBitDepthOptionFromPrefValue(
+                        pref.getInt(
+                            codec.bitDepthOrRateForCodecPrefKey,
+                            setting.default.valueForPref
+                        )
                     )
+                } catch (_: Throwable) {
+                    // couldn't find such value
+                    setting.default
+                }
+            }
+
+        val bitRatesForCodecs = Codec.entries
+            .filter {
+                it.bitRateSettingType is BitRateSettingType.BitRateValues
+            }
+            .associateWith { codec ->
+                val setting = codec.bitRateSettingType
+                        as BitRateSettingType.BitRateValues
+                pref.getFloat(
+                    codec.bitDepthOrRateForCodecPrefKey,
+                    setting.default,
                 )
             }
 
@@ -161,6 +183,7 @@ class Settings @Inject constructor(
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
             bitDepthsForCodecs = bitDepthsForCodecs,
+            bitRatesForCodecs = bitRatesForCodecs,
         )
     }
 
@@ -259,8 +282,6 @@ class Settings @Inject constructor(
 
         val currentSampleRate = state.value.sampleRate
 
-
-        // todo uncomment for 0.2.0
         if (!codec.supportsSampleRate(currentSampleRate)) {
             setSampleRate(
                 codec.supportedSampleRateClosestTo(currentSampleRate),
@@ -296,14 +317,26 @@ class Settings @Inject constructor(
 
 
     fun setBitDepth(bitDepth: BitDepthOption) {
-
-        if (!state.value.encoder.supportsSettingBitDepth) {
-            throw IllegalStateException("tried changing bit depth while selected encoder doesn't support it")
-        }
+        require(
+            state.value.encoder.bitRateSettingType
+                    is BitRateSettingType.BitDepthDiscreteValues
+        )
 
         val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
 
         pref.edit().putInt(key, bitDepth.valueForPref)
+            .apply()
+
+        onSharedPreferenceChanged(key, null)
+    }
+
+    fun setBitRate(rate: Float) {
+        require(state.value.encoder.bitRateSettingType
+                is BitRateSettingType.BitRateValues)
+
+        val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
+
+        pref.edit().putFloat(key, rate)
             .apply()
 
         onSharedPreferenceChanged(key, null)

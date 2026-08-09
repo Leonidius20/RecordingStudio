@@ -5,7 +5,7 @@
     <data>
         <variable
             name="recording"
-            type="io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel" />
+            type="io.github.leonidius20.recorder.ui.recordings_list.view.RecordingUiModel" />
     </data>
 
     <net.nicbell.materiallists.ListItem

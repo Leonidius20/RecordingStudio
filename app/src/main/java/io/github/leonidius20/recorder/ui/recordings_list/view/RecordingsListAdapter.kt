@@ -1,59 +1,42 @@
 package io.github.leonidius20.recorder.ui.recordings_list.view
 
-import android.view.View
+import android.content.Context
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel
-import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListViewModel.RecordingUiModel
 
 /**
- * this adapter supports selecting multiple items, removing and (in future) changing their titles
+ * this adapter supports selecting multiple items, removing and
+ * changing their titles
  */
 class RecordingsListAdapter(
-    private val onItemClicked: (Int) -> Unit,
-    private val onItemLongClicked: (Int) -> Unit,
-): RecyclerView.Adapter<RecordingsListAdapter.ViewHolder>() {
-
-    // todo: replace with viewModel.recordings livedata?
-    private var recordings = ArrayList<RecordingUiModel>()
-
-    // private val selectedItems = SparseBooleanArray()
+    context: Context,
+    private val onItemClicked: (id: Long) -> Unit,
+    private val onItemLongClicked: (id: Long) -> Unit,
+) : ListAdapter<RecordingUiModel, RecordingsListAdapter.ViewHolder>(
+    RecordingsDiffUtilCallback()
+) {
 
     /**
-     * item that is currently playing and should be marked appropriately
+     * for when the element is neither selected nor is playing right now
      */
-    private var playingItem: Int? = null // todo: save in viewmodel
+    private val regularIcon = ContextCompat.getDrawable(context, R.drawable.ic_microphone)
+    private val playingIcon = ContextCompat.getDrawable(context, R.drawable.ic_audio_playing)
+    private val selectedIcon = ContextCompat.getDrawable(context, R.drawable.ic_selected)
 
-    fun setData(
-        newData: ArrayList<RecordingUiModel>
-    ) {
-        val callback = RecordingsDiffUtilCallback(
-            oldList = recordings,
-            newList = newData
-        )
-        val diff = DiffUtil.calculateDiff(callback)
-        recordings = newData
-
-        diff.dispatchUpdatesTo(this)
+    fun setData(newData: ArrayList<RecordingUiModel>) {
+        submitList(newData)
     }
 
     inner class ViewHolder(
         val root: RecordingListItemWrapper,
-        val onItemClicked: (Int) -> Unit,
-        val onItemLongClicked: (Int) -> Unit,
-    ): RecyclerView.ViewHolder(root), View.OnClickListener, View.OnLongClickListener {
+    ) : RecyclerView.ViewHolder(root) {
 
-        override fun onClick(v: View) {
-            onItemClicked(position)
-        }
-
-        override fun onLongClick(v: View): Boolean {
-            onItemLongClicked(position)
-            return true
-        }
+        private var isRecordSelected = false
+        private var isRecordPlaying = false
 
         internal fun updateName(newName: String) {
             root.invokeWhenInflated {
@@ -61,83 +44,99 @@ class RecordingsListAdapter(
             }
         }
 
-        internal fun updateSelection(isSelected: Boolean) {
-            root.invokeWhenInflated {
-                binding.leadingIcon.setImageResource(
-                    if (isSelected)
-                        R.drawable.ic_selected
-                    else if (playingItem == position)
-                        R.drawable.ic_audio_playing
-                    else
-                        R.drawable.ic_microphone
-                )
-                binding.root.isSelected = isSelected
-            }
+        internal fun updateSelection(
+            isSelected: Boolean
+        ) {
+            isRecordSelected = isSelected
+
+            updateLeadIcon()
+            updateViewSelection()
         }
 
-        fun updatePlaybackStatus(isSelected: Boolean, isPlaying: Boolean) {
-            root.invokeWhenInflated {
-                binding.txtHeadline.setTextColor(
-                    resources.getColor(
-                        if (isPlaying) R.color.md_theme_primary
-                        else R.color.md_theme_onSurface,
-                    )
-                )
+        fun updatePlaybackStatus(isPlaying: Boolean) {
+            isRecordPlaying = isPlaying
 
-                binding.leadingIcon.setImageResource(
-                    if (isPlaying) R.drawable.ic_audio_playing
-                    else if (isSelected) R.drawable.ic_selected
-                    else R.drawable.ic_microphone,
-                )
-
-                binding.leadingIcon.drawable.setTint(
-                    resources.getColor(
-                        if (isPlaying) R.color.md_theme_primary
-                        else R.color.md_theme_onSurfaceVariant,
-                    )
-                )
-            }
+            updateTitleColor()
+            updateLeadIcon()
+            updateLeadIconTint()
         }
 
-        /*fun bind(recording: RecordingsListViewModel.RecordingUiModel) {
-            binding.recording = recording
-            binding.executePendingBindings()
-        }*/
+        fun updateDuration(newDuration: String) = root.invokeWhenInflated {
+            binding.durationText.text = newDuration
+        }
+
+        fun updateSize(newSize: String) = root.invokeWhenInflated {
+            binding.sizeText.text = newSize
+        }
+
+        // depends on selection state
+        private fun updateViewSelection() = root.invokeWhenInflated {
+            binding.root.isSelected = isRecordSelected
+        }
+
+        // depends on playback status
+        private fun updateTitleColor() = root.invokeWhenInflated {
+            binding.txtHeadline.setTextColor(
+                ContextCompat.getColor(context,
+                    if (isRecordPlaying) R.color.md_theme_primary
+                    else R.color.md_theme_onSurface,
+                )
+            )
+        }
+
+        // depends on playback and selection status
+        private fun updateLeadIcon() = root.invokeWhenInflated {
+            binding.leadingIcon.setImageDrawable(
+                if (isRecordPlaying) playingIcon
+                else if (isRecordSelected) selectedIcon
+                else regularIcon,
+            )
+        }
+
+        // depends on playback status
+        private fun updateLeadIconTint() = root.invokeWhenInflated {
+            binding.leadingIcon.drawable.setTint(
+                ContextCompat.getColor(context,
+                    if (isRecordPlaying) R.color.md_theme_primary
+                    else R.color.md_theme_onSurfaceVariant,
+                )
+            )
+        }
+
+        fun bind(recording: RecordingUiModel) {
+            root.invokeWhenInflated {
+                binding.root.setOnClickListener {
+                    onItemClicked(recording.id)
+                }
+                binding.root.setOnLongClickListener {
+                    onItemLongClicked(recording.id)
+                    true
+                }
+
+                this.binding.recording = recording
+                this.binding.root.isSelected = recording.isSelected
+
+                isRecordSelected = recording.isSelected
+                isRecordPlaying = recording.isPlaying
+
+                updateViewSelection()
+                updateTitleColor()
+                updateLeadIcon()
+                updateLeadIconTint()
+            }
+        }
 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)
         root.inflateAsync(R.layout.recording_list_item2)
-        return ViewHolder(root, onItemClicked, onItemLongClicked)
+        return ViewHolder(root)
     }
 
-    override fun getItemCount() = recordings.size
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.root.invokeWhenInflated {
-            val recording = recordings[position]
-            // we have to do it here because it doesn't work when we
-            // add those listeners to the wrapper
-            binding.root.setOnClickListener(holder)
-            binding.root.setOnLongClickListener(holder)
-
-            this.binding.recording = recording
-            this.binding.root.isSelected = recording.isSelected
-
-            if (recording.isSelected) {
-                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_selected))
-               // binding.leadingIcon.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_errorContainer_highContrast))
-            } else {
-                binding.leadingIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_microphone))
-            }
-
-            // todo: optimize update...() or bind...() functions
-            holder.updatePlaybackStatus(
-                isPlaying = position == playingItem,
-                isSelected = recording.isSelected
-            )
-        }
+        val recording = getItem(position)
+        holder.bind(recording)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
@@ -146,168 +145,61 @@ class RecordingsListAdapter(
         }
 
         payloads.forEach { payload ->
-            when(payload) {
-                is RecordingChangePayload.Name -> {
-                    holder.updateName(payload.newName)
+            (payload as? RecordingChangePayload)?.let { payload ->
+                payload.newName?.let {
+                    holder.updateName(it)
                 }
-                is RecordingChangePayload.Selection -> {
-                    holder.updateSelection(payload.isSelected)
+
+                payload.newIsSelected?.let {
+                    holder.updateSelection(it)
                 }
-                is RecordingChangePayload.Playback -> {
-                    holder.updatePlaybackStatus(
-                        isPlaying = payload.isPlaying,
-                        isSelected = recordings[position].isSelected
-                    )
+
+                payload.newIsPlaying?.let {
+                    holder.updatePlaybackStatus(it)
+                }
+
+                payload.newSize?.let {
+                    holder.updateSize(it)
+                }
+
+                payload.newDuration?.let {
+                    holder.updateDuration(it)
                 }
             }
-        }
-    }
-
-    // private fun isSelected(position: Int) = selectedItems.contains(position)
-
-    /*fun toggleSelection(position: Int) {
-        val wasSelected = selectedItems.get(position, false)
-
-        if (wasSelected) {
-            selectedItems.delete(position)
-        } else {
-            selectedItems.put(position, true)
-        }
-        notifyItemChanged(position, RecordingChangePayload.Selection(!wasSelected))
-        // todo: checked vs unchecked icon (as well as Playing icon in future)
-        // can be changed using payloads
-        // same for recording name
-    }
-
-    fun getSelectedItemsPositions(): List<Int> {
-        return (0 until selectedItems.size()).map {
-            selectedItems.keyAt(it)
-        }
-    }
-
-    fun clearAllSelection() {
-        val selection = getSelectedItemsPositions()
-        selectedItems.clear()
-        selection.forEach { position -> notifyItemChanged(position, RecordingChangePayload.Selection(false)) }
-    }
-
-    fun getSelectedItemsCount() = selectedItems.size() */
-
-    private fun removeItem(position: Int) {
-        recordings.removeAt(position)
-        notifyItemRemoved(position)
-    }
-
-    /**
-     * this of course breaks the single source of truth (it should
-     * be MediaStore but re-querying it after every deletion is potentially
-     * too slow. todo however we can make an in-mem cache a SSOT. Start by populating it from mediastore, then after making recording add it to cached version. We can also ssve this data to disk and only rescan Mediastore of needed as per https://developer.android.com/training/data-storage/shared/media#check-for-updates. there we can use diffutil
-     */
-    /*fun removeItems(positions: List<Int>) {
-        val ranges = breakIntoRangesDescending(positions)
-
-        ranges.forEach { range ->
-            if (range.size == 1) {
-                removeItem(position = range.first())
-            } else {
-                removeRange(fromPosition = range.first(), count = range.size)
-            }
-        }
-    }*/
-
-    /*private fun removeRange(fromPosition: Int, count: Int) {
-        // cut range out of list
-        recordings.removeAtRange(fromPosition, count)
-
-        notifyItemRangeRemoved(fromPosition, count)
-    }*/
-
-    /*private fun <T> MutableList<T>.removeAtRange(fromIndex: Int, count: Int) {
-        this.removeAll(
-            this.slice(fromIndex until fromIndex + count).toSet()
-        )
-    }
-
-    fun replaceItemAt(position: Int, with: RecordingsListViewModel.RecordingUiModel) {
-        recordings[position] = with
-        notifyItemChanged(position)
-    }
-
-    fun renameItemAt(position: Int, newName: String) {
-        recordings[position] = recordings[position].copy(name = newName)
-        notifyItemChanged(position, RecordingChangePayload.Name(newName))
-    }*/
-
-    val currentData
-        get() = recordings
-
-    fun setPlaying(position: Int) {
-        if (position == playingItem) return
-
-        resetPlayingItemHighlighting()
-
-        playingItem = position
-
-        notifyItemChanged(position, RecordingChangePayload.Playback(true))
-    }
-
-    fun resetPlayingItemHighlighting() {
-        if (playingItem != null) {
-            notifyItemChanged(playingItem!!, RecordingChangePayload.Playback(false))
-            playingItem = null
         }
     }
 
 }
 
-class RecordingsDiffUtilCallback(
-    private val oldList: ArrayList<RecordingsListViewModel.RecordingUiModel>,
-    private val newList: ArrayList<RecordingsListViewModel.RecordingUiModel>,
-): DiffUtil.Callback() {
+class RecordingsDiffUtilCallback : DiffUtil.ItemCallback<RecordingUiModel>() {
 
-    override fun getOldListSize() = oldList.size
-
-    override fun getNewListSize() = newList.size
-
-    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
+    override fun areItemsTheSame(oldItem: RecordingUiModel, newItem: RecordingUiModel): Boolean {
         return oldItem.id == newItem.id // uri is the unique identifier
     }
 
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
+    override fun areContentsTheSame(oldItem: RecordingUiModel, newItem: RecordingUiModel): Boolean {
         return oldItem == newItem // here we compare all fields including name, duration
     }
 
-    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
-        val oldItem = oldList[oldItemPosition]
-        val newItem = newList[newItemPosition]
-
-        if (oldItem.name != newItem.name) {
-            return RecordingChangePayload.Name(newItem.name)
-        }
-
-        if (oldItem.isSelected != newItem.isSelected) {
-            return RecordingChangePayload.Selection(newItem.isSelected)
-        }
-
-        if (oldItem.isPlaying != newItem.isPlaying) {
-            return RecordingChangePayload.Playback(newItem.isPlaying)
-        }
-
-        return super.getChangePayload(oldItemPosition, newItemPosition)
+    override fun getChangePayload(oldItem: RecordingUiModel, newItem: RecordingUiModel): Any {
+        return RecordingChangePayload(
+            newName = newItem.name.ifDifferentFrom(oldItem.name),
+            newIsSelected = newItem.isSelected.ifDifferentFrom(oldItem.isSelected),
+            newIsPlaying = newItem.isPlaying.ifDifferentFrom(oldItem.isPlaying),
+            newSize = newItem.size.ifDifferentFrom(oldItem.size),
+            newDuration = newItem.duration.ifDifferentFrom(oldItem.duration),
+        )
     }
 
 }
 
-private sealed interface RecordingChangePayload {
+private fun <T> T.ifDifferentFrom(other: T) =
+    if (this != other) this else null
 
-    data class Name(val newName: String): RecordingChangePayload
-
-    data class Selection(val isSelected: Boolean): RecordingChangePayload
-
-    data class Playback(val isPlaying: Boolean): RecordingChangePayload
-
-}
+private data class RecordingChangePayload(
+    val newName: String? = null,
+    val newIsSelected: Boolean? = null,
+    val newIsPlaying: Boolean? = null,
+    val newSize: String? = null,
+    val newDuration: String? = null,
+)

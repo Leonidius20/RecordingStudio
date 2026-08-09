@@ -13,7 +13,8 @@ An Android sound recorder app. External effect plugin support is planned for the
 
 ## Features
 * Audio recording & playback, renaming and deleting recordings;
-* Support for various container formats and codecs (varies by device);
+* Support for various container formats and codecs, including uncompressed WAV;
+* Adjustable sample rate, bit rate/depth;
 * Compatible with scoped storage (no storage access permission needed on newer Android versions);
 * Automatically stopping recordings on low battery or storage & pausing on incoming call.
 
