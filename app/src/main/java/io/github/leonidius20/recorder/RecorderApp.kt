@@ -11,14 +11,13 @@ class RecorderApp: Application() {
 
     companion object {
         lateinit var instance: RecorderApp
-    }
-
-    init {
-        instance = this
+            private set
     }
 
     override fun onCreate() {
         super.onCreate()
+
+        instance = this
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())

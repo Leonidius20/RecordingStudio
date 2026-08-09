@@ -94,6 +94,8 @@ interface RecordingsListView : MviView<Model, Event> {
 
         data object ShareSelectedClicked : Event
 
+        data object FileDeletionFailure : Event
+
     }
 
     fun handleLabel(label: Label)
@@ -195,9 +197,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
         if (result.resultCode == Activity.RESULT_OK) {
             dispatch(Event.DisableSelectionMode)
         } else {
-            // todo: localized error message, send as Label, (succuess/failure),
-            //  also clear selection
-            Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show()
+            dispatch(Event.FileDeletionFailure)
         }
     }
 
@@ -206,8 +206,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
             if (result.resultCode == Activity.RESULT_OK) {
                 dispatch(Event.DisableSelectionMode)
             } else {
-                // todo: localized error message, send as Label
-                Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show()
+                dispatch(Event.FileDeletionFailure)
             }
         }
 
@@ -320,6 +319,15 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
                 val uris = label.recs.map { it.uri }
                 // todo
             }
+            is Label.ShowMessage -> {
+                val text = when(label) {
+                    is Label.ShowMessage.FileDeletionFailed ->
+                        context.getString(R.string.file_delete_failure)
+                }
+
+                Toast.makeText(context, text,
+                    Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -428,12 +436,12 @@ internal val eventToIntent: Event.() -> Intent = {
         is Event.DeleteSelectedClicked -> Intent.DeleteSelected
         is Event.RenameSelectedClicked -> Intent.RenameSelected
         is Event.ShareSelectedClicked -> Intent.ShareSelected
+        is Event.FileDeletionFailure -> Intent.NotifyFileDeletionFailed
     }
 }
 
 class RecordingsListController @AssistedInject constructor(
     private val storeFactory: RecordingsListStoreFactory,
-    @Assisted lifecycle: Lifecycle,
     @Assisted instanceKeeper: InstanceKeeper,
 ) {
     private val store = instanceKeeper.getStore {
@@ -443,7 +451,6 @@ class RecordingsListController @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            lifecycle: Lifecycle,
             instanceKeeper: InstanceKeeper,
         ): RecordingsListController
     }

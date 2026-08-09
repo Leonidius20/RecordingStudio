@@ -35,7 +35,6 @@ class RecordingsListFragment : RecStudioFragment() {
 
         controller =
             controllerFactory.create(
-                lifecycle = essentyLifecycle(),
                 instanceKeeper = instanceKeeper(),
             )
 
