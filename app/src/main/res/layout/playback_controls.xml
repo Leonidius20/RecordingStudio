@@ -1,21 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- todo https://developer.android.com/develop/ui/views/theming/shadows-clipping -->
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?><!-- todo https://developer.android.com/develop/ui/views/theming/shadows-clipping -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     style="?attr/materialCardViewElevatedStyle"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 
         android:layout_gravity="bottom"
-        android:layoutDirection="ltr"
         android:background="?colorSurfaceContainerLow"
         android:elevation="1dp"
+        android:layoutDirection="ltr"
         android:orientation="vertical"
 
         android:padding="4dp"
@@ -39,51 +37,51 @@
                 style="@style/ExoMediaButton.Previous"
                 app:tint="?colorOnSurface" />
 
-            <ImageButton android:id="@id/exo_play_pause"
-                style="@style/ExoMediaButton.Play"/>
+            <ImageButton
+                android:id="@id/exo_play_pause"
+                style="@style/ExoMediaButton.Play" />
 
             <ImageButton
                 android:id="@id/exo_next"
-                style="@style/ExoMediaButton.Next"/>
+                style="@style/ExoMediaButton.Next" />
 
             <!-- todo: slider for time -->
 
 
+        </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@id/exo_position"
+                style="@style/ExoStyledControls.TimeText.Position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@id/exo_duration"
+                style="@style/ExoStyledControls.TimeText.Duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </LinearLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <View
+            android:id="@id/exo_progress_placeholder"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content" />
 
-            <TextView
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ExoStyledControls.TimeText.Position"
-                android:id="@id/exo_position"/>
-
-            <View
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/exo_position"
-                app:layout_constraintEnd_toStartOf="@id/exo_duration"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:id="@id/exo_progress_placeholder"/>
-
-
-            <TextView
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ExoStyledControls.TimeText.Duration"
-                android:id="@id/exo_duration"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

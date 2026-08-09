@@ -6,7 +6,7 @@
     <data>
 
     </data>
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.recordings_list.view.RecordingsListFragment">
@@ -31,8 +31,8 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recording_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -49,7 +49,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -57,16 +56,16 @@
             android:textAppearance="?textAppearanceBodyLarge"
             android:text="@string/recordings_list_empty"/>
 
+        <!--
         <View
             android:layout_width="match_parent"
             android:layout_height="86dp"
             android:layout_gravity="bottom"
-            android:background="@drawable/rec_list_bottom_fade"/>
+            android:background="@drawable/rec_list_bottom_fade"/> -->
 
         <androidx.media3.ui.PlayerView
             android:id="@+id/player_view"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/recording_list"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_width="match_parent"
@@ -74,7 +73,6 @@
             app:hide_on_touch="false"
             app:show_timeout="0"
             app:controller_layout_id="@layout/playback_controls"
-            android:layout_gravity="bottom"
 
             android:layout_marginStart="@dimen/margin_small"
             android:layout_marginEnd="@dimen/margin_small"
@@ -82,7 +80,7 @@
             android:layout_marginBottom="8dp"
 
 
-            android:layout_height="70dp"/>
+            android:layout_height="wrap_content"/>
         <!-- todo change the height of the controls -->
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
