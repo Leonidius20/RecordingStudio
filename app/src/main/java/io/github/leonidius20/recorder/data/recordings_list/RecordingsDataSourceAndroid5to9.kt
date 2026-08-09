@@ -9,7 +9,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository.Recording
+import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.File

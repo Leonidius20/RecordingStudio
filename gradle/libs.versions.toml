@@ -2,7 +2,7 @@
 agp = "8.3.0"
 customactivityoncrash = "2.4.0"
 fragmentTesting = "1.8.1"
-kotlin = "2.0.0"
+kotlin = "2.2.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -14,15 +14,17 @@ lifecycleLivedataKtx = "2.7.0"
 lifecycleViewmodelKtx = "2.7.0"
 navigation = "2.8.0"
 robolectric = "4.12.2"
-hilt = "2.51"
-ksp = "2.0.0-1.0.22"
+hilt = "2.56.2"
+ksp = "2.2.0-2.0.2"
 materialLists = "0.5.3"
 okLayoutInflater = "1.0.2"
+timber = "5.0.1"
 timeit = "1.2.0"
 audioRecordView = "1.0.5"
 preference = "1.2.1"
 permissionx = "1.8.0"
 androidx-media3 = "1.4.0"
+mviKotlin = "4.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +45,7 @@ hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 material-lists = { group = "net.nicbell.material-lists", name = "listitem", version.ref = "materialLists"}
 ok-layoutinflater = { group = "com.github.okcredit", name = "OkLayoutInflater", version.ref = "okLayoutInflater" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 timeit = { group = "com.github.yashovardhan99", name = "TimeIt", version.ref="timeit" }
 audioRecordView = { group = "com.github.Armen101", name = "AudioRecordView", version.ref = "audioRecordView" }
 androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
@@ -51,6 +54,11 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidx-media3" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "androidx-media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
+mviKotlin = { group = "com.arkivanov.mvikotlin", name = "mvikotlin", version.ref = "mviKotlin" }
+mviKotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", version.ref = "mviKotlin" }
+mviKotlin-logging = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-logging", version.ref = "mviKotlin" }
+mviKotlin-timetravel = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-timetravel", version.ref = "mviKotlin" }
+mviKotlin-extensions-coroutines = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-extensions-coroutines", version.ref = "mviKotlin" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

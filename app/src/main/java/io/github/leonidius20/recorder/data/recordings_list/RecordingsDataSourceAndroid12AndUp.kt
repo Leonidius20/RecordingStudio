@@ -7,7 +7,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository.Recording
+import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
