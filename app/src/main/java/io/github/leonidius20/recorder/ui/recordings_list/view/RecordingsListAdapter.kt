@@ -77,7 +77,7 @@ class RecordingsListAdapter(
         // depends on playback status
         private fun updateTitleColor() = root.invokeWhenInflated {
             binding.txtHeadline.setTextColor(
-                resources.getColor(
+                ContextCompat.getColor(context,
                     if (isRecordPlaying) R.color.md_theme_primary
                     else R.color.md_theme_onSurface,
                 )
@@ -96,7 +96,7 @@ class RecordingsListAdapter(
         // depends on playback status
         private fun updateLeadIconTint() = root.invokeWhenInflated {
             binding.leadingIcon.drawable.setTint(
-                resources.getColor(
+                ContextCompat.getColor(context,
                     if (isRecordPlaying) R.color.md_theme_primary
                     else R.color.md_theme_onSurfaceVariant,
                 )
@@ -106,6 +106,8 @@ class RecordingsListAdapter(
         fun bind(recording: RecordingUiModel) {
             root.invokeWhenInflated {
                 binding.root.setOnClickListener {
+                    val position = bindingAdapterPosition
+                    if (position == RecyclerView.NO_POSITION) return@setOnClickListener
                     onItemClicked(recording.id, position)
                 }
                 binding.root.setOnLongClickListener {

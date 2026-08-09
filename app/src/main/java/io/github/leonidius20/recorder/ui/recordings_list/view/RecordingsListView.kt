@@ -247,17 +247,19 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
     override fun handleLabel(label: Label) {
         when (label) {
             is Label.UpdatePlayerItems -> {
-                mediaController?.replaceMediaItems(
-                    0, mediaController!!.mediaItemCount,
-                    label.recordings.map { recording ->
-                        MediaItem.Builder()
-                            .setUri(recording.uri)
-                            .setMediaId(recording.id.toString())
-                            .setMediaMetadata(
-                                MediaMetadata.Builder().setDisplayTitle(recording.name).build()
-                            ).build()
-                    }
-                )
+                mediaController?.let { mediaController ->
+                    mediaController.replaceMediaItems(
+                        0, mediaController.mediaItemCount,
+                        label.recordings.map { recording ->
+                            MediaItem.Builder()
+                                .setUri(recording.uri)
+                                .setMediaId(recording.id.toString())
+                                .setMediaMetadata(
+                                    MediaMetadata.Builder().setDisplayTitle(recording.name).build()
+                                ).build()
+                        }
+                    )
+                }
             }
             is Label.Play -> {
                 mediaController?.run {
