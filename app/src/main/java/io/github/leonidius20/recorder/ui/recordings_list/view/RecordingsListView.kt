@@ -71,7 +71,7 @@ interface RecordingsListView : MviView<Model, Event> {
 
         data class RecordingLongPressed(val id: Long) : Event
 
-        data class RecordingClicked(val id: Long, val index: Int) : Event
+        data class RecordingClicked(val id: Long) : Event
 
         data object DisableSelectionMode : Event
 
@@ -119,8 +119,8 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
 
     private var adapter: RecordingsListAdapter = RecordingsListAdapter(
         context,
-        onItemClicked = { id, position ->
-            dispatch(Event.RecordingClicked(id, position))
+        onItemClicked = { id ->
+            dispatch(Event.RecordingClicked(id))
         }, onItemLongClicked = { id ->
             dispatch(Event.RecordingLongPressed(id))
         }
@@ -352,21 +352,27 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     mediaItem?.let {
-                        dispatch(Event.OtherRecordingStartedPlaying(
-                            id = mediaItem.mediaId.toLong(),
-                            index = mediaController!!.currentMediaItemIndex,
-                        ))
+                        mediaController?.currentMediaItemIndex?.let { index ->
+                            dispatch(Event.OtherRecordingStartedPlaying(
+                                id = mediaItem.mediaId.toLong(),
+                                index = index,
+                            ))
+                        } ?: dispatch(Event.PlaybackEnded)
                     } ?: dispatch(Event.PlaybackEnded)
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
-                        val index = mediaController!!.currentMediaItemIndex
-                        val item = mediaController!!.currentMediaItem!!
-                        dispatch(Event.OtherRecordingStartedPlaying(
-                            id = item.mediaId.toLong(),
-                            index = index,
-                        ))
+                        mediaController?.let { mediaController ->
+                            val index = mediaController.currentMediaItemIndex
+
+                            mediaController.currentMediaItem?.let { item ->
+                                dispatch(Event.OtherRecordingStartedPlaying(
+                                    id = item.mediaId.toLong(),
+                                    index = index,
+                                ))
+                            }
+                        }
                     }
                 }
 
@@ -390,6 +396,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
         }
         controllerFuture = null
         mediaController = null
+        binding.playerView.player = null
         dispatch(Event.MediaControllerDisconnected)
     }
 
@@ -416,7 +423,7 @@ internal val stateToModel: State.() -> Model = {
 internal val eventToIntent: Event.() -> Intent = {
     when(this) {
         is Event.RecordingClicked -> {
-            Intent.PlayOrToggleSelection(this.index, this.id)
+            Intent.PlayOrToggleSelection(this.id)
         }
         is Event.RecordingLongPressed -> {
             Intent.ToggleSelection(this.id)

@@ -14,7 +14,7 @@ import io.github.leonidius20.recorder.R
  */
 class RecordingsListAdapter(
     context: Context,
-    private val onItemClicked: (id: Long, index: Int) -> Unit,
+    private val onItemClicked: (id: Long) -> Unit,
     private val onItemLongClicked: (id: Long) -> Unit,
 ) : ListAdapter<RecordingUiModel, RecordingsListAdapter.ViewHolder>(
     RecordingsDiffUtilCallback()
@@ -106,9 +106,7 @@ class RecordingsListAdapter(
         fun bind(recording: RecordingUiModel) {
             root.invokeWhenInflated {
                 binding.root.setOnClickListener {
-                    val position = bindingAdapterPosition
-                    if (position == RecyclerView.NO_POSITION) return@setOnClickListener
-                    onItemClicked(recording.id, position)
+                    onItemClicked(recording.id)
                 }
                 binding.root.setOnLongClickListener {
                     onItemLongClicked(recording.id)

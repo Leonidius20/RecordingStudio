@@ -29,7 +29,6 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
         // if selection mode is off, play recording, else toggle selection
         data class PlayOrToggleSelection(
-            val index: Int,
             val id: Long,
         ) : Intent
 
@@ -176,7 +175,10 @@ class RecordingsListStoreFactory @Inject constructor(
                         executeAction(Action.ToggleSelection(intent.id))
                     } else {
                         dispatch(Msg.NowPlaying(intent.id))
-                        publish(Label.Play(intent.index))
+                        // todo: more optimal lookup?
+                        val index = state().recordings
+                            .indexOfFirst { it.id == intent.id }
+                        publish(Label.Play(index))
                     }
                 }
                 is Intent.ToggleSelection -> {
