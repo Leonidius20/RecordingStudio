@@ -13,6 +13,8 @@
         <item name="preferenceStyle">@style/Theme.RecordingStudio.PreferenceStyle</item>
         <item name="switchPreferenceCompatStyle">@style/Theme.RecordingStudio.SwitchPreferenceStyle</item> -->
 
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
+
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
@@ -127,6 +129,18 @@
 
         <item name="android:windowBackground">@android:color/transparent</item>
 
+    </style>
+
+    <!-- Dialog Theme Wrapper -->
+    <style name="ThemeOverlay.App.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.App.BottomSheet.Modal</item>
+        <item name="enableEdgeToEdge">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.App.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="paddingBottomSystemWindowInsets">false</item>
     </style>
 
 </resources>
