@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.ui.recordings_list.view
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
+import android.content.Intent.ACTION_SEND
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.Formatter
@@ -316,8 +317,32 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
                 dispatch(Event.DisableSelectionMode)
             }
             is Label.Share -> {
-                val uris = label.recs.map { it.uri }
-                // todo
+                val recs = label.recs
+
+                if (recs.isEmpty()) return
+
+                val shareIntent = if (recs.size == 1) {
+                    val rec = recs.first()
+
+                    android.content.Intent().apply {
+                        action = ACTION_SEND
+                        val imageUri  = rec.uri
+                        putExtra(android.content.Intent.EXTRA_STREAM, imageUri)
+                        type = rec.mimeType
+                    }
+                } else {
+                    val mime = if (recs.all { it.mimeType == recs.first().mimeType })
+                        recs.first().mimeType else "audio/*"
+
+                    android.content.Intent().apply {
+                        action = android.content.Intent.ACTION_SEND_MULTIPLE
+                        putParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM,
+                            ArrayList(recs.map { it.uri }))
+                        type = mime
+                    }
+                }
+
+                context.startActivity(android.content.Intent.createChooser(shareIntent, null))
             }
             is Label.ShowMessage -> {
                 val text = when(label) {
