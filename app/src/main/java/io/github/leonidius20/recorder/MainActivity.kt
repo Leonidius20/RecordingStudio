@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, windowInsets ->
             val insets = windowInsets.getInsets(
                 WindowInsetsCompat.Type.systemBars()
-                        // or WindowInsetsCompat.Type.displayCutout()
+                        or WindowInsetsCompat.Type.displayCutout()
             )
             // Apply the insets as a margin to the view. This solution sets
             // only the bottom, left, and right dimensions, but you can apply whichever
@@ -97,33 +97,25 @@ class MainActivity : AppCompatActivity() {
 
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     bottomMargin = insets.bottom // (handled by bottom app bar in vertical mode).
-                }
-            }
 
-            val cutoutInsets = windowInsets.getInsets(
-               WindowInsetsCompat.Type.displayCutout())
-
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-
-                rootView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginEnd = if (layoutDirection == View.LAYOUT_DIRECTION_LTR)
-                        cutoutInsets.right
-                    else cutoutInsets.left
+                        insets.right
+                    else insets.left
                 }
             }
-
 
             // Return CONSUMED if you don't want want the window insets to keep passing
             // down to descendant views.
             //WindowInsetsCompat.CONSUMED
-            windowInsets
+            windowInsets // todo: subtract from them what i've consumed?
         }
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             binding.navView.doOnApplyWindowInsets { view, windowInsets, initialPadding ->
                 val cutoutInsets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.displayCutout())
+                    WindowInsetsCompat.Type.displayCutout()
+                    or WindowInsetsCompat.Type.systemBars()
+                )
 
                 if (isLeftToRight) {
                     view.updatePadding(
@@ -139,35 +131,6 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-
-        // this does not bloody work!
-        /*if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-            val navRail = binding.navView
-
-            ViewCompat.setOnApplyWindowInsetsListener(navRail) { v, windowInsets ->
-
-                /*val insets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.displayCutout()
-                )*/
-
-                windowInsets.displayCutout?.let { cutout ->
-                    // default, rail on left
-                    if (resources.configuration.layoutDirection == Configuration.SCREENLAYOUT_LAYOUTDIR_LTR) {
-                        v.updatePadding(
-                            left = cutout.safeInsetLeft
-                        )
-                    } else {
-                        // rtl, hebrew
-                        v.updatePadding(
-                            right = cutout.safeInsetRight
-                        )
-                    }
-                }
-
-                windowInsets
-            }
-        }*/
 
     }
 
