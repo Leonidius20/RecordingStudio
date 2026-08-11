@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -33,6 +34,9 @@ class MainActivity : AppCompatActivity() {
                 darkScrim = R.color.md_theme_primary
             )*/
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
