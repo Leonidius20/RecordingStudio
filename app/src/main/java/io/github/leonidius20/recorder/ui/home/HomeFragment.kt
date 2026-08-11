@@ -15,7 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
-import io.github.leonidius20.recorder.ui.audio_settings.AudioSettingsBottomSheet
+import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import kotlinx.coroutines.launch
 import javax.inject.Inject

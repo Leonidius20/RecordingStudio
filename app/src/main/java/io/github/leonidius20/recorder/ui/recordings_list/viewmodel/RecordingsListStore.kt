@@ -4,7 +4,6 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
@@ -91,13 +90,10 @@ sealed interface Label {
 }
 
 class RecordingsListStoreFactory @Inject constructor(
-    //private val storeFactory: StoreFactory,
+    private val storeFactory: StoreFactory,
     private val executorProvider: Provider<ExecutorImpl>,
     // todo: maybe inject provider<Executor> and then @Bind ExecutorImpl
 ) {
-
-    // todo inject
-    private val storeFactory: StoreFactory = DefaultStoreFactory()
 
     fun create(): RecordingsListStore = object : RecordingsListStore, Store<Intent, State, Label> by storeFactory.create(
         name = "RecordingsListStore",
