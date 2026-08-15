@@ -196,40 +196,39 @@ class Settings @Inject constructor(
         val description: String,
     )
 
-    private val _audioSourceOptions = mutableListOf(
-        AudioSourceOption(
-            MediaRecorder.AudioSource.DEFAULT,
-            "Default",
-            "Default audio input. Some processing may be applied by device"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.MIC,
-            "Mic",
-            "Regular microphone input (some processing may be applied by device)"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.CAMCORDER,
-            "Camcorder",
-            "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.VOICE_RECOGNITION,
-            "Voice recognition",
-            "Tuned for voice recognition"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-            "Voice communication",
-            "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
-        ),
-    )
+    val audioSourceOptions = buildList {
+        addAll(
+            listOf(
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.DEFAULT,
+                    "Default",
+                    "Default audio input. Some processing may be applied by device"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.MIC,
+                    "Mic",
+                    "Regular microphone input (some processing may be applied by device)"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.CAMCORDER,
+                    "Camcorder",
+                    "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                    "Voice recognition",
+                    "Tuned for voice recognition"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    "Voice communication",
+                    "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
+                ),
+            )
+        )
 
-    val audioSourceOptions: List<AudioSourceOption>
-        get() = _audioSourceOptions
-
-    init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            _audioSourceOptions.add(
+            add(
                 AudioSourceOption(
                     MediaRecorder.AudioSource.UNPROCESSED,
                     "Unprocessed",

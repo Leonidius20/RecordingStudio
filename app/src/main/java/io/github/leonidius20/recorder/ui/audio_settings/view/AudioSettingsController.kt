@@ -11,12 +11,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.states
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStoreFactory
-import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsView.Event
-import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsView.Model
-import kotlinx.coroutines.flow.map
 
 class AudioSettingsController @AssistedInject constructor(
     private val storeFactory: AudioSettingsStoreFactory,
@@ -36,23 +31,10 @@ class AudioSettingsController @AssistedInject constructor(
 
     fun onViewCreated(view: AudioSettingsView, viewLifecycle: Lifecycle) {
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
-            store.states.map(stateToModel) bindTo view
-            view.events.map(eventToIntent) bindTo store
+            store.states bindTo view
+            view.events bindTo store
             store.labels bindTo view::handleLabel
         }
     }
 
-}
-
-internal val stateToModel: State.() -> Model = {
-    Model(
-        name = ""
-    )
-}
-
-internal val eventToIntent: Event.() -> Intent = {
-    //when(this) {
-
-    //}
-    Intent.Test
 }

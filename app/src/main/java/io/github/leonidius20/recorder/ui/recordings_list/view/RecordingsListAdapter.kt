@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.ui.common.ifDifferentFrom
 
 /**
  * this adapter supports selecting multiple items, removing and
@@ -192,9 +193,6 @@ class RecordingsDiffUtilCallback : DiffUtil.ItemCallback<RecordingUiModel>() {
     }
 
 }
-
-private fun <T> T.ifDifferentFrom(other: T) =
-    if (this != other) this else null
 
 private data class RecordingChangePayload(
     val newName: String? = null,
