@@ -11,14 +11,13 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Label
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.ChipSetting
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
-interface AudioSettingsStore : Store<Intent, State, Label> {
+interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
     sealed interface Intent {
 
@@ -147,10 +146,6 @@ interface AudioSettingsStore : Store<Intent, State, Label> {
 
     }
 
-    sealed interface Label {
-
-    }
-
 }
 
 class AudioSettingsStoreFactory @Inject constructor(
@@ -175,7 +170,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
     class ExecutorImpl @Inject constructor(
         private val settings: Settings,
-    ): CoroutineExecutor<Intent, Action, State, Msg, Label>() {
+    ): CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 
         override fun executeIntent(intent: Intent) {
             when(intent) {
@@ -306,7 +301,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
     }
 
-    fun create(): AudioSettingsStore = object : AudioSettingsStore, Store<Intent, State, Label> by storeFactory.create(
+    fun create(): AudioSettingsStore = object : AudioSettingsStore, Store<Intent, State, Nothing> by storeFactory.create(
         name = "AudioSettingsStore",
         initialState = State.Loading as State,
         bootstrapper = SimpleBootstrapper(Action.SubscribeToUpdates),

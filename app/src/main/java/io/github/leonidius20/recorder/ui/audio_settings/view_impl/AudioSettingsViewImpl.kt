@@ -14,7 +14,6 @@ import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsView
@@ -45,9 +44,7 @@ class AudioSettingsViewImpl(
 
     init {
         fun createChipLayoutManager() =
-            FlexboxLayoutManager(context, FlexDirection.ROW).apply {
-                // alignContent = AlignContent.FLEX_START
-            }
+            FlexboxLayoutManager(context, FlexDirection.ROW)
 
         // audio source selection chips
         binding.audioSourcesList.apply {
@@ -79,6 +76,8 @@ class AudioSettingsViewImpl(
 
         // bit rate continuous
         // todo - remove, use predefined values?
+
+        binding.audioSettingsBitrateContinuousSlider.stepSize = 1f
         binding.audioSettingsBitrateContinuousSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {
                 // Responds to when slider's touch event is being started
@@ -224,10 +223,6 @@ class AudioSettingsViewImpl(
             }
         }
         )
-    }
-
-    override fun handleLabel(label: AudioSettingsStore.Label) {
-
     }
 
 }

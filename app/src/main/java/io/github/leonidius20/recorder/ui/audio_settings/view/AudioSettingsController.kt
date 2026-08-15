@@ -6,7 +6,6 @@ import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.bind
 import com.arkivanov.mvikotlin.extensions.coroutines.events
-import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.states
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -33,7 +32,6 @@ class AudioSettingsController @AssistedInject constructor(
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
             store.states bindTo view
             view.events bindTo store
-            store.labels bindTo view::handleLabel
         }
     }
 

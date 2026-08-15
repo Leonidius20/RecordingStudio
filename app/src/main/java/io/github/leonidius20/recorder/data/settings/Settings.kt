@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 class Settings @Inject constructor(
@@ -150,7 +151,8 @@ class Settings @Inject constructor(
                 pref.getFloat(
                     codec.bitDepthOrRateForCodecPrefKey,
                     setting.default,
-                )
+                ).roundToInt().toFloat() // todo - ??????
+                // this is bc in older versions you could set fractional values here
             }
 
         return SettingsState(

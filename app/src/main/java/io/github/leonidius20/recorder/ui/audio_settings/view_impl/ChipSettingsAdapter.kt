@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.ui.audio_settings.view_impl
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -30,9 +31,13 @@ class ChipSettingsAdapter<T>(
     ChipSettingsDiffUtilCallback()
 ) {
 
+    init {
+        setHasStableIds(true)
+    }
+
     inner class ViewHolder(
         private val chip: Chip,
-    ) : RecyclerView.ViewHolder(chip) {
+    ) : RecyclerView.ViewHolder(chip), CompoundButton.OnCheckedChangeListener {
 
         init {
             chip.apply {
@@ -40,6 +45,19 @@ class ChipSettingsAdapter<T>(
                 isCheckedIconVisible = true
                 isCheckable = true
                 isClickable = true
+                setOnCheckedChangeListener(this@ViewHolder)
+            }
+        }
+
+        override fun onCheckedChanged(chip: CompoundButton, checked: Boolean) {
+            // make sure you cannot de-select a chip by clicking it
+            // (simulate ChipGroup with selection required)
+            if (!checked) {
+                chip.apply {
+                    setOnCheckedChangeListener(null)
+                    chip.isChecked = true
+                    setOnCheckedChangeListener(this@ViewHolder)
+                }
             }
         }
 
@@ -56,9 +74,18 @@ class ChipSettingsAdapter<T>(
         }
 
         fun updateSelectionState(isSelected: Boolean) {
-            chip.isChecked = isSelected
+            chip.apply {
+                setOnCheckedChangeListener(null)
+                chip.isChecked = isSelected
+                setOnCheckedChangeListener(this@ViewHolder)
+            }
         }
 
+    }
+
+    override fun getItemId(position: Int): Long {
+        val item = getItem(position)
+        return item.id.toLong()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
