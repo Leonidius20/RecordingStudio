@@ -6,7 +6,7 @@ package io.github.leonidius20.recorder.data.settings
 sealed interface BitRateSettingType {
 
     data class BitDepthDiscreteValues(
-        val availableOptions: Array<BitDepthOption>,
+        val availableOptions: List<BitDepthOption>,
         val default: BitDepthOption,
     ) : BitRateSettingType
 
@@ -15,7 +15,7 @@ sealed interface BitRateSettingType {
     }
 
     data class BitRateDiscreteValues(
-        val bitRateOptions: Array<Float>,
+        val bitRateOptions: List<Float>,
         override val default: Float,
     ) : BitRateValues
 

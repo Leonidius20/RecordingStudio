@@ -42,7 +42,7 @@ enum class Codec(
         supportedSampleRates = intArrayOf(8_000),
         bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
             default = 12.20f,
-            bitRateOptions = arrayOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
+            bitRateOptions = listOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
         ),
 
         //supportsStereo = false,
@@ -55,7 +55,7 @@ enum class Codec(
         supportedSampleRates = intArrayOf(16_000),
 
         bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
-            bitRateOptions = arrayOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
+            bitRateOptions = listOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
             default = 23.85f,
         ),
         //supportsStereo = false,
@@ -106,7 +106,7 @@ enum class Codec(
         isSupportedByDevice = true,
         supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
         bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
-            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption }.toTypedArray(),
+            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
             default = PcmBitDepthOption.PCM_16BIT_INT,
         ),
     );

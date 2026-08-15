@@ -5,17 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
-import io.github.leonidius20.recorder.data.settings.AudioChannels
-import io.github.leonidius20.recorder.data.settings.BitDepthOption
-import io.github.leonidius20.recorder.data.settings.BitRateSettingType
-import io.github.leonidius20.recorder.data.settings.Codec
-import io.github.leonidius20.recorder.data.settings.Container
-import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -23,7 +14,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val recorderServiceLauncher: RecorderServiceLauncher,
-    private val settings: Settings,
 ) : ViewModel() {
 
     sealed class UiState(
@@ -88,8 +78,6 @@ class HomeViewModel @Inject constructor(
      */
     val amplitudes = recorderServiceLauncher.amplitudes
 
-    val audioSources = settings.audioSourceOptions
-
     fun onStartRecording() {
         recorderServiceLauncher.launchRecording()
     }
@@ -104,95 +92,5 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getUri() = recorderServiceLauncher.getUri()
-
-    fun selectAudioSource(value: Int) {
-        settings.setAudioSource(value)
-    }
-
-    val outputFormats = Container.supportedContainers()
-
-    val selectedContainer = settings.state.map {
-        it.outputFormat
-    }.asLiveData(viewModelScope.coroutineContext)
-
-    fun isChecked(container: Container) =
-        settings.state.value.outputFormat.value == container.value
-
-    fun selectOutputFormat(container: Container) {
-        settings.setOutputFormat(container)
-    }
-
-    fun isChecked(audioSource: Settings.AudioSourceOption) =
-        audioSource.value == settings.state.value.audioSource
-
-    val encoderOptions = selectedContainer
-        .map { it.availableCodecs }
-        .distinctUntilChanged()
-
-
-    fun isEncoderChecked(encoder: Codec) =
-        settings.state.value.encoder.value == encoder.value
-
-    fun setEncoder(encoder: Codec) {
-        settings.setCodec(encoder)
-    }
-
-    val audioChannelsOptions = AudioChannels.entries
-
-    // todo: one state for all settings, mvi
-    fun isChannelsOptionsChecked(channels: AudioChannels) =
-        channels == settings.state.value.numOfChannels
-
-    fun setChannels(channels: AudioChannels) {
-        settings.setNumberOfChannels(channels)
-    }
-
-    val supportedSampleRates = settings.state.map {
-        it.encoder.supportedSampleRates
-            .intersect(settings.sampleRatesSupportedByDevice)
-            .sorted()
-    }.asLiveData(viewModelScope.coroutineContext)
-
-    fun setSampleRate(rate: Int) {
-        settings.setSampleRate(rate)
-    }
-
-    val currentSampleRate
-        get() = settings.state.value.sampleRate
-
-    val availableBitDepths = settings.state.map {
-        val bitRateSetting = it.encoder.bitRateSettingType
-        if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
-            bitRateSetting.availableOptions
-        } else emptyArray()
-    }.asLiveData(viewModelScope.coroutineContext)
-
-    val currentBitDepth
-        get() = with(settings.state.value) {
-            val bitRateSetting = encoder.bitRateSettingType
-            if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
-                bitDepthsForCodecs[encoder]
-            } else null
-        }
-
-    fun setBitDepth(bitDepthOption: BitDepthOption) {
-        settings.setBitDepth(bitDepthOption)
-    }
-
-    val availableBitRates = settings.state.map {
-        val bitRateSetting = it.encoder.bitRateSettingType
-        bitRateSetting as? BitRateSettingType.BitRateValues
-    }.asLiveData(viewModelScope.coroutineContext)
-
-    val currentBitRate
-        get() = with(settings.state.value) {
-            if (encoder.bitRateSettingType is BitRateSettingType.BitRateValues) {
-                bitRatesForCodecs[encoder]
-            } else null
-        }
-
-    fun setBitRate(rate: Float) {
-        settings.setBitRate(rate)
-    }
 
 }

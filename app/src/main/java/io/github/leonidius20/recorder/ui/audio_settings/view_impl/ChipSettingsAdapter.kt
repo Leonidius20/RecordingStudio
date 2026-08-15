@@ -1,11 +1,13 @@
 package io.github.leonidius20.recorder.ui.audio_settings.view_impl
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.ui.common.ifDifferentFrom
 
 // todo: rename into checkable setting or something,
@@ -60,8 +62,11 @@ class ChipSettingsAdapter<T>(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-         // todo inflate xml with margin end 8dp
-        return ViewHolder(Chip(parent.context))
+        return ViewHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.chip_setting, parent, false)
+                    as Chip
+        )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
