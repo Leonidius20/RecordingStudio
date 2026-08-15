@@ -227,10 +227,7 @@ class AudioSettingsStoreFactory @Inject constructor(
                             }
 
                             val bitRateSettingType = codec.bitRateSettingType
-                            val availableBitRates = run {
-                                val bitRateSetting = codec.bitRateSettingType
-                                bitRateSetting as? BitRateSettingType.BitRateValues
-                            }
+
 
                             val audioSources = settings.audioSourceOptions.map {
                                 AudioSettingsStore.AudioSourceSetting(

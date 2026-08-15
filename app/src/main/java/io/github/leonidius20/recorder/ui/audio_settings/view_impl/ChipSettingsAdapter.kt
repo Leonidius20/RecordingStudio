@@ -60,6 +60,7 @@ class ChipSettingsAdapter<T>(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+         // todo inflate xml with margin end 8dp
         return ViewHolder(Chip(parent.context))
     }
 

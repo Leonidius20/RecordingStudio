@@ -4,6 +4,8 @@ import androidx.core.view.isVisible
 import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.ViewRenderer
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.slider.Slider
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.settings.AudioChannels
@@ -42,17 +44,38 @@ class AudioSettingsViewImpl(
     }
 
     init {
+        fun createChipLayoutManager() =
+            FlexboxLayoutManager(context, FlexDirection.ROW).apply {
+                // alignContent = AlignContent.FLEX_START
+            }
+
         // audio source selection chips
-        binding.audioSourcesList.adapter = audioSourcesAdapter
+        binding.audioSourcesList.apply {
+            layoutManager = createChipLayoutManager()
+            itemAnimator = null
+            adapter = audioSourcesAdapter
+        }
 
         // format selection chips
-        binding.outputFormatList.adapter = containersAdapter
+        binding.outputFormatList.apply {
+            layoutManager = createChipLayoutManager()
+            itemAnimator = null
+            adapter = containersAdapter
+        }
 
         // codec selection chips
-        binding.codecsList.adapter = codecsAdapter
+        binding.codecsList.apply {
+            layoutManager = createChipLayoutManager()
+            itemAnimator = null
+            adapter = codecsAdapter
+        }
 
         // audio channels (mono/stereo) chips
-        binding.channelOptionsList.adapter = channelsAdapter
+        binding.channelOptionsList.apply {
+            layoutManager = createChipLayoutManager()
+            itemAnimator = null
+            adapter = channelsAdapter
+        }
 
         // bit rate continuous
         // todo - remove, use predefined values?

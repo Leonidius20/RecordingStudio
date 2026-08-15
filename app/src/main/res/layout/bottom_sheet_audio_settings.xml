@@ -58,8 +58,7 @@
                     android:id="@+id/audio_sources_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/margin_small"
-                    app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager" />
+                    android:layout_marginBottom="@dimen/margin_small" />
 
                 <TextView
                     android:id="@+id/audio_source_description_text"
@@ -81,7 +80,6 @@
                     android:id="@+id/output_format_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager"
                     android:layout_marginBottom="@dimen/margin_normal" />
 
                 <!-- Block relating to codecs -->
@@ -103,8 +101,7 @@
                     android:id="@+id/codecs_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/margin_normal"
-                    app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager" />
+                    android:layout_marginBottom="@dimen/margin_normal" />
 
                 <!-- Block relating to mono/stereo. Titled "Channels" -->
                 <TextView
@@ -125,8 +122,7 @@
                     android:id="@+id/channel_options_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/margin_normal"
-                    app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager" />
+                    android:layout_marginBottom="@dimen/margin_normal" />
 
                 <LinearLayout
                     android:id="@+id/sample_rate_settings_block"
