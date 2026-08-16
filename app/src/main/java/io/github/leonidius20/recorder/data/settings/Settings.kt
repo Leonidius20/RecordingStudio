@@ -2,9 +2,12 @@ package io.github.leonidius20.recorder.data.settings
 
 import android.app.Application.AUDIO_SERVICE
 import android.content.Context
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
+import androidx.annotation.BoolRes
+import androidx.annotation.StringRes
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -110,14 +113,14 @@ class Settings @Inject constructor(
     private fun getCurrentSettingsState(): SettingsState {
         val container = Container.getByValue(
             pref.getInt(
-                context.getString(R.string.pref_output_format_key),
+                R.string.pref_output_format_key,
                 MediaRecorder.OutputFormat.THREE_GPP,
             )
         )
 
         var codec = Codec.getByValue(
             pref.getInt(
-                context.getString(R.string.pref_encoder_key),
+                R.string.pref_encoder_key,
                 container.defaultCodec.value,
             )
         )
@@ -149,37 +152,55 @@ class Settings @Inject constructor(
 
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
-                context.getString(R.string.stop_on_low_battery_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_low_battery_default)
+                R.string.stop_on_low_battery_pref_key,
+                R.bool.stop_on_low_battery_default
             ),
             stopOnLowStorage = pref.getBoolean(
-                context.getString(R.string.stop_on_low_storage_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_storage_default)
+                R.string.stop_on_low_storage_pref_key,
+                R.bool.stop_on_storage_default
             ),
             pauseOnCall = pref.getBoolean(
-                context.getString(R.string.pause_on_call_pref_key),
-                context.resources.getBoolean(R.bool.pause_on_call_default)
+                R.string.pause_on_call_pref_key,
+                R.bool.pause_on_call_default
             ),
             audioSource = pref.getInt(
-                context.getString(R.string.pref_audio_source_key),
+                R.string.pref_audio_source_key,
                 MediaRecorder.AudioSource.MIC,
             ),
             outputFormat = container,
             encoder = codec,
             numOfChannels = AudioChannels.fromInt(
                 pref.getInt(
-                    context.getString(R.string.num_channels_pref_key),
+                    R.string.num_channels_pref_key,
                     AudioChannels.MONO.numberOfChannels()
                 )
             ),
             sampleRate = pref.getInt(
-                context.getString(R.string.sample_rate_pref_key),
+                R.string.sample_rate_pref_key,
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
             bitDepth = bitDepth,
             bitRate = bitRate,
         )
     }
+
+    // todo: move default values and keys into code
+    //  so as not to depend on context here?
+    private fun SharedPreferences.getBoolean(
+        @StringRes key: Int,
+        @BoolRes defaultValue: Int,
+    ) = getBoolean(
+        context.getString(key),
+        context.resources.getBoolean(defaultValue)
+    )
+
+    private fun SharedPreferences.getInt(
+        @StringRes key: Int,
+        defaultValue: Int,
+    ) = getInt(
+        context.getString(key),
+        defaultValue
+    )
 
     data class AudioSourceOption(
         /**
