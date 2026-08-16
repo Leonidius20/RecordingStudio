@@ -123,7 +123,7 @@ class AudioSettingsViewImpl(
 
             binding.audioSettingsSampleRateSlider.apply {
                 setValues(
-                    list = values.map { it.toString() },
+                    list = values.map { it.rate.toString() },
                     selectedIndex = selectedIndex
                 )
 
