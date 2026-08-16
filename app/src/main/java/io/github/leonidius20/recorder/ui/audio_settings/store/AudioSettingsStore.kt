@@ -51,9 +51,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
     }
 
-    // todo: maybe move make AudioSourceOption itself implement the interface,
-    //  since all data is there, and
-    //  also add description to the interface?
+
     data class AudioSourceSetting(
         override val option: Settings.AudioSourceOption,
         override val isSelected: Boolean,
@@ -102,7 +100,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
             get() = option.value
 
         override val displayName: String
-            get() = option.name // todo: replace with display name
+            get() = option.name // todo: replace with display name, but need context for that
 
     }
 
@@ -252,8 +250,6 @@ class AudioSettingsStoreFactory @Inject constructor(
                                     )
                                 },
 
-                                // todo: have Settings expose type and current value
-                                //  instead of this list of bitrates per codec
                                 bitRateSettings = when (bitRateSettingType) {
                                     is BitRateSettingType.BitDepthDiscreteValues,
                                     BitRateSettingType.None -> null

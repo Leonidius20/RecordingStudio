@@ -212,6 +212,7 @@ class Settings @Inject constructor(
     )
 
     val audioSourceOptions = buildList {
+        // todo: localize
         addAll(
             listOf(
                 AudioSourceOption(
@@ -256,6 +257,8 @@ class Settings @Inject constructor(
     fun setAudioSource(value: Int) {
         val key = context.getString(R.string.pref_audio_source_key)
 
+        // todo: migrate to datastore that provides async api.
+        //  we can do away with the change listeners too
         pref.edit().putInt(
             key,
             value
