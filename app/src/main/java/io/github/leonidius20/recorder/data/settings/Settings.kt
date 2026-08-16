@@ -2,9 +2,12 @@ package io.github.leonidius20.recorder.data.settings
 
 import android.app.Application.AUDIO_SERVICE
 import android.content.Context
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
+import androidx.annotation.BoolRes
+import androidx.annotation.StringRes
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
@@ -12,13 +15,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 class Settings @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
 
     data class SettingsState(
@@ -30,12 +35,15 @@ class Settings @Inject constructor(
         val encoder: Codec,
         val numOfChannels: AudioChannels,
         val sampleRate: Int,
-        val bitDepthsForCodecs: Map<Codec, BitDepthOption>,
+
+        // todo: have an AudioConfig class with some sealed heirarchy that
+        //  does away with the nullable things like that
+        val bitDepth: BitDepthOption?,
+        val bitRate: Float?,
+
         // todo: maybe we instead should make Codec a proper class with subsclasses,
         // where each instance is a codec with certain parameters set up (sample rate, bit rate)
         // and the class itself will be checking if these parameters work together?
-
-        val bitRatesForCodecs: Map<Codec, Float>, // double in kbps
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -105,14 +113,14 @@ class Settings @Inject constructor(
     private fun getCurrentSettingsState(): SettingsState {
         val container = Container.getByValue(
             pref.getInt(
-                context.getString(R.string.pref_output_format_key),
+                R.string.pref_output_format_key,
                 MediaRecorder.OutputFormat.THREE_GPP,
             )
         )
 
         var codec = Codec.getByValue(
             pref.getInt(
-                context.getString(R.string.pref_encoder_key),
+                R.string.pref_encoder_key,
                 container.defaultCodec.value,
             )
         )
@@ -120,72 +128,78 @@ class Settings @Inject constructor(
             codec = container.defaultCodec
         }
 
-        val bitDepthsForCodecs = Codec.entries
-            .filter { it.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues }
-            .associateWith { codec ->
-                val setting = codec.bitRateSettingType
-                        as BitRateSettingType.BitDepthDiscreteValues
-                try {
-
-
-                    codec.getBitDepthOptionFromPrefValue(
-                        pref.getInt(
-                            codec.bitDepthOrRateForCodecPrefKey,
-                            setting.default.valueForPref
-                        )
+        val bitDepth = (codec.bitRateSettingType as? BitRateSettingType.BitDepthDiscreteValues)?.let {
+            try {
+                codec.getBitDepthOptionFromPrefValue(
+                    pref.getInt(
+                        codec.bitDepthOrRateForCodecPrefKey,
+                        it.default.valueForPref
                     )
-                } catch (_: Throwable) {
-                    // couldn't find such value
-                    setting.default
-                }
-            }
-
-        val bitRatesForCodecs = Codec.entries
-            .filter {
-                it.bitRateSettingType is BitRateSettingType.BitRateValues
-            }
-            .associateWith { codec ->
-                val setting = codec.bitRateSettingType
-                        as BitRateSettingType.BitRateValues
-                pref.getFloat(
-                    codec.bitDepthOrRateForCodecPrefKey,
-                    setting.default,
                 )
+            } catch (t: Throwable) {
+                Timber.e(t)
+                it.default
             }
+        }
+
+        val bitRate = (codec.bitRateSettingType as? BitRateSettingType.BitRateValues)?.let {
+            pref.getFloat(
+                codec.bitDepthOrRateForCodecPrefKey,
+                it.default,
+            )
+        }
 
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
-                context.getString(R.string.stop_on_low_battery_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_low_battery_default)
+                R.string.stop_on_low_battery_pref_key,
+                R.bool.stop_on_low_battery_default
             ),
             stopOnLowStorage = pref.getBoolean(
-                context.getString(R.string.stop_on_low_storage_pref_key),
-                context.resources.getBoolean(R.bool.stop_on_storage_default)
+                R.string.stop_on_low_storage_pref_key,
+                R.bool.stop_on_storage_default
             ),
             pauseOnCall = pref.getBoolean(
-                context.getString(R.string.pause_on_call_pref_key),
-                context.resources.getBoolean(R.bool.pause_on_call_default)
+                R.string.pause_on_call_pref_key,
+                R.bool.pause_on_call_default
             ),
             audioSource = pref.getInt(
-                context.getString(R.string.pref_audio_source_key),
+                R.string.pref_audio_source_key,
                 MediaRecorder.AudioSource.MIC,
             ),
             outputFormat = container,
             encoder = codec,
             numOfChannels = AudioChannels.fromInt(
                 pref.getInt(
-                    context.getString(R.string.num_channels_pref_key),
+                    R.string.num_channels_pref_key,
                     AudioChannels.MONO.numberOfChannels()
                 )
             ),
             sampleRate = pref.getInt(
-                context.getString(R.string.sample_rate_pref_key),
+                R.string.sample_rate_pref_key,
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
-            bitDepthsForCodecs = bitDepthsForCodecs,
-            bitRatesForCodecs = bitRatesForCodecs,
+            bitDepth = bitDepth,
+            bitRate = bitRate,
         )
     }
+
+    // todo: move default values and keys into code
+    //  so as not to depend on context here?
+    private fun SharedPreferences.getBoolean(
+        @StringRes key: Int,
+        @BoolRes defaultValue: Int,
+    ) = getBoolean(
+        context.getString(key),
+        context.resources.getBoolean(defaultValue)
+    )
+
+    private fun SharedPreferences.getInt(
+        @StringRes key: Int,
+        defaultValue: Int,
+    ) = getInt(
+        context.getString(key),
+        defaultValue
+    )
 
     data class AudioSourceOption(
         /**
@@ -194,42 +208,48 @@ class Settings @Inject constructor(
         val value: Int,
         val name: String,
         val description: String,
-    )
+    ) {
 
-    private val _audioSourceOptions = mutableListOf(
-        AudioSourceOption(
-            MediaRecorder.AudioSource.DEFAULT,
-            "Default",
-            "Default audio input. Some processing may be applied by device"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.MIC,
-            "Mic",
-            "Regular microphone input (some processing may be applied by device)"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.CAMCORDER,
-            "Camcorder",
-            "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.VOICE_RECOGNITION,
-            "Voice recognition",
-            "Tuned for voice recognition"
-        ),
-        AudioSourceOption(
-            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-            "Voice communication",
-            "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
-        ),
-    )
+        companion object {
+            val DEFAULT = AudioSourceOption(
+                MediaRecorder.AudioSource.DEFAULT,
+                "Default",
+                "Default audio input. Some processing may be applied by device"
+            )
+        }
 
-    val audioSourceOptions: List<AudioSourceOption>
-        get() = _audioSourceOptions
+    }
 
-    init {
+    val audioSourceOptions = buildList {
+        // todo: localize
+        addAll(
+            listOf(
+                AudioSourceOption.DEFAULT,
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.MIC,
+                    "Mic",
+                    "Regular microphone input (some processing may be applied by device)"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.CAMCORDER,
+                    "Camcorder",
+                    "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                    "Voice recognition",
+                    "Tuned for voice recognition"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    "Voice communication",
+                    "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
+                ),
+            )
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            _audioSourceOptions.add(
+            add(
                 AudioSourceOption(
                     MediaRecorder.AudioSource.UNPROCESSED,
                     "Unprocessed",
@@ -242,6 +262,8 @@ class Settings @Inject constructor(
     fun setAudioSource(value: Int) {
         val key = context.getString(R.string.pref_audio_source_key)
 
+        // todo: migrate to datastore that provides async api.
+        //  we can do away with the change listeners too
         pref.edit().putInt(
             key,
             value

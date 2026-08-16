@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:id="@+id/quality_settings_bottom_sheet"
+        style="@style/Widget.Material3.BottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+
+        android:fitsSystemWindows="false">
+
+        <!-- Drag handle for accessibility -->
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/drag_handle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/margin_normal"
+            android:paddingEnd="@dimen/margin_normal"
+            android:fitsSystemWindows="false"
+            android:clipToPadding="false">
+
+
+            <LinearLayout
+                android:id="@+id/scrollable_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clipToPadding="false"
+                app:paddingBottomSystemWindowInsets="true">
+
+                <!-- Block relating to audio sources -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_title_audio_source"
+                    android:textAppearance="?textAppearanceTitleLarge" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_description_audio_source"
+                    android:textAppearance="?textAppearanceBodyMedium" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/audio_sources_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:id="@+id/audio_source_description_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_normal"
+                    android:textAppearance="?textAppearanceBodySmall"
+                    tools:text="Explanation of the chosen audio source" />
+
+                <!-- Block relating to output format -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_title_container"
+                    android:textAppearance="?textAppearanceTitleLarge" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/output_format_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_normal" />
+
+                <!-- Block relating to codecs -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_title_codec"
+                    android:textAppearance="?textAppearanceTitleLarge" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_hint_codec"
+                    android:textAppearance="?textAppearanceBodyMedium" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/codecs_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_normal" />
+
+                <!-- Block relating to mono/stereo. Titled "Channels" -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_title_channels"
+                    android:textAppearance="?textAppearanceTitleLarge" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/audio_settings_description_channels"
+                    android:textAppearance="?textAppearanceBodyMedium" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/channel_options_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin_normal" />
+
+                <LinearLayout
+                    android:id="@+id/sample_rate_settings_block"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_small"
+                        android:text="@string/audio_settings_title_sample_rate"
+                        android:textAppearance="?textAppearanceTitleLarge" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_normal"
+                        android:text="@string/audio_settings_hint_sample_rate"
+                        android:textAppearance="?textAppearanceBodyMedium" />
+
+                    <io.github.leonidius20.recorder.ui.common.Selector
+                        android:id="@+id/audio_settings_sample_rate_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/selector_height"
+                        android:layout_marginBottom="@dimen/margin_normal" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bit_depth_settings_block"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_normal"
+                        android:text="@string/audio_settings_title_bit_depth"
+                        android:textAppearance="?textAppearanceTitleLarge" />
+
+                    <io.github.leonidius20.recorder.ui.common.Selector
+                        android:id="@+id/audio_settings_bit_depth_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/selector_height"
+                        android:layout_marginBottom="@dimen/margin_normal" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bit_rate_settings_block"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_normal"
+                        android:text="@string/audio_settings_title_bit_rate"
+                        android:textAppearance="?textAppearanceTitleLarge" />
+
+                    <io.github.leonidius20.recorder.ui.common.Selector
+                        android:id="@+id/audio_settings_bitrate_discrete_selector"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/selector_height"
+                        android:layout_marginBottom="@dimen/margin_normal" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/audio_settings_bitrate_continuous_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_small"
+                        android:visibility="gone"
+                        app:labelBehavior="gone" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/bitrate_slider_labels"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/margin_normal"
+                        android:layout_marginEnd="@dimen/margin_normal"
+                        android:layout_marginBottom="@dimen/margin_normal">
+
+                        <TextView
+                            android:id="@+id/min_bitrate_slider_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?textAppearanceLabelMedium"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/current_bitrate_slider_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?textAppearanceLabelMedium"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/max_bitrate_slider_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?textAppearanceLabelMedium"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+</layout>

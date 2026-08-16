@@ -166,4 +166,6 @@ dependencies {
     implementation(libs.mviKotlin.extensions.coroutines)
 
     implementation(libs.timber)
+
+    implementation(libs.flexbox)
 }
