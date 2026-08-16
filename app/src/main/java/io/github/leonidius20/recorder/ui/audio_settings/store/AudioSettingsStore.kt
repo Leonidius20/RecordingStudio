@@ -218,8 +218,6 @@ class AudioSettingsStoreFactory @Inject constructor(
                                 )
                             }
 
-                            val currentBitDepth = newSettings.bitDepthsForCodecs[codec]
-
                             val newState = State(
                                 audioSources = audioSources,
                                 audioSource = settings.audioSourceOptions.find {
@@ -261,7 +259,7 @@ class AudioSettingsStoreFactory @Inject constructor(
                                     BitRateSettingType.None -> null
 
                                     is BitRateSettingType.BitRateValues -> {
-                                        newSettings.bitRatesForCodecs[codec]?.let {
+                                        newSettings.bitRate?.let {
                                             AudioSettingsStore.BitRateSettings(
                                                 type = bitRateSettingType,
                                                 current = it
@@ -273,7 +271,7 @@ class AudioSettingsStoreFactory @Inject constructor(
                                 bitDepths = availableBitDepths?.map {
                                     AudioSettingsStore.BitDepthSetting(
                                         depth = it,
-                                        isSelected = it == currentBitDepth
+                                        isSelected = it == newSettings.bitDepth
                                     )
                                 },
                             )

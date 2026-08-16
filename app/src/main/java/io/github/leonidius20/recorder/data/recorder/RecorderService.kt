@@ -193,7 +193,7 @@ class RecorderService : LifecycleService() {
                 audioSource = settingsState.audioSource,
                 sampleRate = settingsState.sampleRate,
                 monoOrStereo = settingsState.numOfChannels,
-                bitDepth = settingsState.bitDepthsForCodecs[Codec.PCM] as PcmBitDepthOption,
+                bitDepth = settingsState.bitDepth as PcmBitDepthOption,
                 coroutineScope = lifecycleScope,
             )
         } else {
@@ -208,7 +208,7 @@ class RecorderService : LifecycleService() {
                     sampleRate = settingsState.sampleRate,
                     bitRate =
                         if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
-                            settingsState.bitRatesForCodecs[settingsState.encoder]
+                            settingsState.bitRate
                         else null
                 )
             } catch (e: IOException) {

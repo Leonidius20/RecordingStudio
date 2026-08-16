@@ -12,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +20,7 @@ import kotlin.math.roundToInt
 
 @Singleton
 class Settings @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
 
     data class SettingsState(
@@ -31,12 +32,15 @@ class Settings @Inject constructor(
         val encoder: Codec,
         val numOfChannels: AudioChannels,
         val sampleRate: Int,
-        val bitDepthsForCodecs: Map<Codec, BitDepthOption>,
+
+        // todo: have an AudioConfig class with some sealed heirarchy that
+        //  does away with the nullable things like that
+        val bitDepth: BitDepthOption?,
+        val bitRate: Float?,
+
         // todo: maybe we instead should make Codec a proper class with subsclasses,
         // where each instance is a codec with certain parameters set up (sample rate, bit rate)
         // and the class itself will be checking if these parameters work together?
-
-        val bitRatesForCodecs: Map<Codec, Float>, // double in kbps
     )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -121,39 +125,27 @@ class Settings @Inject constructor(
             codec = container.defaultCodec
         }
 
-        val bitDepthsForCodecs = Codec.entries
-            .filter { it.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues }
-            .associateWith { codec ->
-                val setting = codec.bitRateSettingType
-                        as BitRateSettingType.BitDepthDiscreteValues
-                try {
-
-
-                    codec.getBitDepthOptionFromPrefValue(
-                        pref.getInt(
-                            codec.bitDepthOrRateForCodecPrefKey,
-                            setting.default.valueForPref
-                        )
+        val bitDepth = (codec.bitRateSettingType as? BitRateSettingType.BitDepthDiscreteValues)?.let {
+            try {
+                codec.getBitDepthOptionFromPrefValue(
+                    pref.getInt(
+                        codec.bitDepthOrRateForCodecPrefKey,
+                        it.default.valueForPref
                     )
-                } catch (_: Throwable) {
-                    // couldn't find such value
-                    setting.default
-                }
+                )
+            } catch (t: Throwable) {
+                Timber.e(t)
+                null
             }
+        }
 
-        val bitRatesForCodecs = Codec.entries
-            .filter {
-                it.bitRateSettingType is BitRateSettingType.BitRateValues
-            }
-            .associateWith { codec ->
-                val setting = codec.bitRateSettingType
-                        as BitRateSettingType.BitRateValues
-                pref.getFloat(
-                    codec.bitDepthOrRateForCodecPrefKey,
-                    setting.default,
-                ).roundToInt().toFloat() // todo - ??????
-                // this is bc in older versions you could set fractional values here
-            }
+        val bitRate = (codec.bitRateSettingType as? BitRateSettingType.BitRateValues)?.let {
+            pref.getFloat(
+                codec.bitDepthOrRateForCodecPrefKey,
+                it.default,
+            ).roundToInt().toFloat() // todo - ??????
+            // this is bc in older versions you could set fractional values here
+        }
 
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
@@ -184,8 +176,8 @@ class Settings @Inject constructor(
                 context.getString(R.string.sample_rate_pref_key),
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
-            bitDepthsForCodecs = bitDepthsForCodecs,
-            bitRatesForCodecs = bitRatesForCodecs,
+            bitDepth = bitDepth,
+            bitRate = bitRate,
         )
     }
 
