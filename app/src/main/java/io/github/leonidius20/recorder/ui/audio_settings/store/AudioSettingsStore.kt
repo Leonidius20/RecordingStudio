@@ -121,30 +121,16 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
         val current: Float,
     )
 
-    sealed interface State {
-
-        data object Loading : State
-
-        data class Ready(
-            // todo: can have all these as empty lists and remove sealed class
-            //  hierarchy
-            val audioSources: List<AudioSourceSetting>,
-            val audioSource: Settings.AudioSourceOption,
-
-            val containers: List<ContainerSetting>,
-
-            val codecs: List<CodecSetting>,
-
-            val channelOptions: List<ChannelsSetting>,
-
-            val sampleRates: List<SampleRateSetting>,
-
-            val bitRateSettings: BitRateSettings?,
-
-            val bitDepths: List<BitDepthSetting>?,
-        ) : State
-
-    }
+    data class State(
+        val audioSources: List<AudioSourceSetting> = emptyList(),
+        val audioSource: Settings.AudioSourceOption? = null,
+        val containers: List<ContainerSetting> = emptyList(),
+        val codecs: List<CodecSetting> = emptyList(),
+        val channelOptions: List<ChannelsSetting> = emptyList(),
+        val sampleRates: List<SampleRateSetting> = emptyList(),
+        val bitRateSettings: BitRateSettings? = null,
+        val bitDepths: List<BitDepthSetting>? = null,
+    )
 
 }
 
@@ -162,7 +148,7 @@ class AudioSettingsStoreFactory @Inject constructor(
     sealed interface Msg {
 
         data class SettingsUpdated(
-            val newSettings: State.Ready,
+            val newSettings: State,
         ) : Msg
 
     }
@@ -234,7 +220,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val currentBitDepth = newSettings.bitDepthsForCodecs[codec]
 
-                            val newState = State.Ready(
+                            val newState = State(
                                 audioSources = audioSources,
                                 audioSource = settings.audioSourceOptions.find {
                                     it.value == newSettings.audioSource
@@ -303,7 +289,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
     fun create(): AudioSettingsStore = object : AudioSettingsStore, Store<Intent, State, Nothing> by storeFactory.create(
         name = "AudioSettingsStore",
-        initialState = State.Loading as State,
+        initialState = State(),
         bootstrapper = SimpleBootstrapper(Action.SubscribeToUpdates),
         executorFactory = { executorProvider.get() },
         reducer = { msg ->

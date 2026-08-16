@@ -96,29 +96,27 @@ class AudioSettingsViewImpl(
     }
 
     override val renderer: ViewRenderer<State> = diff {
-        diff(get = { (it as? State.Ready)?.audioSources }, set = {
+        diff(get = { it.audioSources }, set = {
             audioSourcesAdapter.submitList(it)
         })
 
-        diff(get = { (it as? State.Ready)?.audioSource }, set = {
+        diff(get = { it.audioSource }, set = {
             binding.audioSourceDescriptionText.text = it?.description
         })
 
-        diff(get = { (it as? State.Ready)?.containers }, set = {
+        diff(get = { it.containers }, set = {
             containersAdapter.submitList(it)
         })
 
-        diff(get = { (it as? State.Ready)?.codecs }, set = {
+        diff(get = { it.codecs }, set = {
             codecsAdapter.submitList(it)
         })
 
-        diff(get = { (it as? State.Ready)?.channelOptions }, set = {
+        diff(get = { it.channelOptions }, set = {
             channelsAdapter.submitList(it)
         })
 
-        diff(get = { (it as? State.Ready)?.sampleRates }, set = { values ->
-            if (values == null) return@diff
-
+        diff(get = { it.sampleRates }, set = { values ->
             // todo: should we remove this search here?
             // todo: maybe set adapter in slider??
             val selectedIndex = values.indexOfFirst { it.isSelected }
@@ -139,7 +137,7 @@ class AudioSettingsViewImpl(
 
         })
 
-        diff(get = { (it as? State.Ready)?.bitDepths }, set = { availableBitDepths ->
+        diff(get = { it.bitDepths }, set = { availableBitDepths ->
             if (availableBitDepths.isNullOrEmpty()) {
                 binding.bitDepthSettingsBlock.isVisible = false
             } else {
@@ -164,7 +162,7 @@ class AudioSettingsViewImpl(
             }
         })
 
-        diff(get = { (it as? State.Ready)?.bitRateSettings }, set = { bitRateSettings ->
+        diff(get = { it.bitRateSettings }, set = { bitRateSettings ->
             binding.bitRateSettingsBlock.isVisible = bitRateSettings != null
 
             if (bitRateSettings == null) return@diff
