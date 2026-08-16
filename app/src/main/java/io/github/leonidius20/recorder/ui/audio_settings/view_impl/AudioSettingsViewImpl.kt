@@ -18,6 +18,7 @@ import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsView
 import java.text.DecimalFormat
+import kotlin.math.roundToInt
 
 class AudioSettingsViewImpl(
     val binding: BottomSheetAudioSettingsBinding,
@@ -211,6 +212,9 @@ class AudioSettingsViewImpl(
                         valueFrom = bitRateSettingType.min
                         valueTo = bitRateSettingType.max
                         value = bitRateSettings.current
+                            .roundToInt().toFloat()
+                        // there could be fractional values saved by prior app versions
+                        // that allowed fractional slider steps
                     }
 
                     binding.maxBitrateSliderValue.text =

@@ -220,7 +220,7 @@ class AudioSettingsStoreFactory @Inject constructor(
                                 audioSources = audioSources,
                                 audioSource = settings.audioSourceOptions.find {
                                     it.value == newSettings.audioSource
-                                }!!, // todo: move this logic to Settings
+                                } ?: Settings.AudioSourceOption.DEFAULT, // todo: move this logic to Settings
 
                                 containers = Container.supportedContainers().map {
                                     AudioSettingsStore.ContainerSetting(

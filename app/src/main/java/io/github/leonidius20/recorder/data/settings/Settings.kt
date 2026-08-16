@@ -138,7 +138,7 @@ class Settings @Inject constructor(
                 )
             } catch (t: Throwable) {
                 Timber.e(t)
-                null
+                it.default
             }
         }
 
@@ -146,8 +146,7 @@ class Settings @Inject constructor(
             pref.getFloat(
                 codec.bitDepthOrRateForCodecPrefKey,
                 it.default,
-            ).roundToInt().toFloat() // todo - ??????
-            // this is bc in older versions you could set fractional values here
+            )
         }
 
         return SettingsState(
@@ -209,17 +208,23 @@ class Settings @Inject constructor(
         val value: Int,
         val name: String,
         val description: String,
-    )
+    ) {
+
+        companion object {
+            val DEFAULT = AudioSourceOption(
+                MediaRecorder.AudioSource.DEFAULT,
+                "Default",
+                "Default audio input. Some processing may be applied by device"
+            )
+        }
+
+    }
 
     val audioSourceOptions = buildList {
         // todo: localize
         addAll(
             listOf(
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.DEFAULT,
-                    "Default",
-                    "Default audio input. Some processing may be applied by device"
-                ),
+                AudioSourceOption.DEFAULT,
                 AudioSourceOption(
                     MediaRecorder.AudioSource.MIC,
                     "Mic",

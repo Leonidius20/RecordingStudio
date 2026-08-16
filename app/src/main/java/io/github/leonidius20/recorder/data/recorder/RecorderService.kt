@@ -190,7 +190,8 @@ class RecorderService : LifecycleService() {
                 audioSource = settingsState.audioSource,
                 sampleRate = settingsState.sampleRate,
                 monoOrStereo = settingsState.numOfChannels,
-                bitDepth = settingsState.bitDepth as PcmBitDepthOption,
+                bitDepth = settingsState.bitDepth as? PcmBitDepthOption
+                    ?: PcmBitDepthOption.PCM_16BIT_INT,
                 coroutineScope = lifecycleScope,
             )
         } else {

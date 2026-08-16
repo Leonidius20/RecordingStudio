@@ -1,4 +1,4 @@
 0.2.1
 - Added the option to share recordings from the list
-- Fixed recoding being played not highlighted after screen rotation
+- Fixed recording being played not highlighted after screen rotation
 - Fixed 3-button navigation bar overlaid on UI
