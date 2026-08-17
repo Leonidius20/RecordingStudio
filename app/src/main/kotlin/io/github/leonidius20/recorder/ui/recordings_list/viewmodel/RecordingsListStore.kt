@@ -49,6 +49,8 @@ interface RecordingsListStore : Store<Intent, State, Label> {
 
         data object ShareSelected : Intent
 
+        data object EditSelected : Intent
+
         data object NotifyFileDeletionFailed : Intent
 
     }
@@ -80,6 +82,8 @@ sealed interface Label {
     data class Rename(val rec: Recording) : Label
 
     data class Share(val recs: List<Recording>) : Label
+
+    data class Edit(val rec: Recording) : Label
 
     sealed interface ShowMessage : Label {
 
@@ -209,6 +213,9 @@ class RecordingsListStoreFactory @Inject constructor(
                 }
                 is Intent.NotifyFileDeletionFailed -> {
                     publish(Label.ShowMessage.FileDeletionFailed)
+                }
+                is Intent.EditSelected -> {
+                    publish(Label.Edit(singleSelectedRecording()))
                 }
             }
         }

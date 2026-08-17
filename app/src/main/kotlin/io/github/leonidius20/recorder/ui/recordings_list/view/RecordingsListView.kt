@@ -95,6 +95,8 @@ interface RecordingsListView : MviView<Model, Event> {
 
         data object ShareSelectedClicked : Event
 
+        data object EditSelectedClicked : Event
+
         data object FileDeletionFailure : Event
 
     }
@@ -180,6 +182,10 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
 
                 R.id.recordings_list_action_trash -> {
                     dispatch(Event.TrashSelectedClicked)
+                }
+
+                R.id.recordings_list_action_edit -> {
+                    dispatch(Event.EditSelectedClicked)
                 }
             }
             return true
@@ -315,6 +321,15 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
                         )
                 )
                 dispatch(Event.DisableSelectionMode)
+            }
+            is Label.Edit -> {
+// todo: check if aap and ndk is not used in lite veriosn
+                fragment.findNavController().navigate(
+                    RecordingsListFragmentDirections
+                        .actionRecordingsListToEditRecording(
+                            label.rec.uri, label.rec.name,
+                        )
+                )
             }
             is Label.Share -> {
                 share(label.recs)
@@ -469,6 +484,7 @@ internal val eventToIntent: Event.() -> Intent = {
         is Event.DeleteSelectedClicked -> Intent.DeleteSelected
         is Event.RenameSelectedClicked -> Intent.RenameSelected
         is Event.ShareSelectedClicked -> Intent.ShareSelected
+        is Event.EditSelectedClicked -> Intent.EditSelected
         is Event.FileDeletionFailure -> Intent.NotifyFileDeletionFailed
     }
 }

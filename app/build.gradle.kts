@@ -98,6 +98,12 @@ android {
             dimension = "version"
             applicationIdSuffix = ".lite"
             // versionNameSuffix = "-lite"
+
+            externalNativeBuild {
+                cmake {
+                    targets.clear()
+                }
+            }
         }
 
         create("full") {
