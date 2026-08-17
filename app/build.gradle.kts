@@ -102,8 +102,29 @@ android {
 
         create("full") {
             dimension = "version"
+            minSdk = 29
+
+            packaging.jniLibs.keepDebugSymbols.add("**.so")
+
+            resValue("string", "aap_version", libs.versions.aap.get())
+
+            externalNativeBuild {
+                cmake {
+                    arguments("-DANDROID_STL=c++_shared")
+                    cppFlags("-g", "")
+                }
+            }
         }
 
+    }
+
+    ndkVersion = libs.versions.ndk.get()
+
+    externalNativeBuild {
+        cmake {
+            version = "3.22.1"
+            path("src/full/cpp/CMakeLists.txt")
+        }
     }
 
     dependenciesInfo {
@@ -157,7 +178,8 @@ dependencies {
 
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
-    // todo: if flavour = full, include AAP framework
+    "fullImplementation"(libs.androidAudioPlugin)
+    "fullImplementation"(libs.androidAudioPlugin.manager)
 
     implementation(libs.mviKotlin)
     implementation(libs.mviKotlin.main)

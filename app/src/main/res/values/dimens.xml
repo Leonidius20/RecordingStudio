@@ -14,4 +14,7 @@
     <dimen name="view_selector_border_radius">16dp</dimen>
 
     <dimen name="selector_height">56dp</dimen>
+
+    <dimen name="icon_btn_dimension">48dp</dimen>
+
 </resources>

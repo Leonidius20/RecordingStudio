@@ -26,6 +26,8 @@ preference = "1.2.1"
 permissionx = "1.8.0"
 androidx-media3 = "1.4.0"
 mviKotlin = "4.4.0"
+aap = "0.8.3.9.4"
+ndk = "26.1.10909125"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +58,8 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidx-media3" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "androidx-media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
+androidAudioPlugin = { group = "com.github.Leonidius20.aap-core", name = "androidaudioplugin", version.ref = "aap" }
+androidAudioPlugin-manager = { group = "com.github.Leonidius20.aap-core", name = "androidaudioplugin-manager", version.ref = "aap" }
 mviKotlin = { group = "com.arkivanov.mvikotlin", name = "mvikotlin", version.ref = "mviKotlin" }
 mviKotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", version.ref = "mviKotlin" }
 mviKotlin-logging = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-logging", version.ref = "mviKotlin" }
