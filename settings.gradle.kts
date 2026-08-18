@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        mavenLocal()
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -14,6 +15,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven("https://jitpack.io")
@@ -22,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "RecordingStudio"
 include(":app")
- 
+include(":file_import")

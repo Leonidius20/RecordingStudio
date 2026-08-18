@@ -102,6 +102,9 @@ android {
 
         create("full") {
             dimension = "version"
+            minSdk = 29
+
+            resValue("string", "aap_version", libs.versions.aap.get())
         }
 
     }
@@ -157,7 +160,9 @@ dependencies {
 
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
-    // todo: if flavour = full, include AAP framework
+    "fullImplementation"(libs.androidAudioPlugin)
+    "fullImplementation"(libs.androidAudioPlugin.manager)
+    "fullImplementation"(project(":file_import"))
 
     implementation(libs.mviKotlin)
     implementation(libs.mviKotlin.main)
