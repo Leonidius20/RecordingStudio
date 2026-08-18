@@ -1,10 +1,6 @@
 package io.github.leonidius20.recorder.data.import_file
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class NativeBridge @Inject constructor() {
+class NativeBridge {
 
     init {
         System.loadLibrary("dummy")

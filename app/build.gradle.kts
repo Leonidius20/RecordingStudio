@@ -98,39 +98,15 @@ android {
             dimension = "version"
             applicationIdSuffix = ".lite"
             // versionNameSuffix = "-lite"
-
-            externalNativeBuild {
-                cmake {
-                    targets.clear()
-                }
-            }
         }
 
         create("full") {
             dimension = "version"
             minSdk = 29
 
-            packaging.jniLibs.keepDebugSymbols.add("**.so")
-
             resValue("string", "aap_version", libs.versions.aap.get())
-
-            externalNativeBuild {
-                cmake {
-                    arguments("-DANDROID_STL=c++_shared")
-                    cppFlags("-g", "")
-                }
-            }
         }
 
-    }
-
-    ndkVersion = libs.versions.ndk.get()
-
-    externalNativeBuild {
-        cmake {
-            version = "3.22.1"
-            path("src/full/cpp/CMakeLists.txt")
-        }
     }
 
     dependenciesInfo {
@@ -186,6 +162,7 @@ dependencies {
 
     "fullImplementation"(libs.androidAudioPlugin)
     "fullImplementation"(libs.androidAudioPlugin.manager)
+    "fullImplementation"(project(":file_import"))
 
     implementation(libs.mviKotlin)
     implementation(libs.mviKotlin.main)

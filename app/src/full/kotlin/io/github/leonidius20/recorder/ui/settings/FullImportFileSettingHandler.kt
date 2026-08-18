@@ -5,13 +5,16 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.FragmentComponent
 import dagger.hilt.android.scopes.FragmentScoped
+import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.import_file.NativeBridge
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import javax.inject.Inject
 import javax.inject.Provider
+import javax.inject.Singleton
 
 class FullImportFileSettingHandler @Inject constructor(
     val nativeBridge: Provider<NativeBridge>,
@@ -73,5 +76,15 @@ abstract class FullSettingsModule {
     abstract fun bindImportHandler(
         handler: FullImportFileSettingHandler,
     ) : ImportFileSettingHandler
+
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NativeModule {
+
+    @Singleton
+    @Provides
+    fun provideNativeBridge() = NativeBridge()
 
 }
