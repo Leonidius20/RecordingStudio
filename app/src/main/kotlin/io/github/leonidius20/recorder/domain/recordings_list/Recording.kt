@@ -6,7 +6,7 @@ data class Recording(
     val id: Long,
     val uri: Uri, // todo: use kotlin's uri?
     val name: String,
-    val duration: Int,
+    val durationMs: Long,
     val size: Int,
     val dateTaken: Long,
     val mimeType: String,

@@ -449,7 +449,7 @@ internal val stateToModel: State.() -> Model = {
             RecordingUiModel(
                 it.id,
                 it.name,
-                millisecondsToStopwatchString(it.duration),
+                millisecondsToStopwatchString(it.durationMs),
                 // todo: remove context here
                 Formatter.formatFileSize(RecorderApp.instance, it.size.toLong()),
                 isSelected = selectedItems.contains(it.id),

@@ -7,7 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
-import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
+import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -69,13 +70,18 @@ class HomeViewModel @Inject constructor(
     /**
      * time elapsed since the start of the recording
      */
-    val timerText = recorderServiceLauncher.timer.map { milliseconds ->
-        millisecondsToStopwatchString(milliseconds)
-    }.asLiveData()
+    val timerText = recorderServiceLauncher.timer
+        .distinctUntilChangedBy { millis -> millis / 1000 }
+        .map { millis ->
+            secondsToStopwatchString(millis / 1000)
+        }
+        .asLiveData() // todo: put into main state?
 
     /**
      * for audio visualization
      */
+    // todo: SharedFlow with buffer - make it replay last N samples to new
+    //  subscriber (i.e. recreated screen)
     val amplitudes = recorderServiceLauncher.amplitudes
 
     fun onStartRecording() {
