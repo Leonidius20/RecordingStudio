@@ -27,12 +27,15 @@ import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.recorder.observers.ControlObserver
+import io.github.leonidius20.recorder.data.recorder.observers.LowBatteryObserver
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
+import io.github.leonidius20.recorder.domain.recorder.SystemEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -40,6 +43,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -107,8 +111,10 @@ class RecorderService : LifecycleService() {
     @Inject
     lateinit var recordingsListRepository: RecordingsListRepository
 
-    private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
-    private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
+    //private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
+    //private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
+    private lateinit var recControlObserver: ControlObserver
+    private lateinit var lowBatteryObserver: LowBatteryObserver
     private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
 
@@ -123,30 +129,44 @@ class RecorderService : LifecycleService() {
         createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        recControlBroadcastReceiver = RecordingControlBroadcastReceiver().apply {
-            val intentFilter = IntentFilter().apply {
-                addAction(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
-                addAction(RecordingControlBroadcastReceiver.ACTION_STOP)
-            }
+        recControlObserver = ControlObserver(this).apply {
+            // todo: create 1 interface for observers, unite
+            //  all channels, put all observers in list,
+            //
+            lifecycleScope.launch {
+                events.consumeAsFlow().collect {
+                    when(it) {
 
-            ContextCompat.registerReceiver(
-                this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-        }
-
-        lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
-            callback = {
-                if (settings.state.value.stopOnLowBattery) {
-                    stopAbruptly(explanation = "The device is running out of battery.")
+                        SystemEvent.TOGGLE_REC_PAUSE -> {
+                            toggleRecPause()
+                        }
+                        SystemEvent.STOP -> {
+                            stop()
+                        }
+                        else -> {}
+                    }
                 }
             }
-        ).apply {
-            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
-            ContextCompat.registerReceiver(
-                this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_EXPORTED
-            )
+
+            register()
+        }
+
+        // todo: only register if in settings the option is on
+        lowBatteryObserver = LowBatteryObserver(this).apply {
+            lifecycleScope.launch {
+                events.consumeAsFlow().collect {
+                    when(it) {
+                        SystemEvent.LOW_BATTERY -> {
+                            if (settings.state.value.stopOnLowBattery) {
+                                stopAbruptly(explanation = "The device is running out of battery.")
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
+
+            register()
         }
 
         lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
@@ -293,8 +313,8 @@ class RecorderService : LifecycleService() {
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
 
-        unregisterReceiver(recControlBroadcastReceiver)
-        unregisterReceiver(lowBatteryBroadcastReceiver)
+        recControlObserver.unregister()
+        lowBatteryObserver.unregister()
         unregisterReceiver(lowStorageBroadcastReceiver)
         unregisterReceiver(callBroadcastReceiver)
     }
