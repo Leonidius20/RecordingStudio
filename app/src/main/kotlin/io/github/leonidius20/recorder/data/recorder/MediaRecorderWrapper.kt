@@ -8,6 +8,7 @@ import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
+import timber.log.Timber
 import java.io.IOException
 
 /**
@@ -55,6 +56,7 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
     }
 
     override fun start() {
+        Timber.d("MediaRecorderWrapper start")
         recorder.start()
     }
 

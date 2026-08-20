@@ -21,11 +21,10 @@ import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import kotlin.math.abs
 import kotlin.math.max
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
@@ -43,7 +42,6 @@ class PcmAudioRecorder(
     private val coroutineScope: CoroutineScope,
     private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : AudioRecorder {
-
 
     private lateinit var audioRecord: AudioRecord
 
@@ -69,6 +67,7 @@ class PcmAudioRecorder(
 
     @SuppressLint("MissingPermission")
     override fun start() {
+        Timber.d("PcmAudioRecorder start")
 
         audioRecord = AudioRecord(
             audioSource,

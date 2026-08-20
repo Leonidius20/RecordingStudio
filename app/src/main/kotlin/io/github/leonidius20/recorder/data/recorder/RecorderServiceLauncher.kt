@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -72,6 +73,7 @@ class RecorderServiceLauncher @Inject constructor(
      * that can be observed while the recording is in progress
      */
     fun launchRecording() {
+        Timber.d("Launcher.launchRecording()")
 
 
         // if (!recordingsDirectory.exists()) mkdirs
@@ -161,13 +163,6 @@ class RecorderServiceLauncher @Inject constructor(
 
     override fun onServiceDisconnected(name: ComponentName?) {
         binder = null
-    }
-
-    /**
-     * called by service itself when it is stopped
-     */
-    fun onServiceStopped() {
-        _state.value = RecorderState.IDLE
     }
 
     fun getUri() = binder!!.service.fileUri

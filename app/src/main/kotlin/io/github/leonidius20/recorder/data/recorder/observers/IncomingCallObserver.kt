@@ -1,15 +1,16 @@
 package io.github.leonidius20.recorder.data.recorder.observers
 
-import androidx.lifecycle.lifecycleScope
+import android.content.Context
 import io.github.leonidius20.recorder.data.recorder.IncomingCallBroadcastReceiver
-import io.github.leonidius20.recorder.data.recorder.RecorderService
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 class IncomingCallObserver(
-    private val service: RecorderService,
+    val context: Context,
+    val scope: CoroutineScope,
 ) : SystemEventObserver {
 
     override val events: Channel<SystemEvent> = Channel()
@@ -18,16 +19,16 @@ class IncomingCallObserver(
 
     override fun register() {
         callBroadcastReceiver = IncomingCallBroadcastReceiver {
-            service.lifecycleScope.launch {
+            scope.launch {
                 events.send(SystemEvent.INCOMING_CALL)
             }
         }.apply {
-            registerInContext(service)
+            registerInContext(context)
         }
     }
 
     override fun unregister() {
-        service.unregisterReceiver(callBroadcastReceiver)
+        context.unregisterReceiver(callBroadcastReceiver)
     }
 
 }
