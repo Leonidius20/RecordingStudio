@@ -5,21 +5,22 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import io.github.leonidius20.recorder.data.recorder.RecorderService
 import io.github.leonidius20.recorder.data.recorder.RecordingControlBroadcastReceiver
-import io.github.leonidius20.recorder.domain.recorder.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 class ControlObserver(
     val service: RecorderService, // should be recorder service context
-) {
+) : SystemEventObserver {
 
     private val context get() = service
 
-    val events: Channel<SystemEvent> = Channel()
+    override val events: Channel<SystemEvent> = Channel()
 
     private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
 
-    fun register() {
+    override fun register() {
         recControlBroadcastReceiver = RecordingControlBroadcastReceiver {
             service.lifecycleScope.launch {
                 events.send(it)
@@ -37,7 +38,7 @@ class ControlObserver(
         }
     }
 
-    fun unregister() {
+    override fun unregister() {
         context.unregisterReceiver(recControlBroadcastReceiver)
     }
 

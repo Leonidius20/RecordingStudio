@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import io.github.leonidius20.recorder.domain.recorder.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEvent
 
 class RecordingControlBroadcastReceiver(
     private val callback: (SystemEvent) -> Unit,

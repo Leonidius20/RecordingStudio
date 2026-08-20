@@ -35,7 +35,8 @@ import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
-import io.github.leonidius20.recorder.domain.recorder.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -82,8 +84,6 @@ class RecorderService : LifecycleService() {
     val state: StateFlow<State>
         get() = _state
 
-    //private val job = SupervisorJob()
-    //val serviceScope = CoroutineScope(job + Dispatchers.Main)
 
     private val _timer = MutableStateFlow(0L)
 
@@ -111,10 +111,8 @@ class RecorderService : LifecycleService() {
     @Inject
     lateinit var recordingsListRepository: RecordingsListRepository
 
-    //private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
-    //private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
-    private lateinit var recControlObserver: ControlObserver
-    private lateinit var lowBatteryObserver: LowBatteryObserver
+    private lateinit var observers: List<SystemEventObserver>
+
     private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
     private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
 
@@ -129,45 +127,34 @@ class RecorderService : LifecycleService() {
         createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        recControlObserver = ControlObserver(this).apply {
-            // todo: create 1 interface for observers, unite
-            //  all channels, put all observers in list,
-            //
-            lifecycleScope.launch {
-                events.consumeAsFlow().collect {
-                    when(it) {
+        // todo: have another class handle all of them and expose one method
+        val observers = listOf(
+            ControlObserver(this),
+            LowBatteryObserver(this),
+        )
 
-                        SystemEvent.TOGGLE_REC_PAUSE -> {
-                            toggleRecPause()
-                        }
-                        SystemEvent.STOP -> {
-                            stop()
-                        }
-                        else -> {}
+        lifecycleScope.launch {
+            observers.map { it.events.consumeAsFlow() }.merge().collect { event ->
+                when(event) {
+
+                    SystemEvent.TOGGLE_REC_PAUSE -> {
+                        toggleRecPause()
                     }
+                    SystemEvent.STOP -> {
+                        stop()
+                    }
+
+                    SystemEvent.LOW_BATTERY -> {
+                        if (settings.state.value.stopOnLowBattery) {
+                            stopAbruptly(explanation = "The device is running out of battery.")
+                        }
+                    }
+                    else -> {}
                 }
             }
-
-            register()
         }
 
-        // todo: only register if in settings the option is on
-        lowBatteryObserver = LowBatteryObserver(this).apply {
-            lifecycleScope.launch {
-                events.consumeAsFlow().collect {
-                    when(it) {
-                        SystemEvent.LOW_BATTERY -> {
-                            if (settings.state.value.stopOnLowBattery) {
-                                stopAbruptly(explanation = "The device is running out of battery.")
-                            }
-                        }
-                        else -> {}
-                    }
-                }
-            }
-
-            register()
-        }
+        observers.forEach(SystemEventObserver::register)
 
         lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
             if (settings.state.value.stopOnLowStorage) {
@@ -313,8 +300,7 @@ class RecorderService : LifecycleService() {
 
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
 
-        recControlObserver.unregister()
-        lowBatteryObserver.unregister()
+        observers.forEach(SystemEventObserver::unregister)
         unregisterReceiver(lowStorageBroadcastReceiver)
         unregisterReceiver(callBroadcastReceiver)
     }

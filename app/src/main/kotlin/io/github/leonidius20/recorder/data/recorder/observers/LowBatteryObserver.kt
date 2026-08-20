@@ -6,20 +6,21 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import io.github.leonidius20.recorder.data.recorder.BroadcastReceiverWithCallback
 import io.github.leonidius20.recorder.data.recorder.RecorderService
-import io.github.leonidius20.recorder.domain.recorder.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 class LowBatteryObserver(
     val service: RecorderService, // should be recorder service context
-) {
+) : SystemEventObserver {
     private val context get() = service
 
     private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
 
-    val events: Channel<SystemEvent> = Channel()
+    override val events: Channel<SystemEvent> = Channel()
 
-    fun register() {
+    override fun register() {
         lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
             callback = {
                 service.lifecycleScope.launch {
@@ -35,7 +36,7 @@ class LowBatteryObserver(
         }
     }
 
-    fun unregister() {
+    override fun unregister() {
         context.unregisterReceiver(lowBatteryBroadcastReceiver)
     }
 
