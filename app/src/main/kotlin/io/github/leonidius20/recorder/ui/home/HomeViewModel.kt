@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
+import io.github.leonidius20.recorder.domain.recorder.RecorderState
 import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
@@ -60,10 +61,10 @@ class HomeViewModel @Inject constructor(
 
     val uiState: LiveData<UiState> = recorderServiceLauncher.state.map {
         when (it) {
-            RecorderServiceLauncher.State.IDLE -> UiState.Idle
-            RecorderServiceLauncher.State.RECORDING -> UiState.Recording(isPausingSupported = recorderServiceLauncher.isPausingSupported)
-            RecorderServiceLauncher.State.PAUSED -> UiState.Paused
-            RecorderServiceLauncher.State.ERROR -> UiState.Idle // todo: error UI state
+            RecorderState.IDLE -> UiState.Idle
+            RecorderState.RECORDING -> UiState.Recording(isPausingSupported = recorderServiceLauncher.isPausingSupported)
+            RecorderState.PAUSED -> UiState.Paused
+            RecorderState.ERROR -> UiState.Idle // todo: error UI state
         }
     }.asLiveData()
 

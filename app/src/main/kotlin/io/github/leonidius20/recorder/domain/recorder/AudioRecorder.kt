@@ -1,6 +1,10 @@
-package io.github.leonidius20.recorder.data.recorder
+package io.github.leonidius20.recorder.domain.recorder
+
+import kotlinx.coroutines.flow.StateFlow
 
 interface AudioRecorder {
+
+    // val state: StateFlow<RecorderState>
 
     fun start()
 
@@ -23,11 +27,10 @@ interface AudioRecorder {
 
     fun supportsPausing(): Boolean
 
-    enum class State {
-        IDLE,
-        RECORDING,
-        PAUSED,
-        ERROR,
-    }
+}
+
+interface PausableAudioRecorder : AudioRecorder {
+
+
 
 }

@@ -1,19 +1,16 @@
 package io.github.leonidius20.recorder.data.recorder
 
 import android.content.ComponentName
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.net.Uri
 import android.os.Build
 import android.os.IBinder
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.recorder.domain.recorder.RecorderState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +19,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,15 +39,8 @@ class RecorderServiceLauncher @Inject constructor(
 
     private var binder: RecorderService.Binder? = null
 
-    enum class State {
-        IDLE,
-        RECORDING,
-        PAUSED,
-        ERROR,
-    }
-
-    private val _state = MutableStateFlow(State.IDLE)
-    val state: StateFlow<State>
+    private val _state = MutableStateFlow(RecorderState.IDLE)
+    val state: StateFlow<RecorderState>
         get() = _state
 
 
@@ -112,7 +99,7 @@ class RecorderServiceLauncher @Inject constructor(
         // theoretically it is possible to send a broadcast here instead of
         //  relying on binding
         binder!!.service.stop()
-        _state.value = State.IDLE
+        _state.value = RecorderState.IDLE
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -124,7 +111,7 @@ class RecorderServiceLauncher @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val serviceLifecycleObserver = UiStateUpdater { state ->
         _state.value = state
-        if (state == State.IDLE || state == State.ERROR) {
+        if (state == RecorderState.IDLE || state == RecorderState.ERROR) {
             isPausingSupported = false // resetting in case the next recording is started with other params that do not support pausing
             _amplitudes.resetReplayCache() // make sure old values are removed
         }
@@ -149,15 +136,15 @@ class RecorderServiceLauncher @Inject constructor(
                     RecorderService.State.RECORDING -> {
                         // first update pausing support, only then change state
                         isPausingSupported = service.service.supportsPausing
-                        _state.value = State.RECORDING
+                        _state.value = RecorderState.RECORDING
                     }
-                    RecorderService.State.PAUSED -> _state.value = State.PAUSED
+                    RecorderService.State.PAUSED -> _state.value = RecorderState.PAUSED
                     RecorderService.State.ERROR -> {
                         // todo error ui state
-                        _state.value = State.ERROR
+                        _state.value = RecorderState.ERROR
                     }
                     RecorderService.State.PREPARING -> {
-                        _state.value = State.IDLE
+                        _state.value = RecorderState.IDLE
                     }
                 }
             }.launchIn(this)
@@ -180,7 +167,7 @@ class RecorderServiceLauncher @Inject constructor(
      * called by service itself when it is stopped
      */
     fun onServiceStopped() {
-        _state.value = State.IDLE
+        _state.value = RecorderState.IDLE
     }
 
     fun getUri() = binder!!.service.fileUri

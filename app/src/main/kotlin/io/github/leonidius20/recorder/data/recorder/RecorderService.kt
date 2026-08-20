@@ -32,6 +32,7 @@ import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
