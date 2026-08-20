@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
@@ -19,7 +18,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
@@ -28,15 +26,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recorder.observers.ControlObserver
+import io.github.leonidius20.recorder.data.recorder.observers.IncomingCallObserver
 import io.github.leonidius20.recorder.data.recorder.observers.LowBatteryObserver
+import io.github.leonidius20.recorder.data.recorder.observers.LowStorageObserver
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
-import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -113,11 +113,7 @@ class RecorderService : LifecycleService() {
 
     private lateinit var observers: List<SystemEventObserver>
 
-    private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
-    private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
-
     private lateinit var amplitudeVizUpdateJob: Job
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -131,6 +127,8 @@ class RecorderService : LifecycleService() {
         val observers = listOf(
             ControlObserver(this),
             LowBatteryObserver(this),
+            LowStorageObserver(this),
+            IncomingCallObserver(this),
         )
 
         lifecycleScope.launch {
@@ -144,38 +142,29 @@ class RecorderService : LifecycleService() {
                         stop()
                     }
 
+                    SystemEvent.LOW_STORAGE -> {
+                        if (settings.state.value.stopOnLowStorage) {
+                            stopAbruptly("The device is running out of storage.")
+                        }
+                    }
+
                     SystemEvent.LOW_BATTERY -> {
                         if (settings.state.value.stopOnLowBattery) {
                             stopAbruptly(explanation = "The device is running out of battery.")
                         }
                     }
-                    else -> {}
+
+                    SystemEvent.INCOMING_CALL -> {
+                        if (settings.state.value.pauseOnCall) {
+                            pause()
+                            sendNotificationAboutPausingOnCall()
+                        }
+                    }
                 }
             }
         }
 
         observers.forEach(SystemEventObserver::register)
-
-        lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
-            if (settings.state.value.stopOnLowStorage) {
-                stopAbruptly("The device is running out of storage.")
-            }
-        }.apply {
-            val intentFilter = IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW)
-            ContextCompat.registerReceiver(
-                this@RecorderService, this,
-                intentFilter, ContextCompat.RECEIVER_EXPORTED
-            )
-        }
-
-        callBroadcastReceiver = IncomingCallBroadcastReceiver {
-            if (settings.state.value.pauseOnCall) {
-                pause()
-                sendNotificationAboutPausingOnCall()
-            }
-        }.apply {
-            registerInContext(this@RecorderService)
-        }
 
         val fileFormat = settings.state.value.outputFormat
 
@@ -296,13 +285,9 @@ class RecorderService : LifecycleService() {
 
         descriptor.close()
 
-        // job.cancel()
-
         NotificationManagerCompat.from(this).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
 
         observers.forEach(SystemEventObserver::unregister)
-        unregisterReceiver(lowStorageBroadcastReceiver)
-        unregisterReceiver(callBroadcastReceiver)
     }
 
     /**
