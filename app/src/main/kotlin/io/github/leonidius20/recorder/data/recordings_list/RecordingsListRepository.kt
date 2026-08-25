@@ -109,4 +109,13 @@ class RecordingsListRepository @Inject constructor(
         return dataSource.createRecordingFile(name, mimeType)
     }
 
+    fun updateRecordingMetadata(
+        fileUri: Uri, size: Long, duration: Long,
+    ) {
+        context.contentResolver.update(fileUri, ContentValues().apply {
+            put(MediaStore.MediaColumns.SIZE, size)
+            put(MediaStore.MediaColumns.DURATION, duration)
+        }, null, null)
+    }
+
 }

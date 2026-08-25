@@ -1,22 +1,9 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import android.content.ContentValues
-import android.content.Context
-import android.net.Uri
-import android.os.Build
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
-import android.util.Log
-import androidx.annotation.RequiresApi
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.scopes.ServiceScoped
-import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
-import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
-import io.github.leonidius20.recorder.data.settings.BitRateSettingType
-import io.github.leonidius20.recorder.data.settings.Container
-import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
-import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,21 +17,19 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 // todo: unit tests for business logic?
 // todo: remove all the fucking notifications from here
 @ServiceScoped
 class RecordAudioUseCase @Inject constructor(
-    private val settings: Settings,
-    private val context: Context, // the context in which we record. i.e. service context. should be provided by hilt
+    private val settings: SettingsInterface,
     private val scope: CoroutineScope,
     private val recordingsListRepository: RecordingsListRepository,
     private val notificationsManager: RecordingNotificationsManager,
     private val systemEventObserver: UnitedSystemEventObserver,
+    private val outputFileFactory: OutputFileAbstraction.Factory,
+    private val recorderFactory: AudioRecorderFactory,
 ) {
 
     // todo: is this needed even???
@@ -60,9 +45,7 @@ class RecordAudioUseCase @Inject constructor(
     val state: StateFlow<State>
         get() = _state
 
-    lateinit var fileUri: Uri
-
-    private lateinit var descriptor: ParcelFileDescriptor
+    lateinit var file: OutputFileAbstraction
 
     lateinit var recorder: AudioRecorder
 
@@ -128,51 +111,25 @@ class RecordAudioUseCase @Inject constructor(
 
         systemEventObserver.register()
 
+        // todo: this is what has to be lifted out. how do we
+        //  stop depending on the
         val fileFormat = settings.state.value.outputFormat
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
+        file = outputFileFactory.create(
+            namePattern = "yyyy-MM-dd-HH-mm-ss",
+            format = fileFormat
+        ).apply {
+            open()
+        }
 
-        val fileName = dateFormat.format(Date(System.currentTimeMillis()))
-
-        // http://androidxref.com/4.4.4_r1/xref/frameworks/base/media/java/android/media/MediaFile.java#174
-        fileUri = recordingsListRepository.createRecordingFile(
-            fileName,
-            fileFormat.mimeType
-        )
-        descriptor = context.contentResolver.openFileDescriptor(fileUri, "rw")!!
-
-        val settingsState = settings.state.value
-
-        if (fileFormat == Container.WAV) {
-            recorder = PcmAudioRecorder(
-                descriptor = descriptor,
-                audioSource = settingsState.audioSource,
-                sampleRate = settingsState.sampleRate,
-                monoOrStereo = settingsState.numOfChannels,
-                bitDepth = settingsState.bitDepth as? PcmBitDepthOption
-                    ?: PcmBitDepthOption.PCM_16BIT_INT,
-                coroutineScope = scope,
+        try {
+            recorder = recorderFactory.create(
+                file
             )
-        } else {
-
-            try {
-                recorder = MediaRecorderWrapper(
-                    audioSource = settingsState.audioSource,
-                    container = fileFormat,
-                    descriptor = descriptor,
-                    encoder = settingsState.encoder,
-                    channels = settingsState.numOfChannels,
-                    sampleRate = settingsState.sampleRate,
-                    bitRate =
-                        if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
-                            settingsState.bitRate
-                        else null
-                )
-            } catch (e: IOException) {
-                Log.e("Recorder", "prepare() failed", e)
-                stopOnError()
-            }
-
+        } catch (e: IOException) {
+            e.printStackTrace()
+            stopOnError()
+            return
         }
 
         recorder.start()
@@ -215,7 +172,6 @@ class RecordAudioUseCase @Inject constructor(
     /**
      * @return the new state
      */
-    @RequiresApi(Build.VERSION_CODES.N)
     fun toggleRecPause(): State {
         when (state.value) {
             State.RECORDING -> {
@@ -245,19 +201,17 @@ class RecordAudioUseCase @Inject constructor(
      * called by service when it's destroyed normally or not
      */
     fun onDestroy() {
-        context.contentResolver.update(fileUri, ContentValues().apply {
-            put(MediaStore.MediaColumns.SIZE, descriptor.statSize)
-            put(MediaStore.MediaColumns.DURATION, stopwatch.elapsedTime)
-        }, null, null)
-
-        descriptor.close()
+        recordingsListRepository.updateRecordingMetadata(
+            file.fileUri, size = file.descriptor.statSize,
+            duration = stopwatch.elapsedTime
+        )
+        file.close()
 
         notificationsManager.cancelPausedOnIncomingCallNotification()
 
         systemEventObserver.unregister()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun pause() {
         recorder.pause()
         stopwatch.pause()
@@ -265,7 +219,6 @@ class RecordAudioUseCase @Inject constructor(
         notificationsManager.updateNotification(state.value)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun resume() {
         recorder.resume()
         stopwatch.resume()

@@ -13,12 +13,15 @@ import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
@@ -65,7 +68,7 @@ class RecorderService : LifecycleService() {
 
     // needed here so that we can return it from activity started for result (action record audio)
     val fileUri: Uri
-        get() = recordAudioUseCase.fileUri
+        get() = recordAudioUseCase.file.fileUri
 
     @Inject
     lateinit var recordAudioUseCase: RecordAudioUseCase
@@ -183,5 +186,15 @@ object RecorderModule {
     fun provideContext(
         service: Service
     ): Context = service
+
+}
+
+@Module
+@InstallIn(ServiceComponent::class)
+interface RecorderModuleBinds {
+
+    @Binds
+    @ServiceScoped
+    fun bindRecorderFactory(factory: AudioRecorderFactoryImpl): AudioRecorderFactory
 
 }

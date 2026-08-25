@@ -14,6 +14,7 @@ import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import timber.log.Timber
 import java.util.SortedSet
@@ -21,10 +22,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
 
+interface SettingsInterface {
+
+    val state: StateFlow<Settings.SettingsState>
+
+}
+
 @Singleton
 class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
-) {
+) : SettingsInterface {
 
     data class SettingsState(
         val stopOnLowBattery: Boolean,
@@ -71,7 +78,7 @@ class Settings @Inject constructor(
 
     private val _state = MutableStateFlow(getCurrentSettingsState())
 
-    val state = _state.asStateFlow()
+    override val state = _state.asStateFlow()
 
     private val pauseOnCallKey = context.getString(R.string.pause_on_call_pref_key)
 
