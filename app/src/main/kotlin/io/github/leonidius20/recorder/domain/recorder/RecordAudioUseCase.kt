@@ -12,17 +12,12 @@ import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.scopes.ServiceScoped
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
-import io.github.leonidius20.recorder.data.recorder.observers.ControlObserver
-import io.github.leonidius20.recorder.data.recorder.observers.IncomingCallObserver
-import io.github.leonidius20.recorder.data.recorder.observers.LowBatteryObserver
-import io.github.leonidius20.recorder.data.recorder.observers.LowStorageObserver
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.domain.events.SystemEvent
-import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,12 +26,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,12 +44,8 @@ class RecordAudioUseCase @Inject constructor(
     private val scope: CoroutineScope,
     private val recordingsListRepository: RecordingsListRepository,
     private val notificationsManager: RecordingNotificationsManager,
+    private val systemEventObserver: UnitedSystemEventObserver,
 ) {
-
-    init {
-        Timber.d("Created audio record use case")
-
-    }
 
     // todo: is this needed even???
     enum class State {
@@ -96,11 +84,8 @@ class RecordAudioUseCase @Inject constructor(
      */
     val amplitudes = _amplitudes.asSharedFlow()
 
-    private lateinit var observers: List<SystemEventObserver>
-
     private fun onSystemEvent(event: SystemEvent) {
         when(event) {
-
             SystemEvent.TOGGLE_REC_PAUSE -> {
                 toggleRecPause()
             }
@@ -130,28 +115,18 @@ class RecordAudioUseCase @Inject constructor(
     }
 
     fun start() {
-        Timber.d("use case start()")
-
         notificationsManager.createRecInProgressNotificationChannel()
 
         notificationsManager.createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        // todo: have another class handle all of them and expose one method
-        observers = listOf(
-            ControlObserver(context, scope),
-            LowBatteryObserver(context, scope),
-            LowStorageObserver(context, scope),
-            IncomingCallObserver(context, scope),
-        )
-
         scope.launch {
-            observers.map { it.events.consumeAsFlow() }.merge().collect(
+            systemEventObserver.events.collect(
                 ::onSystemEvent
             )
         }
 
-        observers.forEach(SystemEventObserver::register)
+        systemEventObserver.register()
 
         val fileFormat = settings.state.value.outputFormat
 
@@ -279,12 +254,11 @@ class RecordAudioUseCase @Inject constructor(
 
         notificationsManager.cancelPausedOnIncomingCallNotification()
 
-        observers.forEach(SystemEventObserver::unregister)
+        systemEventObserver.unregister()
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun pause() {
-        //recorder.pause()
         recorder.pause()
         stopwatch.pause()
         _state.value = State.PAUSED
@@ -293,7 +267,6 @@ class RecordAudioUseCase @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun resume() {
-        //recorder.resume()
         recorder.resume()
         stopwatch.resume()
         _state.value = State.RECORDING
