@@ -19,16 +19,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
+import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-
-const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.inprogress"
-const val REC_ABRUPT_STOP_CHANNEL_ID = "io.github.leonidius20.recorder.stopped"
 
 // todo: refactor maybe, place audio-related stuff in separate class to separate from
 // todo: for this, use lifecycle-aware components
@@ -71,6 +70,9 @@ class RecorderService : LifecycleService() {
     @Inject
     lateinit var recordAudioUseCase: RecordAudioUseCase
 
+    @Inject
+    lateinit var notificationsManager: RecordingNotificationsManager
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
@@ -110,7 +112,9 @@ class RecorderService : LifecycleService() {
         try {
             ServiceCompat.startForeground(
                 this, PERSISTENT_NOTIFICATION_ID,
-                recordAudioUseCase.buildPersistentNotification(), foregroundServiceType
+                notificationsManager.buildPersistentNotification(
+                    RecordAudioUseCase.State.RECORDING
+                ), foregroundServiceType
             )
         } catch (e: Exception) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
@@ -163,11 +167,6 @@ class RecorderService : LifecycleService() {
     }
 
 }
-
-const val REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID = 1
-const val REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID = 2
-const val PERSISTENT_NOTIFICATION_ID = 100
-
 
 @Module
 @InstallIn(ServiceComponent::class)
