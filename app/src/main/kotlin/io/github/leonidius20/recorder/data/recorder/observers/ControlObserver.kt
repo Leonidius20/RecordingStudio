@@ -8,6 +8,8 @@ import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 class ControlObserver(
@@ -15,7 +17,10 @@ class ControlObserver(
     val scope: CoroutineScope,
 ) : SystemEventObserver {
 
-    override val events: Channel<SystemEvent> = Channel()
+    private val events: Channel<SystemEvent> = Channel()
+
+    override val eventsFlow: Flow<SystemEvent>
+        get() = events.consumeAsFlow()
 
     private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
 

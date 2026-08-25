@@ -20,11 +20,16 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
+import io.github.leonidius20.recorder.domain.recorder.OutputFileAbstraction
+import io.github.leonidius20.recorder.domain.recorder.OutputFileFactory
+import io.github.leonidius20.recorder.domain.recorder.OutputFileFactoryImpl
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,7 +73,7 @@ class RecorderService : LifecycleService() {
 
     // needed here so that we can return it from activity started for result (action record audio)
     val fileUri: Uri
-        get() = recordAudioUseCase.file.fileUri
+        get() = (recordAudioUseCase.file as OutputFileAbstraction).fileUri // todo: do something about this
 
     @Inject
     lateinit var recordAudioUseCase: RecordAudioUseCase
@@ -196,5 +201,13 @@ interface RecorderModuleBinds {
     @Binds
     @ServiceScoped
     fun bindRecorderFactory(factory: AudioRecorderFactoryImpl): AudioRecorderFactory
+
+    @Binds
+    @ServiceScoped
+    fun bindEventObserver(observer: UnitedSystemEventObserver): SystemEventObserver
+
+    @Binds
+    @ServiceScoped
+    fun bindOutputFileFactory(factory: OutputFileFactoryImpl): OutputFileFactory
 
 }

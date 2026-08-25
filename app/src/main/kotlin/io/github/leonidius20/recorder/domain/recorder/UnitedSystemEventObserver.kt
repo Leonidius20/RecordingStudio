@@ -6,9 +6,10 @@ import io.github.leonidius20.recorder.data.recorder.observers.ControlObserver
 import io.github.leonidius20.recorder.data.recorder.observers.IncomingCallObserver
 import io.github.leonidius20.recorder.data.recorder.observers.LowBatteryObserver
 import io.github.leonidius20.recorder.data.recorder.observers.LowStorageObserver
+import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
@@ -16,9 +17,7 @@ import javax.inject.Inject
 class UnitedSystemEventObserver @Inject constructor(
     val context: Context,
     val scope: CoroutineScope // service context and scope
-) {
-
-    val events get() = observers.map { it.events.consumeAsFlow() }.merge()
+) : SystemEventObserver {
 
     val observers = listOf(
         ControlObserver(context, scope),
@@ -27,11 +26,14 @@ class UnitedSystemEventObserver @Inject constructor(
         IncomingCallObserver(context, scope),
     )
 
-    fun register() {
+    override val eventsFlow: Flow<SystemEvent>
+        get() = observers.map { it.eventsFlow }.merge()
+
+    override fun register() {
         observers.forEach(SystemEventObserver::register)
     }
 
-    fun unregister() {
+    override fun unregister() {
         observers.forEach(SystemEventObserver::unregister)
     }
 

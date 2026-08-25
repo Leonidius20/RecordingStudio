@@ -126,6 +126,9 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    // todo: remove once architecture is good enough so it's not needed
+    testImplementation("io.mockk:mockk:1.13.12")
 
     testImplementation(libs.androidx.junit)
     testImplementation(libs.androidx.espresso.core)

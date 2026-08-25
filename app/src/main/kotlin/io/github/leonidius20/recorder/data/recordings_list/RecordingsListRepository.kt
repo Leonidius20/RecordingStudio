@@ -11,6 +11,7 @@ import android.os.Looper
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.recorder.domain.recorder.OutputFileAbstraction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -20,12 +21,18 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+interface RecordingsListRepositoryInterface {
+
+
+
+}
+
 @Singleton
 class RecordingsListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @Named("io") private val ioDispatcher: CoroutineDispatcher,
     private val dataSource: RecordingsDataSource,
-) {
+) : RecordingsListRepositoryInterface {
 
     val recordings = callbackFlow {
 
@@ -107,15 +114,6 @@ class RecordingsListRepository @Inject constructor(
 
     fun createRecordingFile(name: String, mimeType: String): Uri {
         return dataSource.createRecordingFile(name, mimeType)
-    }
-
-    fun updateRecordingMetadata(
-        fileUri: Uri, size: Long, duration: Long,
-    ) {
-        context.contentResolver.update(fileUri, ContentValues().apply {
-            put(MediaStore.MediaColumns.SIZE, size)
-            put(MediaStore.MediaColumns.DURATION, duration)
-        }, null, null)
     }
 
 }

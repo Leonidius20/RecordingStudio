@@ -1,10 +1,10 @@
 package io.github.leonidius20.recorder.domain.events
 
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 
 interface SystemEventObserver {
 
-    val events: Channel<SystemEvent>
+    val eventsFlow: Flow<SystemEvent>
 
     fun register()
 

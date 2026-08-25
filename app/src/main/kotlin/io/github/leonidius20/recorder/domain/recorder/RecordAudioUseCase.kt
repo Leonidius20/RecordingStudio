@@ -2,9 +2,9 @@ package io.github.leonidius20.recorder.domain.recorder
 
 import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.scopes.ServiceScoped
-import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,10 +25,9 @@ import javax.inject.Inject
 class RecordAudioUseCase @Inject constructor(
     private val settings: SettingsInterface,
     private val scope: CoroutineScope,
-    private val recordingsListRepository: RecordingsListRepository,
-    private val notificationsManager: RecordingNotificationsManager,
-    private val systemEventObserver: UnitedSystemEventObserver,
-    private val outputFileFactory: OutputFileAbstraction.Factory,
+    private val notificationsManager: RecordingNotificationsManager, // todo: instead somewhere subscribe to states and update notifications accordingliy
+    private val systemEventObserver: SystemEventObserver,
+    private val outputFileFactory: OutputFileFactory,
     private val recorderFactory: AudioRecorderFactory,
 ) {
 
@@ -45,7 +44,7 @@ class RecordAudioUseCase @Inject constructor(
     val state: StateFlow<State>
         get() = _state
 
-    lateinit var file: OutputFileAbstraction
+    lateinit var file: OutputFile
 
     lateinit var recorder: AudioRecorder
 
@@ -104,7 +103,7 @@ class RecordAudioUseCase @Inject constructor(
 
         // used to control the recording from
         scope.launch {
-            systemEventObserver.events.collect(
+            systemEventObserver.eventsFlow.collect(
                 ::onSystemEvent
             )
         }
@@ -201,10 +200,8 @@ class RecordAudioUseCase @Inject constructor(
      * called by service when it's destroyed normally or not
      */
     fun onDestroy() {
-        recordingsListRepository.updateRecordingMetadata(
-            file.fileUri, size = file.descriptor.statSize,
-            duration = stopwatch.elapsedTime
-        )
+        file.updateMetadata(duration = stopwatch.elapsedTime)
+
         file.close()
 
         notificationsManager.cancelPausedOnIncomingCallNotification()

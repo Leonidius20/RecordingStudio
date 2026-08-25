@@ -12,11 +12,12 @@ import java.io.IOException
 import javax.inject.Inject
 import kotlin.jvm.Throws
 
+// todo: replace with a lambda?
 interface AudioRecorderFactory {
 
     @Throws(IOException::class)
     fun create(
-        file: OutputFileAbstraction,
+        file: OutputFile,
     ): AudioRecorder
 
 }
@@ -29,11 +30,14 @@ class AudioRecorderFactoryImpl @Inject constructor(
 
     @Throws(IOException::class)
     override fun create(
-        file: OutputFileAbstraction,
+        file: OutputFile,
     ): AudioRecorder {
         // todo pass here so that it doesn't get changed between file creation and now
         val settingsState = settings.state.value
         val fileFormat = settingsState.outputFormat
+
+        // todo: do something about this
+        val file = file as OutputFileAbstraction
 
         return if (fileFormat == Container.WAV) {
             PcmAudioRecorder(
