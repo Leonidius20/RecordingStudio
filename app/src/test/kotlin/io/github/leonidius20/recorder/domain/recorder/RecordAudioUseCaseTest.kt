@@ -8,10 +8,12 @@ import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -28,6 +30,7 @@ class RecordAudioUseCaseTest {
         Codec.AMR_NB, AudioChannels.MONO, 0, null,0f
     )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `When low battery, stop if setting enabled`() = runTest {
         val scope = this
@@ -56,7 +59,8 @@ class RecordAudioUseCaseTest {
 
         val useCase = RecordAudioUseCase(
             settingsProvider,
-            scope = this,
+            scope = backgroundScope,
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
             notificationsManager = mockk(relaxed = true), // todo: remove mocking and this dependency too
             systemEventObserver = observer,
             outputFileFactory = object : OutputFileFactory {
@@ -80,13 +84,14 @@ class RecordAudioUseCaseTest {
                 override fun create(file: OutputFile): AudioRecorder {
                     return mockk(relaxed = true) // todo: return fake impl?
                 }
-            }
+            },
+            stopwatch = mockk(relaxed = true) // todo: fake
 
         )
 
         useCase.start()
 
-        observer.sendEvent()
+        observer.sendEvent().join()
 
         assertEquals(RecordAudioUseCase.State.STOP, useCase.state.value)
     }

@@ -29,6 +29,8 @@ import io.github.leonidius20.recorder.domain.recorder.OutputFileFactoryImpl
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.domain.recorder.StopwatchInterface
+import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
 import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -209,5 +211,10 @@ interface RecorderModuleBinds {
     @Binds
     @ServiceScoped
     fun bindOutputFileFactory(factory: OutputFileFactoryImpl): OutputFileFactory
+
+    @Binds
+    @ServiceScoped
+    fun bindStopwatch(stopwatch: StopwatchWrapper): StopwatchInterface
+    // todo maybe remove and implement my own kotlin stopwatch or use other library
 
 }

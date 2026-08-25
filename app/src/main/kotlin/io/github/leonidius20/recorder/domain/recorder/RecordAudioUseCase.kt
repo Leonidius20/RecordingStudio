@@ -1,10 +1,11 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import com.yashovardhan99.timeit.Stopwatch
 import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.data.common.di.Dispatcher
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,10 +26,12 @@ import javax.inject.Inject
 class RecordAudioUseCase @Inject constructor(
     private val settings: SettingsInterface,
     private val scope: CoroutineScope,
+    @Dispatcher.Main private val dispatcher: CoroutineDispatcher,
     private val notificationsManager: RecordingNotificationsManager, // todo: instead somewhere subscribe to states and update notifications accordingliy
     private val systemEventObserver: SystemEventObserver,
     private val outputFileFactory: OutputFileFactory,
     private val recorderFactory: AudioRecorderFactory,
+    private val stopwatch: StopwatchInterface,
 ) {
 
     // todo: is this needed even???
@@ -48,17 +51,13 @@ class RecordAudioUseCase @Inject constructor(
 
     lateinit var recorder: AudioRecorder
 
-    private lateinit var stopwatch: Stopwatch
-
     private lateinit var amplitudeVizUpdateJob: Job
-
-    private val _timer = MutableStateFlow(0L)
 
     /**
      * length of the recording so far in milliseconds
      */
     val timer: StateFlow<Long>
-        get() = _timer
+        get() = stopwatch.timer
 
     private val _amplitudes = MutableSharedFlow<Int>()
     /**
@@ -102,7 +101,7 @@ class RecordAudioUseCase @Inject constructor(
         notificationsManager.createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        scope.launch {
+        scope.launch(dispatcher) {
             systemEventObserver.eventsFlow.collect(
                 ::onSystemEvent
             )
@@ -135,11 +134,6 @@ class RecordAudioUseCase @Inject constructor(
 
         _state.value = State.RECORDING
 
-
-        stopwatch = Stopwatch()
-        stopwatch.setOnTickListener {
-            _timer.value = stopwatch.elapsedTime
-        }
         stopwatch.start()
 
 
@@ -200,7 +194,7 @@ class RecordAudioUseCase @Inject constructor(
      * called by service when it's destroyed normally or not
      */
     fun onDestroy() {
-        file.updateMetadata(duration = stopwatch.elapsedTime)
+        file.updateMetadata(duration = timer.value)
 
         file.close()
 
