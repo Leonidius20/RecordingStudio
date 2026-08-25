@@ -35,14 +35,16 @@ class RecordAudioUseCaseTest {
     fun `When low battery, stop if setting enabled`() = runTest {
         val scope = this
 
-        var settings = fakeSettings.copy(
+        val settings = fakeSettings.copy(
             stopOnLowBattery = true
         )
 
-        var settingsProvider = object : SettingsInterface {
+        val settingsProvider = object : SettingsInterface {
+            val _state = MutableStateFlow(settings)
             override val state: StateFlow<Settings.SettingsState>
-                get() = MutableStateFlow(settings)
+                get() = _state
         }
+
 
         val observer = object : SystemEventObserver {
 
@@ -57,7 +59,7 @@ class RecordAudioUseCaseTest {
 
         }
 
-        val useCase = RecordAudioUseCase(
+        fun createUseCase() = RecordAudioUseCase(
             settingsProvider,
             scope = backgroundScope,
             dispatcher = UnconfinedTestDispatcher(testScheduler),
@@ -89,11 +91,26 @@ class RecordAudioUseCaseTest {
 
         )
 
+        var useCase = createUseCase()
+
         useCase.start()
 
         observer.sendEvent().join()
 
         assertEquals(RecordAudioUseCase.State.STOP, useCase.state.value)
+
+        useCase.stop()
+
+        settingsProvider._state.value = settings.copy(
+            stopOnLowBattery = false
+        )
+
+        useCase = createUseCase()
+        useCase.start()
+
+        observer.sendEvent().join()
+
+        assertEquals(RecordAudioUseCase.State.RECORDING, useCase.state.value)
     }
 
 }
