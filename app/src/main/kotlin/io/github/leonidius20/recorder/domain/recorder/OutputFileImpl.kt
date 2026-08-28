@@ -12,16 +12,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-interface OutputFile {
-
-    fun open()
-
-    fun close()
-
-    fun updateMetadata(duration: Long)
-
-}
-
 class OutputFileImpl(
     private val context: Context,
     repo: RecordingsListRepository,
@@ -53,13 +43,6 @@ class OutputFileImpl(
         }, null, null)
     }
 
-}
-
-interface OutputFileFactory {
-    fun create(
-        namePattern: String,
-        format: Container,
-    ) : OutputFile
 }
 
 class OutputFileFactoryImpl @Inject constructor(

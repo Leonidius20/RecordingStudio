@@ -33,7 +33,7 @@ class RecordAudioUseCase @Inject constructor(
     private val systemEventObserver: SystemEventObserver,
     private val outputFileFactory: OutputFileFactory,
     private val recorderFactory: AudioRecorderFactory,
-    private val stopwatch: StopwatchInterface,
+    private val stopwatch: Stopwatch,
 ) {
 
     private val _state = MutableStateFlow<RecordingState>(RecordingState.Idle)
@@ -95,10 +95,6 @@ class RecordAudioUseCase @Inject constructor(
      */
     fun start(): Boolean {
         _state.value = RecordingState.Preparing
-
-        notificationsManager.createRecInProgressNotificationChannel()
-
-        notificationsManager.createPrematureStopNotificationChannel()
 
         // used to control the recording from
         watchSystemEventsJob = scope.launch(dispatcher) {

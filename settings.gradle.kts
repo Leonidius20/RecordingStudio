@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "RecordingStudio"
 include(":app")
 include(":file_import")
+include(":domain:recorder")

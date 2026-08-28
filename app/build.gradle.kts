@@ -176,4 +176,6 @@ dependencies {
     implementation(libs.timber)
 
     implementation(libs.flexbox)
+
+    implementation(project(":domain:recorder"))
 }

@@ -11,16 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import javax.inject.Inject
 
-// todo: replace with a lambda?
-interface AudioRecorderFactory {
-
-    @Throws(IOException::class)
-    fun create(
-        file: OutputFile,
-    ): AudioRecorder
-
-}
-
 class AudioRecorderFactoryImpl @Inject constructor(
     private val settings: Settings, // todo maybe pass in method instead of injecting
     @param:Scope.App private val scope: CoroutineScope,

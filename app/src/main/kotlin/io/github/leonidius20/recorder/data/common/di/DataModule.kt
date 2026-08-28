@@ -12,7 +12,9 @@ import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
 import io.github.leonidius20.recorder.domain.recorder.OutputFileFactory
 import io.github.leonidius20.recorder.domain.recorder.OutputFileFactoryImpl
-import io.github.leonidius20.recorder.domain.recorder.StopwatchInterface
+import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManagerImpl
+import io.github.leonidius20.recorder.domain.recorder.Stopwatch
 import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
 import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
 import kotlinx.coroutines.CoroutineDispatcher
@@ -94,7 +96,11 @@ interface RecorderModuleBinds {
 
     @Binds
     @Singleton
-    fun bindStopwatch(stopwatch: StopwatchWrapper): StopwatchInterface
+    fun bindStopwatch(stopwatch: StopwatchWrapper): Stopwatch
     // todo maybe remove and implement my own kotlin stopwatch or use other library
+
+    @Binds
+    @Singleton
+    fun bindNotificationManager(manager: RecordingNotificationsManagerImpl): RecordingNotificationsManager
 
 }
