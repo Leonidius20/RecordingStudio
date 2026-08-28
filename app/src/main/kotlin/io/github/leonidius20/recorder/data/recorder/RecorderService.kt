@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.domain.recorder.RecordingState
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,7 +29,7 @@ class RecorderService : LifecycleService() {
 
         lifecycleScope.launch {
             recordAudioUseCase.state.collect {
-                if (it is RecordAudioUseCase.State.Stopping) {
+                if (it is RecordingState.Stopping) {
                     stopSelf()
                 }
             }
@@ -44,7 +45,7 @@ class RecorderService : LifecycleService() {
             ServiceCompat.startForeground(
                 this, PERSISTENT_NOTIFICATION_ID,
                 notificationsManager.buildPersistentNotification(
-                    RecordAudioUseCase.State.Recording(supportsPausing),
+                    RecordingState.Recording(supportsPausing),
                     supportsPausing,
                 ), foregroundServiceType
             )

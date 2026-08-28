@@ -23,7 +23,7 @@ interface AudioRecorderFactory {
 
 class AudioRecorderFactoryImpl @Inject constructor(
     private val settings: Settings, // todo maybe pass in method instead of injecting
-    @Scope.App private val scope: CoroutineScope,
+    @param:Scope.App private val scope: CoroutineScope,
 ) : AudioRecorderFactory {
 
     @Throws(IOException::class)
@@ -35,7 +35,7 @@ class AudioRecorderFactoryImpl @Inject constructor(
         val fileFormat = settingsState.outputFormat
 
         // todo: do something about this
-        val file = file as OutputFileAbstraction
+        val file = file as OutputFileImpl
 
         return if (fileFormat == Container.WAV) {
             PcmAudioRecorder(

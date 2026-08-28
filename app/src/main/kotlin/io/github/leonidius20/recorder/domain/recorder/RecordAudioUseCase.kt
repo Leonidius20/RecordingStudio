@@ -36,25 +36,8 @@ class RecordAudioUseCase @Inject constructor(
     private val stopwatch: StopwatchInterface,
 ) {
 
-    sealed interface State {
-
-        data object Preparing : State
-
-        data class Recording(
-            val supportsPausing: Boolean,
-        ) : State
-
-        data object Paused : State
-
-        data object Error : State
-
-        data object Stopping : State  // new: for service to stop. todo: replace with IDLE?
-
-        data object Idle : State
-    }
-
-    private val _state = MutableStateFlow<State>(State.Idle)
-    val state: StateFlow<State>
+    private val _state = MutableStateFlow<RecordingState>(RecordingState.Idle)
+    val state: StateFlow<RecordingState>
         get() = _state
 
     lateinit var file: OutputFile
@@ -111,7 +94,7 @@ class RecordAudioUseCase @Inject constructor(
      * @return whether pausing is supported
      */
     fun start(): Boolean {
-        _state.value = State.Preparing
+        _state.value = RecordingState.Preparing
 
         notificationsManager.createRecInProgressNotificationChannel()
 
@@ -147,7 +130,7 @@ class RecordAudioUseCase @Inject constructor(
 
         recorder.start()
 
-        _state.value = State.Recording(
+        _state.value = RecordingState.Recording(
             supportsPausing = recorder.supportsPausing()
         )
 
@@ -157,12 +140,12 @@ class RecordAudioUseCase @Inject constructor(
         amplitudeVizUpdateJob = scope.launch(Dispatchers.Default) {
             // every 100ms, emit maxAmplitude
             while (isActive) {
-                if (state.value is State.Recording) {
+                if (state.value is RecordingState.Recording) {
                     _amplitudes.emit(recorder.maxAmplitude())
                     delay(100)
                 } else {
                     // first() supposed to be cancellable?
-                    state.first { it is State.Recording }
+                    state.first { it is RecordingState.Recording }
                 }
             }
         }
@@ -171,7 +154,7 @@ class RecordAudioUseCase @Inject constructor(
     }
 
     fun stopOnError() {
-        _state.value = State.Error
+        _state.value = RecordingState.Error
         // todo: have the service subscribe to state and
         //  kill itself on ERROR
         stopSelf()
@@ -179,7 +162,7 @@ class RecordAudioUseCase @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun stopSelf() {
-        _state.value = State.Stopping
+        _state.value = RecordingState.Stopping
 
         watchSystemEventsJob?.cancel()
         watchSystemEventsJob = null
@@ -198,13 +181,13 @@ class RecordAudioUseCase @Inject constructor(
     /**
      * @return the new state
      */
-    fun toggleRecPause(): State {
+    fun toggleRecPause(): RecordingState {
         when (state.value) {
-            is State.Recording -> {
+            is RecordingState.Recording -> {
                 pause()
             }
 
-            is State.Paused -> {
+            is RecordingState.Paused -> {
                 resume()
             }
 
@@ -227,20 +210,20 @@ class RecordAudioUseCase @Inject constructor(
      * called by service when it's destroyed normally or not
      */
     fun onDestroy() {
-        _state.value = State.Idle
+        _state.value = RecordingState.Idle
     }
 
     private fun pause() {
         recorder.pause()
         stopwatch.pause()
-        _state.value = State.Paused
+        _state.value = RecordingState.Paused
         notificationsManager.updateNotification(state.value, recorder.supportsPausing())
     }
 
     private fun resume() {
         recorder.resume()
         stopwatch.resume()
-        _state.value = State.Recording(
+        _state.value = RecordingState.Recording(
             supportsPausing = recorder.supportsPausing()
         )
 

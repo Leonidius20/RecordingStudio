@@ -1,10 +1,6 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import kotlinx.coroutines.flow.StateFlow
-
 interface AudioRecorder {
-
-    // val state: StateFlow<RecorderState>
 
     fun start()
 
@@ -26,11 +22,5 @@ interface AudioRecorder {
     fun maxAmplitude(): Int
 
     fun supportsPausing(): Boolean
-
-}
-
-interface PausableAudioRecorder : AudioRecorder {
-
-
 
 }

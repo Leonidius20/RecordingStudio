@@ -97,7 +97,7 @@ class RecordAudioUseCaseTest {
 
         observer.sendEvent().join()
 
-        assertEquals(RecordAudioUseCase.State.STOP, useCase.state.value)
+        assertEquals(RecordingState.STOP, useCase.state.value)
 
         useCase.stop()
 
@@ -110,7 +110,7 @@ class RecordAudioUseCaseTest {
 
         observer.sendEvent().join()
 
-        assertEquals(RecordAudioUseCase.State.RECORDING, useCase.state.value)
+        assertEquals(RecordingState.RECORDING, useCase.state.value)
     }
 
 }

@@ -4,9 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Container
@@ -25,11 +22,11 @@ interface OutputFile {
 
 }
 
-class OutputFileAbstraction @AssistedInject constructor(
-    @ApplicationContext private val context: Context,
+class OutputFileImpl(
+    private val context: Context,
     repo: RecordingsListRepository,
-    @Assisted namePattern: String,
-    @Assisted val format: Container,
+    namePattern: String,
+    val format: Container,
 ) : OutputFile {
 
     private val dateFormat = SimpleDateFormat(namePattern, Locale.getDefault())
@@ -56,16 +53,6 @@ class OutputFileAbstraction @AssistedInject constructor(
         }, null, null)
     }
 
-    @AssistedFactory
-    interface Factory {
-
-        fun create(
-            namePattern: String,
-            format: Container,
-        ) : OutputFileAbstraction
-
-    }
-
 }
 
 interface OutputFileFactory {
@@ -76,12 +63,13 @@ interface OutputFileFactory {
 }
 
 class OutputFileFactoryImpl @Inject constructor(
-    val factory: OutputFileAbstraction.Factory,
+    @param:ApplicationContext private val context: Context,
+    private val repo: RecordingsListRepository,
 ) : OutputFileFactory {
 
     override fun create(namePattern: String, format: Container) =
-        factory.create(namePattern, format)
-
-
+        OutputFileImpl(
+            context, repo, namePattern, format
+        )
 
 }

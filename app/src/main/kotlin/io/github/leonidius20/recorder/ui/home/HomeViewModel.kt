@@ -6,8 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.leonidius20.recorder.domain.recorder.OutputFileAbstraction
+import io.github.leonidius20.recorder.domain.recorder.OutputFileImpl
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
+import io.github.leonidius20.recorder.domain.recorder.RecordingState
 import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
@@ -61,11 +62,11 @@ class HomeViewModel @Inject constructor(
 
     val uiState: LiveData<UiState> = recorderServiceLauncher.state.map {
         when (it) {
-            is RecordAudioUseCase.State.Idle -> UiState.Idle
-            is RecordAudioUseCase.State.Recording -> UiState.Recording(isPausingSupported = it.supportsPausing)
-            is RecordAudioUseCase.State.Paused -> UiState.Paused
-            is RecordAudioUseCase.State.Error -> UiState.Idle // todo: error UI state
-            is RecordAudioUseCase.State.Stopping, RecordAudioUseCase.State.Preparing -> UiState.Idle // todo: loading state
+            is RecordingState.Idle -> UiState.Idle
+            is RecordingState.Recording -> UiState.Recording(isPausingSupported = it.supportsPausing)
+            is RecordingState.Paused -> UiState.Paused
+            is RecordingState.Error -> UiState.Idle // todo: error UI state
+            is RecordingState.Stopping, RecordingState.Preparing -> UiState.Idle // todo: loading state
         }
     }.asLiveData()
 
@@ -82,8 +83,6 @@ class HomeViewModel @Inject constructor(
     /**
      * for audio visualization
      */
-    // todo: SharedFlow with buffer - make it replay last N samples to new
-    //  subscriber (i.e. recreated screen)
     val amplitudes = recorderServiceLauncher.amplitudes
 
     fun onStartRecording() {
@@ -100,6 +99,6 @@ class HomeViewModel @Inject constructor(
     }
 
     // todo: no casting
-    fun getUri() = (recorderServiceLauncher.file as OutputFileAbstraction).fileUri
+    fun getUri() = (recorderServiceLauncher.file as OutputFileImpl).fileUri
 
 }

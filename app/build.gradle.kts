@@ -128,7 +128,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     // todo: remove once architecture is good enough so it's not needed
-    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation(libs.mockk)
 
     testImplementation(libs.androidx.junit)
     testImplementation(libs.androidx.espresso.core)
@@ -161,7 +161,7 @@ dependencies {
 
     // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation(libs.androidx.viewpager2)
 
     "fullImplementation"(libs.androidAudioPlugin)
     "fullImplementation"(libs.androidAudioPlugin.manager)

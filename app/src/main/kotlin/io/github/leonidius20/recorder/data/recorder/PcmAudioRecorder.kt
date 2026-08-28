@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -67,8 +66,6 @@ class PcmAudioRecorder(
 
     @SuppressLint("MissingPermission")
     override fun start() {
-        Timber.d("PcmAudioRecorder start")
-
         audioRecord = AudioRecord(
             audioSource,
             sampleRate,

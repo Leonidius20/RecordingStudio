@@ -118,7 +118,7 @@ class RecordingNotificationsManager @Inject constructor(
      * should happen after toggling rec/pause or every second to update timer
      */
     fun updateNotification(
-        state: RecordAudioUseCase.State,
+        state: RecordingState,
         supportsPausing: Boolean,
     ) {
         NotificationManagerCompat.from(context).notify(
@@ -127,18 +127,18 @@ class RecordingNotificationsManager @Inject constructor(
     }
 
     fun buildPersistentNotification(
-        state: RecordAudioUseCase.State,
+        state: RecordingState,
         supportsPausing: Boolean,
     ): Notification {
         val titleText = when (state) {
-            is RecordAudioUseCase.State.Recording -> context.getString(R.string.notif_recording_in_progress)
-            is RecordAudioUseCase.State.Paused -> context.getString(R.string.notif_recording_paused)
+            is RecordingState.Recording -> context.getString(R.string.notif_recording_in_progress)
+            is RecordingState.Paused -> context.getString(R.string.notif_recording_paused)
             else -> ""
         }
 
         val recPauseToggleActionText = when (state) {
-            is RecordAudioUseCase.State.Recording -> context.getString(R.string.notif_action_pause)
-            is RecordAudioUseCase.State.Paused -> context.getString(R.string.notif_action_resume)
+            is RecordingState.Recording -> context.getString(R.string.notif_action_pause)
+            is RecordingState.Paused -> context.getString(R.string.notif_action_resume)
             else -> ""
         }
 

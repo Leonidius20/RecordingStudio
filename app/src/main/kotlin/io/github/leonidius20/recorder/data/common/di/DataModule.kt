@@ -76,7 +76,6 @@ interface SettingsModule {
 
 }
 
-// todo lift
 @Module
 @InstallIn(SingletonComponent::class)
 interface RecorderModuleBinds {

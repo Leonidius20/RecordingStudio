@@ -18,7 +18,6 @@ import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -96,7 +95,6 @@ class HomeFragment : RecStudioFragment() {
     }
 
     private fun startRecording() {
-        Timber.d("HomeFragment.startRecording()")
         viewLifecycleOwner.lifecycleScope.launch {
             val permissionGranted = permissionManager
                 .checkOrRequestRecordingPermission(this@HomeFragment)
