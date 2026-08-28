@@ -12,7 +12,7 @@ sealed interface RecordingState {
 
     data object Error : RecordingState
 
-    data object Stopping : RecordingState  // new: for service to stop. todo: replace with IDLE?
+    data object Stopping : RecordingState
 
     data object Idle : RecordingState
 }
