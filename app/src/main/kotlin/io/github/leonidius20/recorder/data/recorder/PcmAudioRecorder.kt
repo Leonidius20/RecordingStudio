@@ -6,9 +6,9 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import io.github.leonidius20.recorder.data.settings.AudioChannels
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -24,8 +24,6 @@ import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import kotlin.math.abs
 import kotlin.math.max
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
@@ -43,7 +41,6 @@ class PcmAudioRecorder(
     private val coroutineScope: CoroutineScope,
     private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : AudioRecorder {
-
 
     private lateinit var audioRecord: AudioRecord
 
@@ -69,7 +66,6 @@ class PcmAudioRecorder(
 
     @SuppressLint("MissingPermission")
     override fun start() {
-
         audioRecord = AudioRecord(
             audioSource,
             sampleRate,

@@ -72,7 +72,7 @@ class RecordingsDataSourceAndroid12AndUp @Inject constructor(
                 // Get values of columns for a given video.
                 val id = cursor.getLong(idColumn)
                 val name = cursor.getString(nameColumn)
-                val duration = cursor.getInt(durationColumn)
+                val duration = cursor.getLong(durationColumn)
                 val size = cursor.getInt(sizeColumn)
                 val dateTaken = cursor.getLong(dateTakenColumn)
                 val mimeType = cursor.getString(mimeTypeColumn)

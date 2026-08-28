@@ -6,14 +6,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
-import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
+import io.github.leonidius20.recorder.domain.recorder.OutputFileImpl
+import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
+import io.github.leonidius20.recorder.domain.recorder.RecordingState
+import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val recorderServiceLauncher: RecorderServiceLauncher,
+    private val recorderServiceLauncher: RecordAudioUseCase,
 ) : ViewModel() {
 
     sealed class UiState(
@@ -59,19 +62,23 @@ class HomeViewModel @Inject constructor(
 
     val uiState: LiveData<UiState> = recorderServiceLauncher.state.map {
         when (it) {
-            RecorderServiceLauncher.State.IDLE -> UiState.Idle
-            RecorderServiceLauncher.State.RECORDING -> UiState.Recording(isPausingSupported = recorderServiceLauncher.isPausingSupported)
-            RecorderServiceLauncher.State.PAUSED -> UiState.Paused
-            RecorderServiceLauncher.State.ERROR -> UiState.Idle // todo: error UI state
+            is RecordingState.Idle -> UiState.Idle
+            is RecordingState.Recording -> UiState.Recording(isPausingSupported = it.supportsPausing)
+            is RecordingState.Paused -> UiState.Paused
+            is RecordingState.Error -> UiState.Idle // todo: error UI state
+            is RecordingState.Stopping, RecordingState.Preparing -> UiState.Idle // todo: loading state
         }
     }.asLiveData()
 
     /**
      * time elapsed since the start of the recording
      */
-    val timerText = recorderServiceLauncher.timer.map { milliseconds ->
-        millisecondsToStopwatchString(milliseconds)
-    }.asLiveData()
+    val timerText = recorderServiceLauncher.timer
+        .distinctUntilChangedBy { millis -> millis / 1000 }
+        .map { millis ->
+            secondsToStopwatchString(millis / 1000)
+        }
+        .asLiveData() // todo: put into main state?
 
     /**
      * for audio visualization
@@ -79,7 +86,7 @@ class HomeViewModel @Inject constructor(
     val amplitudes = recorderServiceLauncher.amplitudes
 
     fun onStartRecording() {
-        recorderServiceLauncher.launchRecording()
+        recorderServiceLauncher.start()
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -88,9 +95,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onStopRecording() {
-        recorderServiceLauncher.stopRecording()
+        recorderServiceLauncher.stop()
     }
 
-    fun getUri() = recorderServiceLauncher.getUri()
+    // todo: no casting
+    fun getUri() = (recorderServiceLauncher.file as OutputFileImpl).fileUri
 
 }

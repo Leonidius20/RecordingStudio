@@ -11,21 +11,24 @@ import android.os.Looper
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
+
+interface OutputFileCreator {
+
+
+
+}
 
 @Singleton
 class RecordingsListRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
-    @Named("io") private val ioDispatcher: CoroutineDispatcher,
+    @param:ApplicationContext private val context: Context,
     private val dataSource: RecordingsDataSource,
-) {
+) : OutputFileCreator {
 
     val recordings = callbackFlow {
 

@@ -1,0 +1,69 @@
+package io.github.leonidius20.recorder.domain.recorder
+
+import io.github.leonidius20.recorder.data.common.di.Scope
+import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
+import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
+import io.github.leonidius20.recorder.data.settings.BitRateSettingType
+import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
+import io.github.leonidius20.recorder.data.settings.Settings
+import kotlinx.coroutines.CoroutineScope
+import java.io.IOException
+import javax.inject.Inject
+
+// todo: replace with a lambda?
+interface AudioRecorderFactory {
+
+    @Throws(IOException::class)
+    fun create(
+        file: OutputFile,
+    ): AudioRecorder
+
+}
+
+class AudioRecorderFactoryImpl @Inject constructor(
+    private val settings: Settings, // todo maybe pass in method instead of injecting
+    @param:Scope.App private val scope: CoroutineScope,
+) : AudioRecorderFactory {
+
+    @Throws(IOException::class)
+    override fun create(
+        file: OutputFile,
+    ): AudioRecorder {
+        // todo pass here so that it doesn't get changed between file creation and now
+        val settingsState = settings.state.value
+        val fileFormat = settingsState.outputFormat
+
+        // todo: do something about this
+        val file = file as OutputFileImpl
+
+        return if (fileFormat == Container.WAV) {
+            PcmAudioRecorder(
+                descriptor = file.descriptor,
+                audioSource = settingsState.audioSource,
+                sampleRate = settingsState.sampleRate,
+                monoOrStereo = settingsState.numOfChannels,
+                bitDepth = settingsState.bitDepth as? PcmBitDepthOption
+                    ?: PcmBitDepthOption.PCM_16BIT_INT,
+                coroutineScope = scope,
+            )
+        } else {
+
+                MediaRecorderWrapper(
+                    audioSource = settingsState.audioSource,
+                    container = fileFormat,
+                    descriptor = file.descriptor,
+                    encoder = settingsState.encoder,
+                    channels = settingsState.numOfChannels,
+                    sampleRate = settingsState.sampleRate,
+                    bitRate =
+                        if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
+                            settingsState.bitRate
+                        else null
+                )
+
+
+        }
+    }
+
+}

@@ -4,16 +4,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import io.github.leonidius20.recorder.domain.events.SystemEvent
 
-class RecordingControlBroadcastReceiver: BroadcastReceiver() {
+class RecordingControlBroadcastReceiver(
+    private val callback: (SystemEvent) -> Unit,
+): BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val service = context as RecorderService
-
         if (intent.action == ACTION_PAUSE_OR_RESUME) {
-            service.toggleRecPause()
+            callback(SystemEvent.TOGGLE_REC_PAUSE)
         } else if (intent.action == ACTION_STOP) {
-            service.stop()
+            callback(SystemEvent.STOP)
         } else {
             Log.d("RecControlBReceiver", "Unknown action: ${intent.action}")
         }

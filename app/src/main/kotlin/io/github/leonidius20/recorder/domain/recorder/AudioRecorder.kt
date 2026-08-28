@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.data.recorder
+package io.github.leonidius20.recorder.domain.recorder
 
 interface AudioRecorder {
 
@@ -22,12 +22,5 @@ interface AudioRecorder {
     fun maxAmplitude(): Int
 
     fun supportsPausing(): Boolean
-
-    enum class State {
-        IDLE,
-        RECORDING,
-        PAUSED,
-        ERROR,
-    }
 
 }
