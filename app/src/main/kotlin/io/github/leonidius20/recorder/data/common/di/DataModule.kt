@@ -7,6 +7,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
+import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
+import io.github.leonidius20.recorder.domain.recorder.OutputFileFactory
+import io.github.leonidius20.recorder.domain.recorder.OutputFileFactoryImpl
+import io.github.leonidius20.recorder.domain.recorder.StopwatchInterface
+import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
+import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,5 +73,29 @@ interface SettingsModule {
     @Singleton
     @Binds
     fun bindSettings(settings: Settings): SettingsInterface
+
+}
+
+// todo lift
+@Module
+@InstallIn(SingletonComponent::class)
+interface RecorderModuleBinds {
+
+    @Binds
+    @Singleton
+    fun bindRecorderFactory(factory: AudioRecorderFactoryImpl): AudioRecorderFactory
+
+    @Binds
+    @Singleton
+    fun bindEventObserver(observer: UnitedSystemEventObserver): SystemEventObserver
+
+    @Binds
+    @Singleton
+    fun bindOutputFileFactory(factory: OutputFileFactoryImpl): OutputFileFactory
+
+    @Binds
+    @Singleton
+    fun bindStopwatch(stopwatch: StopwatchWrapper): StopwatchInterface
+    // todo maybe remove and implement my own kotlin stopwatch or use other library
 
 }

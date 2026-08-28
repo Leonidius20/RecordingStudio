@@ -179,14 +179,20 @@ class RecordAudioUseCase @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun stopSelf() {
+        _state.value = State.Stopping
+
         watchSystemEventsJob?.cancel()
         watchSystemEventsJob = null
-
-        _state.value = State.Stopping
 
         stopwatch.clear()
         // todo: maybe move .buffer() to viewmodel or wherever
         _amplitudes.resetReplayCache()
+
+        file.updateMetadata(duration = timer.value)
+
+        file.close()
+
+        notificationsManager.cancelPausedOnIncomingCallNotification()
     }
 
     /**
@@ -221,12 +227,6 @@ class RecordAudioUseCase @Inject constructor(
      * called by service when it's destroyed normally or not
      */
     fun onDestroy() {
-        file.updateMetadata(duration = timer.value)
-
-        file.close()
-
-        notificationsManager.cancelPausedOnIncomingCallNotification()
-
         _state.value = State.Idle
     }
 

@@ -3,72 +3,19 @@ package io.github.leonidius20.recorder.data.recorder
 import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.net.Uri
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.components.SingletonComponent
-import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
-import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
-import io.github.leonidius20.recorder.domain.recorder.OutputFileAbstraction
-import io.github.leonidius20.recorder.domain.recorder.OutputFileFactory
-import io.github.leonidius20.recorder.domain.recorder.OutputFileFactoryImpl
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
-import io.github.leonidius20.recorder.domain.recorder.StopwatchInterface
-import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
-import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
-import javax.inject.Singleton
-
-// todo: refactor maybe, place audio-related stuff in separate class to separate from
-// todo: for this, use lifecycle-aware components
 
 @AndroidEntryPoint
 class RecorderService : LifecycleService() {
-
-    enum class State {
-        PREPARING,
-        RECORDING,
-        PAUSED,
-        ERROR,
-    }
-
-    val supportsPausing
-        get() = recordAudioUseCase.recorder.supportsPausing()
-
-    // private val binder = Binder()
-
-    //private val _state = MutableStateFlow(State.PREPARING)
-    //val state: StateFlow<State>
-    //    get() = _state
-
-    /**
-     * length of the recording so far in milliseconds
-     */
-    val timer: StateFlow<Long>
-        get() = recordAudioUseCase.timer
-
-
-    /**
-     * emits max amplitude every 100ms. Used for audio visualization
-     */
-    val amplitudes get() = recordAudioUseCase.amplitudes
-
-    // needed here so that we can return it from activity started for result (action record audio)
-    val fileUri: Uri
-        get() = (recordAudioUseCase.file as OutputFileAbstraction).fileUri // todo: do something about this
 
     @Inject
     lateinit var recordAudioUseCase: RecordAudioUseCase
@@ -79,30 +26,11 @@ class RecorderService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        Timber.d("RecorderService.onStartCommand()")
-
         lifecycleScope.launch {
             recordAudioUseCase.state.collect {
-                when(it) {
-                    is RecordAudioUseCase.State.Stopping -> {
-                        stopSelf()
-                    }
-                    else -> {
-                        // todo: remove
-                        /*_state.value = when(it) {
-                            RecordAudioUseCase.State.PAUSED -> State.PAUSED
-                            RecordAudioUseCase.State.RECORDING -> State.RECORDING
-                            RecordAudioUseCase.State.ERROR -> State.ERROR
-                            RecordAudioUseCase.State.PREPARING -> State.PREPARING
-                            else -> State.ERROR
-                        }*/
-                    }
-                }
-
-
-                /*if (it == RecordAudioUseCase.State.STOP) {
+                if (it is RecordAudioUseCase.State.Stopping) {
                     stopSelf()
-                }*/
+                }
             }
         }
 
@@ -124,15 +52,11 @@ class RecorderService : LifecycleService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && e is ForegroundServiceStartNotAllowedException
             ) {
-
+                e.printStackTrace()
                 // App not in a valid state to start foreground service
                 // (e.g. started from bg)
             }
             e.printStackTrace()
-
-            //recordAudioUseCase.stopOnError()
-
-            //_state.value = State.ERROR
             stopSelf()
         }
 
@@ -140,54 +64,10 @@ class RecorderService : LifecycleService() {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
 
         recordAudioUseCase.onDestroy()
     }
-
-    /**
-     * @return the new state
-     */
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun toggleRecPause(): RecordAudioUseCase.State {
-        return recordAudioUseCase.toggleRecPause()
-    }
-
-    fun stop() {
-        recordAudioUseCase.stop()
-    }
-
-    inner class Binder : android.os.Binder() {
-
-        // maybe binder should provide use case directly???
-
-        val service = this@RecorderService
-
-    }
-
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-interface RecorderModuleBinds {
-
-    @Binds
-    @Singleton
-    fun bindRecorderFactory(factory: AudioRecorderFactoryImpl): AudioRecorderFactory
-
-    @Binds
-    @Singleton
-    fun bindEventObserver(observer: UnitedSystemEventObserver): SystemEventObserver
-
-    @Binds
-    @Singleton
-    fun bindOutputFileFactory(factory: OutputFileFactoryImpl): OutputFileFactory
-
-    @Binds
-    @Singleton
-    fun bindStopwatch(stopwatch: StopwatchWrapper): StopwatchInterface
-    // todo maybe remove and implement my own kotlin stopwatch or use other library
 
 }
