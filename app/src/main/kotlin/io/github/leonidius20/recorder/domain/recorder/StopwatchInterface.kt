@@ -17,6 +17,9 @@ interface StopwatchInterface {
 
     fun resume()
 
+    /** prepare for next run **/
+    fun clear()
+
 }
 
 class StopwatchWrapper @Inject constructor() : StopwatchInterface {
@@ -50,5 +53,8 @@ class StopwatchWrapper @Inject constructor() : StopwatchInterface {
         stopwatch.resume()
     }
 
+    override fun clear() {
+        _timer.value = 0L
+    }
 
 }

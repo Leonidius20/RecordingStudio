@@ -11,7 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.permissionx.guolindev.PermissionX
-import dagger.hilt.android.scopes.ServiceScoped
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recorder.RecordingControlBroadcastReceiver
@@ -23,9 +23,8 @@ private const val REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID = 1
 private const val REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID = 2
 const val PERSISTENT_NOTIFICATION_ID = 100
 
-@ServiceScoped
 class RecordingNotificationsManager @Inject constructor(
-    private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
 
     /**
@@ -118,22 +117,28 @@ class RecordingNotificationsManager @Inject constructor(
     /**
      * should happen after toggling rec/pause or every second to update timer
      */
-    fun updateNotification(state: RecordAudioUseCase.State) {
+    fun updateNotification(
+        state: RecordAudioUseCase.State,
+        supportsPausing: Boolean,
+    ) {
         NotificationManagerCompat.from(context).notify(
-            PERSISTENT_NOTIFICATION_ID, buildPersistentNotification(state)
+            PERSISTENT_NOTIFICATION_ID, buildPersistentNotification(state, supportsPausing)
         )
     }
 
-    fun buildPersistentNotification(state: RecordAudioUseCase.State): Notification {
+    fun buildPersistentNotification(
+        state: RecordAudioUseCase.State,
+        supportsPausing: Boolean,
+    ): Notification {
         val titleText = when (state) {
-            RecordAudioUseCase.State.RECORDING -> context.getString(R.string.notif_recording_in_progress)
-            RecordAudioUseCase.State.PAUSED -> context.getString(R.string.notif_recording_paused)
+            is RecordAudioUseCase.State.Recording -> context.getString(R.string.notif_recording_in_progress)
+            is RecordAudioUseCase.State.Paused -> context.getString(R.string.notif_recording_paused)
             else -> ""
         }
 
         val recPauseToggleActionText = when (state) {
-            RecordAudioUseCase.State.RECORDING -> context.getString(R.string.notif_action_pause)
-            RecordAudioUseCase.State.PAUSED -> context.getString(R.string.notif_action_resume)
+            is RecordAudioUseCase.State.Recording -> context.getString(R.string.notif_action_pause)
+            is RecordAudioUseCase.State.Paused -> context.getString(R.string.notif_action_resume)
             else -> ""
         }
 
@@ -157,7 +162,7 @@ class RecordingNotificationsManager @Inject constructor(
             )
 
         // todo: make it always once we re-implement recording with a lower-level api
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (supportsPausing) {
             val toggleRecPauseIntent =
                 Intent(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
             notificationB.addAction(

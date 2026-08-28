@@ -3,32 +3,20 @@ package io.github.leonidius20.recorder.data.recorder.observers
 import android.content.Context
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recorder.RecordingControlBroadcastReceiver
-import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
-class ControlObserver(
-    val context: Context,
-    val scope: CoroutineScope,
+class ControlObserver @Inject constructor(
+    @param:ApplicationContext val context: Context,
 ) : SystemEventObserver {
 
-    private val events: Channel<SystemEvent> = Channel()
-
-    override val eventsFlow: Flow<SystemEvent>
-        get() = events.consumeAsFlow()
-
-    private lateinit var recControlBroadcastReceiver: RecordingControlBroadcastReceiver
-
-    override fun register() {
-        recControlBroadcastReceiver = RecordingControlBroadcastReceiver {
-            scope.launch {
-                events.send(it)
-            }
+    override val eventsFlow = callbackFlow {
+        val receiver = RecordingControlBroadcastReceiver {
+            trySend(it)
         }.apply {
             val intentFilter = IntentFilter().apply {
                 addAction(RecordingControlBroadcastReceiver.ACTION_PAUSE_OR_RESUME)
@@ -40,10 +28,10 @@ class ControlObserver(
                 intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED
             )
         }
-    }
 
-    override fun unregister() {
-        context.unregisterReceiver(recControlBroadcastReceiver)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
     }
 
 }

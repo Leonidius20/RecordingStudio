@@ -1,6 +1,6 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import dagger.hilt.android.scopes.ServiceScoped
+import io.github.leonidius20.recorder.data.common.di.Scope
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
 import io.github.leonidius20.recorder.data.settings.BitRateSettingType
@@ -10,7 +10,6 @@ import io.github.leonidius20.recorder.data.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.jvm.Throws
 
 // todo: replace with a lambda?
 interface AudioRecorderFactory {
@@ -22,10 +21,9 @@ interface AudioRecorderFactory {
 
 }
 
-@ServiceScoped
 class AudioRecorderFactoryImpl @Inject constructor(
     private val settings: Settings, // todo maybe pass in method instead of injecting
-    private val scope: CoroutineScope, // service  scope
+    @Scope.App private val scope: CoroutineScope,
 ) : AudioRecorderFactory {
 
     @Throws(IOException::class)

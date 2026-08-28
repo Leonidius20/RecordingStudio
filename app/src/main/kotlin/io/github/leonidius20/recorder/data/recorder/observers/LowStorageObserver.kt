@@ -4,32 +4,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recorder.BroadcastReceiverWithCallback
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
-class LowStorageObserver(
-    val context: Context,
-    val scope: CoroutineScope,
+class LowStorageObserver @Inject constructor(
+    @param:ApplicationContext val context: Context,
 ) : SystemEventObserver {
 
-    private val events: Channel<SystemEvent> = Channel()
-
-    override val eventsFlow: Flow<SystemEvent>
-        get() = events.consumeAsFlow()
-
-    private lateinit var lowStorageBroadcastReceiver: BroadcastReceiverWithCallback
-
-    override fun register() {
-        lowStorageBroadcastReceiver = BroadcastReceiverWithCallback {
-            scope.launch {
-                events.send(SystemEvent.LOW_STORAGE)
-            }
+    override val eventsFlow = callbackFlow {
+        val receiver = BroadcastReceiverWithCallback {
+            trySend(SystemEvent.LOW_STORAGE)
         }.apply {
             val intentFilter = IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW)
             ContextCompat.registerReceiver(
@@ -37,11 +26,10 @@ class LowStorageObserver(
                 intentFilter, ContextCompat.RECEIVER_EXPORTED
             )
         }
-    }
 
-    override fun unregister() {
-        context.unregisterReceiver(lowStorageBroadcastReceiver)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
     }
-
 
 }

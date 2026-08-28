@@ -8,7 +8,9 @@ import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -26,6 +28,14 @@ class Dispatcher {
     annotation class Main
 }
 
+class Scope {
+
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class App
+
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 class DataModule {
@@ -39,6 +49,12 @@ class DataModule {
     @Provides
     @Dispatcher.Main
     fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
+    @Singleton
+    @Provides
+    @Scope.App
+    fun provideAppScope(): CoroutineScope = MainScope()
+
 
 }
 

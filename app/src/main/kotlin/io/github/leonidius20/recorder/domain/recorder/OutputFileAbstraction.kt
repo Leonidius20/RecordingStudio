@@ -8,7 +8,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ServiceScoped
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.data.settings.Container
 import java.text.SimpleDateFormat
@@ -76,7 +75,6 @@ interface OutputFileFactory {
     ) : OutputFile
 }
 
-@ServiceScoped
 class OutputFileFactoryImpl @Inject constructor(
     val factory: OutputFileAbstraction.Factory,
 ) : OutputFileFactory {

@@ -1,13 +1,14 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import dagger.hilt.android.scopes.ServiceScoped
 import io.github.leonidius20.recorder.data.common.di.Dispatcher
+import io.github.leonidius20.recorder.data.common.di.Scope
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,14 +20,15 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
 
 // todo: unit tests for business logic?
 // todo: remove all the fucking notifications from here
-@ServiceScoped
+@Singleton
 class RecordAudioUseCase @Inject constructor(
     private val settings: SettingsInterface,
-    private val scope: CoroutineScope,
-    @Dispatcher.Main private val dispatcher: CoroutineDispatcher,
+    @param:Scope.App private val scope: CoroutineScope,
+    @param:Dispatcher.Main private val dispatcher: CoroutineDispatcher,
     private val notificationsManager: RecordingNotificationsManager, // todo: instead somewhere subscribe to states and update notifications accordingliy
     private val systemEventObserver: SystemEventObserver,
     private val outputFileFactory: OutputFileFactory,
@@ -34,16 +36,24 @@ class RecordAudioUseCase @Inject constructor(
     private val stopwatch: StopwatchInterface,
 ) {
 
-    // todo: is this needed even???
-    enum class State {
-        PREPARING,
-        RECORDING,
-        PAUSED,
-        ERROR,
+    sealed interface State {
 
-        STOP, // new: for service to stop
+        data object Preparing : State
+
+        data class Recording(
+            val supportsPausing: Boolean,
+        ) : State
+
+        data object Paused : State
+
+        data object Error : State
+
+        data object Stopping : State  // new: for service to stop. todo: replace with IDLE?
+
+        data object Idle : State
     }
-    private val _state = MutableStateFlow(State.PREPARING)
+
+    private val _state = MutableStateFlow<State>(State.Idle)
     val state: StateFlow<State>
         get() = _state
 
@@ -59,11 +69,13 @@ class RecordAudioUseCase @Inject constructor(
     val timer: StateFlow<Long>
         get() = stopwatch.timer
 
-    private val _amplitudes = MutableSharedFlow<Int>()
+    private val _amplitudes = MutableSharedFlow<Int>(replay = 60)
     /**
      * emits max amplitude every 100ms. Used for audio visualization
      */
     val amplitudes = _amplitudes.asSharedFlow()
+
+    private var watchSystemEventsJob: Job? = null
 
     private fun onSystemEvent(event: SystemEvent) {
         when(event) {
@@ -95,19 +107,22 @@ class RecordAudioUseCase @Inject constructor(
         }
     }
 
-    fun start() {
+    /**
+     * @return whether pausing is supported
+     */
+    fun start(): Boolean {
+        _state.value = State.Preparing
+
         notificationsManager.createRecInProgressNotificationChannel()
 
         notificationsManager.createPrematureStopNotificationChannel()
 
         // used to control the recording from
-        scope.launch(dispatcher) {
+        watchSystemEventsJob = scope.launch(dispatcher) {
             systemEventObserver.eventsFlow.collect(
                 ::onSystemEvent
             )
         }
-
-        systemEventObserver.register()
 
         // todo: this is what has to be lifted out. how do we
         //  stop depending on the
@@ -127,12 +142,14 @@ class RecordAudioUseCase @Inject constructor(
         } catch (e: IOException) {
             e.printStackTrace()
             stopOnError()
-            return
+            return false
         }
 
         recorder.start()
 
-        _state.value = State.RECORDING
+        _state.value = State.Recording(
+            supportsPausing = recorder.supportsPausing()
+        )
 
         stopwatch.start()
 
@@ -140,26 +157,36 @@ class RecordAudioUseCase @Inject constructor(
         amplitudeVizUpdateJob = scope.launch(Dispatchers.Default) {
             // every 100ms, emit maxAmplitude
             while (isActive) {
-                if (state.value == State.RECORDING) {
+                if (state.value is State.Recording) {
                     _amplitudes.emit(recorder.maxAmplitude())
                     delay(100)
                 } else {
                     // first() supposed to be cancellable?
-                    state.first { it == State.RECORDING }
+                    state.first { it is State.Recording }
                 }
             }
         }
+
+        return recorder.supportsPausing()
     }
 
     fun stopOnError() {
-        _state.value = State.ERROR
+        _state.value = State.Error
         // todo: have the service subscribe to state and
         //  kill itself on ERROR
         stopSelf()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun stopSelf() {
-        _state.value = State.STOP
+        watchSystemEventsJob?.cancel()
+        watchSystemEventsJob = null
+
+        _state.value = State.Stopping
+
+        stopwatch.clear()
+        // todo: maybe move .buffer() to viewmodel or wherever
+        _amplitudes.resetReplayCache()
     }
 
     /**
@@ -167,11 +194,11 @@ class RecordAudioUseCase @Inject constructor(
      */
     fun toggleRecPause(): State {
         when (state.value) {
-            State.RECORDING -> {
+            is State.Recording -> {
                 pause()
             }
 
-            State.PAUSED -> {
+            is State.Paused -> {
                 resume()
             }
 
@@ -200,24 +227,26 @@ class RecordAudioUseCase @Inject constructor(
 
         notificationsManager.cancelPausedOnIncomingCallNotification()
 
-        systemEventObserver.unregister()
+        _state.value = State.Idle
     }
 
     private fun pause() {
         recorder.pause()
         stopwatch.pause()
-        _state.value = State.PAUSED
-        notificationsManager.updateNotification(state.value)
+        _state.value = State.Paused
+        notificationsManager.updateNotification(state.value, recorder.supportsPausing())
     }
 
     private fun resume() {
         recorder.resume()
         stopwatch.resume()
-        _state.value = State.RECORDING
+        _state.value = State.Recording(
+            supportsPausing = recorder.supportsPausing()
+        )
 
         notificationsManager.cancelPausedOnIncomingCallNotification()
 
-        notificationsManager.updateNotification(state.value)
+        notificationsManager.updateNotification(state.value, recorder.supportsPausing())
     }
 
     private fun stopAbruptly(explanation: String) {

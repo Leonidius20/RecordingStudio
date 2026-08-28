@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.leonidius20.recorder.data.recorder.RecorderServiceLauncher
-import io.github.leonidius20.recorder.domain.recorder.RecorderState
+import io.github.leonidius20.recorder.domain.recorder.OutputFileAbstraction
+import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val recorderServiceLauncher: RecorderServiceLauncher,
+    private val recorderServiceLauncher: RecordAudioUseCase,
 ) : ViewModel() {
 
     sealed class UiState(
@@ -61,10 +61,11 @@ class HomeViewModel @Inject constructor(
 
     val uiState: LiveData<UiState> = recorderServiceLauncher.state.map {
         when (it) {
-            RecorderState.IDLE -> UiState.Idle
-            RecorderState.RECORDING -> UiState.Recording(isPausingSupported = recorderServiceLauncher.isPausingSupported)
-            RecorderState.PAUSED -> UiState.Paused
-            RecorderState.ERROR -> UiState.Idle // todo: error UI state
+            is RecordAudioUseCase.State.Idle -> UiState.Idle
+            is RecordAudioUseCase.State.Recording -> UiState.Recording(isPausingSupported = it.supportsPausing)
+            is RecordAudioUseCase.State.Paused -> UiState.Paused
+            is RecordAudioUseCase.State.Error -> UiState.Idle // todo: error UI state
+            is RecordAudioUseCase.State.Stopping, RecordAudioUseCase.State.Preparing -> UiState.Idle // todo: loading state
         }
     }.asLiveData()
 
@@ -86,7 +87,7 @@ class HomeViewModel @Inject constructor(
     val amplitudes = recorderServiceLauncher.amplitudes
 
     fun onStartRecording() {
-        recorderServiceLauncher.launchRecording()
+        recorderServiceLauncher.start()
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -95,9 +96,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onStopRecording() {
-        recorderServiceLauncher.stopRecording()
+        recorderServiceLauncher.stop()
     }
 
-    fun getUri() = recorderServiceLauncher.getUri()
+    // todo: no casting
+    fun getUri() = (recorderServiceLauncher.file as OutputFileAbstraction).fileUri
 
 }

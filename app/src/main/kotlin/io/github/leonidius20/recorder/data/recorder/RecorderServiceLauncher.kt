@@ -33,6 +33,7 @@ import javax.inject.Singleton
  * Therefore, the timer and amplitude flows in this class cannot be just forwarded from
  * the service. They have to account for the service recreation.
  */
+// todo: delete class
 @Singleton
 class RecorderServiceLauncher @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -133,7 +134,7 @@ class RecorderServiceLauncher @Inject constructor(
 
         // serviceScope is cancelled when the service is destroyed
         service.service.lifecycleScope.launch {
-            service.service.state.onEach {
+            /*service.service.state.onEach {
                 when(it) {
                     RecorderService.State.RECORDING -> {
                         // first update pausing support, only then change state
@@ -149,7 +150,7 @@ class RecorderServiceLauncher @Inject constructor(
                         _state.value = RecorderState.IDLE
                     }
                 }
-            }.launchIn(this)
+            }.launchIn(this)*/
 
             service.service.timer.onEach {
                 _timer.value = it

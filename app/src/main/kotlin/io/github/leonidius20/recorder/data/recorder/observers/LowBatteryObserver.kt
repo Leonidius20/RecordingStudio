@@ -4,33 +4,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recorder.BroadcastReceiverWithCallback
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
-class LowBatteryObserver(
-    val context: Context,
-    val scope: CoroutineScope,
+class LowBatteryObserver @Inject constructor(
+    @param:ApplicationContext val context: Context,
 ) : SystemEventObserver {
 
-    private lateinit var lowBatteryBroadcastReceiver: BroadcastReceiverWithCallback
-
-    private val events: Channel<SystemEvent> = Channel()
-
-    override val eventsFlow: Flow<SystemEvent>
-        get() = events.consumeAsFlow()
-
-    override fun register() {
-        lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
+    override val eventsFlow = callbackFlow {
+        val lowBatteryBroadcastReceiver = BroadcastReceiverWithCallback(
             callback = {
-                scope.launch {
-                    events.send(SystemEvent.LOW_BATTERY)
-                }
+                trySend(SystemEvent.LOW_BATTERY)
             }
         ).apply {
             val intentFilter = IntentFilter(Intent.ACTION_BATTERY_LOW)
@@ -39,10 +28,10 @@ class LowBatteryObserver(
                 intentFilter, ContextCompat.RECEIVER_EXPORTED
             )
         }
-    }
 
-    override fun unregister() {
-        context.unregisterReceiver(lowBatteryBroadcastReceiver)
+        awaitClose {
+            context.unregisterReceiver(lowBatteryBroadcastReceiver)
+        }
     }
 
 }

@@ -1,39 +1,29 @@
 package io.github.leonidius20.recorder.data.recorder.observers
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recorder.IncomingCallBroadcastReceiver
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
-class IncomingCallObserver(
-    val context: Context,
-    val scope: CoroutineScope,
+class IncomingCallObserver @Inject constructor(
+    @param:ApplicationContext val context: Context,
 ) : SystemEventObserver {
 
-    private val events: Channel<SystemEvent> = Channel()
-
-    override val eventsFlow: Flow<SystemEvent>
-        get() = events.consumeAsFlow()
-
-    private lateinit var callBroadcastReceiver: IncomingCallBroadcastReceiver
-
-    override fun register() {
-        callBroadcastReceiver = IncomingCallBroadcastReceiver {
-            scope.launch {
-                events.send(SystemEvent.INCOMING_CALL)
-            }
+    override val eventsFlow = callbackFlow {
+        val receiver = IncomingCallBroadcastReceiver {
+            // todo: load test to make sure nothing is dropped?
+            trySend(SystemEvent.INCOMING_CALL)
         }.apply {
             registerInContext(context)
         }
-    }
 
-    override fun unregister() {
-        context.unregisterReceiver(callBroadcastReceiver)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
     }
 
 }
