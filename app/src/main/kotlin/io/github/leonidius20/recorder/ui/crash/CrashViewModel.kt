@@ -6,32 +6,28 @@ import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Intent
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class CrashViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ): ViewModel() {
 
-    private val _isStacktraceCopied = MutableLiveData(false)
-    val isStacktraceCopied: LiveData<Boolean> = _isStacktraceCopied
-
-    private fun notifyStacktraceCopied() {
-        _isStacktraceCopied.value = true
-    }
+    private val _isStacktraceCopied = MutableStateFlow(false)
+    val isStacktraceCopied: StateFlow<Boolean> = _isStacktraceCopied
 
     fun copyToClipboard(crashData: String) {
         val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("Rec Studio crash data", crashData)
         clipboard.setPrimaryClip(clip)
 
-        notifyStacktraceCopied()
+        _isStacktraceCopied.value = true
     }
 
     fun launchGithubInBrowser() {
