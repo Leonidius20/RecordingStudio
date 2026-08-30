@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kapt)
     alias(libs.plugins.hilt)
     id("com.github.alexfu.androidautoversion")
     id("androidx.navigation.safeargs.kotlin")
@@ -94,7 +93,6 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
-        dataBinding = true // todo rem
         viewBinding = true
         buildConfig = true
     }

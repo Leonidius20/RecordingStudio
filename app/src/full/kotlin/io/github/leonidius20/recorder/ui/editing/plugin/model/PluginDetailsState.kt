@@ -1,8 +1,5 @@
 package io.github.leonidius20.recorder.ui.editing.plugin.model
 
-import android.view.View
-import org.androidaudioplugin.PluginInformation
-
 sealed interface PluginDetailsState {
 
     data object Connecting : PluginDetailsState
@@ -24,11 +21,9 @@ sealed interface PluginDetailsState {
 
     // todo: move to some UiState class that is generated from state
     fun playBtnVisibility() =
-        if (this is Connected && !this.isProcessing)
-            View.VISIBLE else View.GONE
+        this is Connected && !this.isProcessing
 
     fun saveBtnVisibility() =
-        if (this is Connected && this.isFileReady)
-            View.VISIBLE else View.GONE
+        this is Connected && this.isFileReady
 
 }

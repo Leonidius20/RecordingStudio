@@ -28,6 +28,10 @@ class RenameDialogViewModel @Inject constructor(
         fileName = MutableStateFlow(args.currentFileName)
     }
 
+    fun updateText(new: String) {
+        fileName.value = new
+    }
+
     fun rename() {
         recordingsListRepository.rename(fileUri, fileId, fileName.value)
     }

@@ -11,9 +11,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.ui.common.RecStudioFragment
@@ -41,9 +43,6 @@ class HomeFragment : RecStudioFragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.viewModel = viewModel
-        binding.fragment = this
 
         // todo: restoring the visualizer on screen rotation
 
@@ -53,14 +52,40 @@ class HomeFragment : RecStudioFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // todo bug - visualizer doesn't get updated on screen rotate
-        viewModel.amplitudes.collectSinceStarted { amplitude ->
-            binding.audioVisualizer.update(amplitude)
-        }
+        with(binding) {
+            stopButton.setOnClickListener { onStopBtnClick() }
+            recordButton.setOnClickListener { onRecButtonClick() }
+            audioSettingsButton.setOnClickListener { onAudioSettingsBtnClick() }
 
-        viewModel.uiState.observe(viewLifecycleOwner) {
-            if (it is HomeViewModel.UiState.Idle) {
-                binding.audioVisualizer.recreate()
+            // todo bug - visualizer doesn't get updated on screen rotate
+            viewModel.amplitudes.collectSinceStarted { amplitude ->
+                audioVisualizer.update(amplitude)
+            }
+
+            viewModel.uiState.observe(viewLifecycleOwner) {
+                if (it is HomeViewModel.UiState.Idle) {
+                    audioVisualizer.recreate()
+                }
+
+                recTimer.isVisible = it.isTimerVisible
+                audioSettingsButton.isVisible = it.audioSettingsButtonVisible
+                recordButton.isVisible = it.isRecPauseBtnVisible
+                stopButton.isVisible = it.isStopButtonVisible
+
+                recordButton.setIconResource(
+                    when(it.recPauseBtnState) {
+                        HomeViewModel.UiState.RecPauseBtnState.RECORD -> R.drawable.ic_record
+                        HomeViewModel.UiState.RecPauseBtnState.PAUSE -> R.drawable.ic_pause
+                    }
+                )
+                recordButton.contentDescription = getString(when(it.recPauseBtnState) {
+                    HomeViewModel.UiState.RecPauseBtnState.RECORD -> R.string.btn_rec_desc
+                    HomeViewModel.UiState.RecPauseBtnState.PAUSE -> R.string.btn_pause_desc
+                })
+            }
+
+            viewModel.timerText.observe(viewLifecycleOwner) {
+                recTimer.text = it
             }
         }
     }
@@ -123,4 +148,3 @@ class HomeFragment : RecStudioFragment() {
     }
 
 }
-

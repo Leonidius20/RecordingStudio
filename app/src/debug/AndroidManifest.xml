@@ -18,9 +18,9 @@
     package="io.github.leonidius20.recorder">
 
     <application>
-        <activity
+        <!-- <activity
             android:name=".HiltTestActivity"
-            android:exported="false"  />
+            android:exported="false"  /> -->
     </application>
 
 </manifest>

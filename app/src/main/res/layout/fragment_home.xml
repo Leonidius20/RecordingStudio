@@ -1,138 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View"/>
-        <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.Recording"/>
-        <import type="io.github.leonidius20.recorder.ui.home.HomeViewModel.UiState.RecPauseBtnState"/>
-        <variable
-            name="viewModel"
-            type="io.github.leonidius20.recorder.ui.home.HomeViewModel" />
-        <variable
-            name="fragment"
-            type="io.github.leonidius20.recorder.ui.home.HomeFragment" />
-    </data>
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.home.HomeFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.home.HomeFragment">
+        android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <com.visualizer.amplitude.AudioRecordView
+            android:id="@+id/audioVisualizer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:chunkAlignTo="center"
 
-            <com.visualizer.amplitude.AudioRecordView
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/rec_timer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+            app:chunkColor="?colorSecondary"
+            app:chunkMaxHeight="300dp"
+            app:chunkMinHeight="5dp"
+            app:chunkRoundedCorners="true"
+            app:chunkSoftTransition="true"
+            app:chunkSpace="5dp"
+            app:chunkWidth="10dp"
+            app:direction="leftToRight"
+            app:layout_constraintBottom_toTopOf="@id/rec_timer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_max="300dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-                android:id="@+id/audioVisualizer"
-                android:layout_width="0dp"
-                app:layout_constraintHeight_max="300dp"
-                android:layout_height="0dp"
-                app:chunkAlignTo="center"
-                app:chunkRoundedCorners="true"
-                app:chunkSoftTransition="true"
-                app:chunkColor="?colorSecondary"
-                app:chunkSpace="5dp"
-                app:chunkWidth="10dp"
-                app:chunkMaxHeight="300dp"
-                app:chunkMinHeight="5dp"
-                app:direction="leftToRight"/>
+        <TextView
+            android:id="@+id/rec_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_normal"
+            android:textAppearance="?textAppearanceLabelLarge"
+            app:layout_constraintBottom_toTopOf="@id/recordButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:visibility="@{viewModel.uiState.isTimerVisible ? View.VISIBLE : View.INVISIBLE}"
-                android:text="@{viewModel.timerText}"
-                android:id="@+id/rec_timer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/recordButton"
-                android:layout_marginBottom="@dimen/margin_normal"
-                android:textAppearance="?textAppearanceLabelLarge"
-                />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/audioSettingsButton"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="72dp"
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/audioSettingsButton"
-                app:icon="@drawable/ic_settings"
-                android:contentDescription="@string/btn_audio_settings_desc"
+            android:layout_height="72dp"
+            android:layout_marginEnd="@dimen/margin_normal"
 
-                style="?attr/materialIconButtonOutlinedStyle"
-                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:contentDescription="@string/btn_audio_settings_desc"
+            app:icon="@drawable/ic_settings"
 
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                app:iconGravity="textStart"
+            app:iconGravity="textStart"
+            app:iconTint="?colorOnBackground"
 
-                app:strokeWidth="0dp"
-                app:iconTint="?colorOnBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/recordButton"
 
-                android:layout_marginEnd="@dimen/margin_normal"
-                android:layout_marginBottom="@dimen/margin_large"
-                android:onClick="@{() -> fragment.onAudioSettingsBtnClick()}"
-                android:visibility="@{viewModel.uiState.audioSettingsButtonVisible ? View.VISIBLE : View.GONE}"
+            app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            app:strokeWidth="0dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/recordButton"
+            style="?attr/materialIconButtonFilledStyle"
 
+            android:layout_width="72dp"
 
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/recordButton" />
+            android:layout_height="72dp"
+            android:layout_marginBottom="@dimen/margin_large"
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/recordButton"
-                app:icon="@{viewModel.uiState.recPauseBtnState == RecPauseBtnState.RECORD ? @drawable/ic_record : @drawable/ic_pause}"
-                tools:icon="@drawable/ic_record"
-                android:contentDescription="@{viewModel.uiState.recPauseBtnState == RecPauseBtnState.RECORD ? @string/btn_rec_desc : @string/btn_pause_desc}"
+            android:elevation="1dp"
 
-                style="?attr/materialIconButtonFilledStyle"
+            app:backgroundTint="?colorSecondaryContainer"
+            app:iconGravity="textStart"
+            app:iconTint="?colorOnSecondaryContainer"
 
-                app:backgroundTint="?colorSecondaryContainer"
-                app:iconTint="?colorOnSecondaryContainer"
+            app:layout_constraintBottom_toBottomOf="parent"
 
-                app:iconGravity="textStart"
+            app:layout_constraintEnd_toEndOf="parent"
 
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            tools:icon="@drawable/ic_record" />
 
-                android:elevation="1dp"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stopButton"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="72dp"
 
-                app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="72dp"
+            android:layout_marginStart="@dimen/margin_normal"
 
-                android:layout_marginBottom="@dimen/margin_large"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:visibility="@{viewModel.uiState.recPauseBtnVisible ? View.VISIBLE : View.GONE}"
-                android:onClick="@{() -> fragment.onRecButtonClick()}" />
+            android:layout_marginBottom="@dimen/margin_large"
+            android:contentDescription="@string/btn_rec_stop_desc"
+            app:icon="@drawable/ic_stop"
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/stopButton"
-                app:icon="@drawable/ic_stop"
-                android:contentDescription="@string/btn_rec_stop_desc"
+            app:iconGravity="textStart"
+            app:iconTint="?colorError"
 
-                style="?attr/materialIconButtonOutlinedStyle"
-                app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/recordButton"
 
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                app:iconGravity="textStart"
+            app:shapeAppearance="?attr/shapeAppearanceCornerMedium"
+            app:strokeColor="?colorError" />
 
-                app:strokeColor="?colorError"
-                app:iconTint="?colorError"
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                android:layout_marginStart="@dimen/margin_normal"
-                android:layout_marginBottom="@dimen/margin_large"
-                android:onClick="@{() -> fragment.onStopBtnClick()}"
-                android:visibility="@{viewModel.uiState.stopButtonVisible ? View.VISIBLE : View.GONE}"
-
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/recordButton" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-</layout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
