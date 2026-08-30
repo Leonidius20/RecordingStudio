@@ -28,6 +28,16 @@ android {
         // translated only into english and ukrainian languages,
         // exclude strings from libraries in other languages
         resourceConfigurations.addAll(listOf("en", "uk"))
+
+        // for optimizing build times
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "dagger.fastInit" to "enabled",
+                    "dagger.hilt.disableModulesHaveInstallInCheck" to "true"
+                )
+            }
+        }
     }
 
     signingConfigs {
