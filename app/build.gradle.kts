@@ -177,5 +177,6 @@ dependencies {
 
     implementation(libs.flexbox)
 
+    implementation(project(":entities"))
     implementation(project(":domain:recorder"))
 }

@@ -4,6 +4,7 @@ import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.RequiresApi
 
+// todo: replace w/ sealed interface?
 enum class Container(
     /**
      * value as expected by MediaRecorder.setOutputFormat()

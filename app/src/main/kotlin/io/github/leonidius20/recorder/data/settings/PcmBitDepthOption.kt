@@ -5,6 +5,7 @@ import io.github.leonidius20.recorder.data.recorder.amplitudes.Float32BitMaxAmpE
 import io.github.leonidius20.recorder.data.recorder.amplitudes.Int16BitMaxAmpExtractor
 import io.github.leonidius20.recorder.data.recorder.amplitudes.Int8BitMaxAmpExtractor
 import io.github.leonidius20.recorder.data.recorder.amplitudes.MaxAmplitudeExtractor
+import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 
 enum class PcmBitDepthOption(
     val valueForAudioRecordApi: Int,
