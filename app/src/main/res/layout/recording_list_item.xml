@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/selectable_list_item_background_tint"
+    android:backgroundTintMode="multiply"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?selectableItemBackground"
+    android:longClickable="true"
+    android:minHeight="72dp"
+    tools:theme="@style/Theme.Material3.DayNight">
+
+    <ImageView
+        android:id="@+id/leading_icon"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="@dimen/margin_normal"
+        android:layout_marginEnd="@dimen/margin_normal"
+        android:tint="?colorOnSurfaceVariant"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/txt_headline"
+
+        app:layout_constraintHeight_max="24dp"
+        app:layout_constraintHeight_min="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        app:layout_constraintWidth_max="24dp"
+        app:layout_constraintWidth_min="24dp"
+        tools:ignore="UseAppTint"
+        tools:src="@drawable/ic_microphone" />
+
+    <TextView
+        android:id="@+id/txt_headline"
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAlignment="viewStart"
+        android:textAppearance="?textAppearanceBodyLarge"
+        android:textColor="?colorOnSurface"
+        app:firstBaselineToTopHeight="17dp"
+        app:lastBaselineToBottomHeight="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/size_text"
+        app:layout_constraintEnd_toStartOf="@id/duration_text"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/leading_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Headline text" />
+
+    <TextView
+        android:id="@+id/size_text"
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?textAppearanceBodyMedium"
+        android:textColor="?colorOnSurfaceVariant"
+        app:firstBaselineToTopHeight="15dp"
+        app:lastBaselineToBottomHeight="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/txt_headline"
+        app:layout_constraintStart_toStartOf="@id/txt_headline"
+        app:layout_constraintTop_toBottomOf="@id/txt_headline"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Support text" />
+
+    <TextView
+        android:id="@+id/duration_text"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_normal"
+        android:firstBaselineToTopHeight="12dp"
+        android:lastBaselineToBottomHeight="4dp"
+
+        android:textAppearance="?textAppearanceLabelSmall"
+        android:textColor="?colorOnSurfaceVariant"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toEndOf="@id/txt_headline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:dividerColor="?colorOutlineVariant"
+        app:dividerInsetEnd="@dimen/margin_normal"
+        app:dividerInsetStart="@dimen/margin_normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

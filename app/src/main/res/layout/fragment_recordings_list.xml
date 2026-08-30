@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/recording_list_item2" />
+        tools:listitem="@layout/recording_list_item" />
 
     <TextView
         android:id="@+id/empty_list_text"
