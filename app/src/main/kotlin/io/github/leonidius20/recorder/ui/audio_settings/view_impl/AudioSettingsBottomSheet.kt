@@ -41,7 +41,6 @@ class AudioSettingsBottomSheet : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = BottomSheetAudioSettingsBinding.inflate(inflater, container, false)
-        binding.lifecycleOwner = viewLifecycleOwner
 
         controller = controllerFactory.create(
             instanceKeeper = instanceKeeper(),

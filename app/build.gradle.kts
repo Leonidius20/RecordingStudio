@@ -152,8 +152,6 @@ dependencies {
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
 
-    implementation(libs.material.lists)
-
     implementation(libs.ok.layoutinflater)
 
     implementation(libs.timeit) // for rec duration timer

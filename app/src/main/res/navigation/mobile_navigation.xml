@@ -28,7 +28,7 @@
         android:id="@+id/navigation_settings"
         android:name="io.github.leonidius20.recorder.ui.settings.SettingsFragment"
         android:label="@string/nav_title_settings"
-        tools:layout="@layout/fragment_settings" >
+        tools:layout="@layout/fragment_preferences" >
         <action
             android:id="@+id/action_nav_settings_to_plugins_list"
             app:destination="@id/navigation_plugins_list"/>

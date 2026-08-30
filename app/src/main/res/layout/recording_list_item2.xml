@@ -19,24 +19,20 @@
         android:clickable="true"
         android:focusable="true"
         android:longClickable="true"
-        android:minHeight="@dimen/list_item_min_height_two_line"
-
-
-
+        android:minHeight="72dp"
         tools:theme="@style/Theme.Material3.DayNight">
-
 
         <ImageView
             android:id="@+id/leading_icon"
 
             android:tint="?colorOnSurfaceVariant"
-            android:layout_marginStart="@dimen/list_item_space_x4"
+            android:layout_marginStart="@dimen/margin_normal"
 
             app:layout_constraintWidth_max="24dp"
             app:layout_constraintWidth_min="24dp"
             app:layout_constraintHeight_max="24dp"
             app:layout_constraintHeight_min="24dp"
-            android:layout_marginEnd="@dimen/list_item_space_x4"
+            android:layout_marginEnd="@dimen/margin_normal"
 
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -47,8 +43,6 @@
             android:layout_height="wrap_content"
             tools:src="@drawable/ic_microphone"
             tools:ignore="UseAppTint" />
-
-
 
         <TextView
             android:id="@+id/txt_headline"
@@ -62,8 +56,8 @@
             android:maxLines="1"
             android:textAppearance="?textAppearanceBodyLarge"
             android:textColor="?colorOnSurface"
-            app:firstBaselineToTopHeight="@dimen/list_item_headline_first_baseline_to_top"
-            app:lastBaselineToBottomHeight="@dimen/list_item_headline_last_baseline_to_bottom"
+            app:firstBaselineToTopHeight="17dp"
+            app:lastBaselineToBottomHeight="7dp"
             app:layout_constraintBottom_toTopOf="@+id/size_text"
             app:layout_constraintEnd_toStartOf="@id/duration_text"
             app:layout_constraintHorizontal_bias="0"
@@ -84,8 +78,8 @@
             android:ellipsize="end"
             android:textAppearance="?textAppearanceBodyMedium"
             android:textColor="?colorOnSurfaceVariant"
-            app:firstBaselineToTopHeight="@dimen/list_item_supporting_text_first_baseline_to_top"
-            app:lastBaselineToBottomHeight="@dimen/list_item_supporting_text_last_baseline_to_bottom"
+            app:firstBaselineToTopHeight="15dp"
+            app:lastBaselineToBottomHeight="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/txt_headline"
             app:layout_constraintStart_toStartOf="@id/txt_headline"
@@ -98,11 +92,11 @@
 
             android:text="@{recording.duration}"
 
-            android:layout_marginEnd="@dimen/list_item_space_x4"
+            android:layout_marginEnd="@dimen/margin_normal"
             android:textColor="?colorOnSurfaceVariant"
             android:textAppearance="?textAppearanceLabelSmall"
-            android:firstBaselineToTopHeight="@dimen/list_item_trailing_supporting_text_first_baseline_to_top"
-            android:lastBaselineToBottomHeight="@dimen/list_item_trailing_supporting_text_last_baseline_to_bottom"
+            android:firstBaselineToTopHeight="12dp"
+            android:lastBaselineToBottomHeight="4dp"
 
             app:layout_constraintStart_toEndOf="@id/txt_headline"
             app:layout_constraintEnd_toEndOf="parent"
@@ -117,8 +111,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:dividerColor="?colorOutlineVariant"
-            app:dividerInsetEnd="@dimen/list_item_space_x4"
-            app:dividerInsetStart="@dimen/list_item_space_x4"
+            app:dividerInsetEnd="@dimen/margin_normal"
+            app:dividerInsetStart="@dimen/margin_normal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
