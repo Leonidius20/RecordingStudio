@@ -2,9 +2,17 @@ package io.github.leonidius20.recorder.data.settings
 
 import android.media.MediaRecorder
 import android.os.Build
-import androidx.annotation.RequiresApi
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.CodecId
+import kotlin.collections.List
+import kotlin.collections.associateBy
+import kotlin.collections.buildList
+import kotlin.collections.find
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapIndexed
+import kotlin.collections.minBy
 import kotlin.math.abs
 
 /*enum class SampleRate(
@@ -89,14 +97,15 @@ add(object : ICodec.CompressedCodec.WithDiscreteBitrate(
 ),)
 }*/
 
-enum class Codec(
+data class Codec(
+    val id: CodecId,
     /**
      * value as expected by MediaRecorder.setAudioEncoder()
      */
     val value: Int,
     val displayName: String,
-    val isSupportedByDevice: Boolean,
-    val supportedSampleRates: IntArray,
+    //val isSupportedByDevice: Boolean,
+    val supportedSampleRates: List<Int>,
 
     // val supportsStereo: Boolean = true,
 
@@ -116,86 +125,6 @@ enum class Codec(
 
     // val isBitRateContinuous : Boolean? = null,
 ) {
-
-    // todo: check support some other way too
-
-    AMR_NB(
-        MediaRecorder.AudioEncoder.AMR_NB,
-        "AMR Narrowband",
-        true,
-        supportedSampleRates = intArrayOf(8_000),
-        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
-            default = 12.20f,
-            bitRateOptions = listOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
-        ),
-
-        //supportsStereo = false,
-    ),
-
-    AMR_WB(
-        MediaRecorder.AudioEncoder.AMR_WB,
-        "AMR Wideband",
-        true,
-        supportedSampleRates = intArrayOf(16_000),
-
-        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
-            bitRateOptions = listOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
-            default = 23.85f,
-        ),
-        //supportsStereo = false,
-    ),
-
-    // todo: vbr, cbr, etc?
-    AAC(
-        MediaRecorder.AudioEncoder.AAC,
-        "AAC-LC",
-        true,
-        supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ),
-
-    HE_AAC(
-        MediaRecorder.AudioEncoder.HE_AAC,
-        "HE-AAC",
-        true,
-        supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ),
-
-    AAC_ELD(
-        MediaRecorder.AudioEncoder.AAC_ELD,
-        "AAC-ELD",
-        true,
-        supportedSampleRates = intArrayOf(16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ),
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    OPUS(
-        MediaRecorder.AudioEncoder.OPUS,
-        "Opus",
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-        // https://hydrogenaud.io/index.php/topic,115663.0.html
-        supportedSampleRates = intArrayOf(8000, 12000, 16000, 24000, 48000),
-        bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
-            min = 6f,
-            max = 510f,
-            default = 128f,
-        ),
-    ),
-
-
-    PCM(
-        value = -1,
-        displayName = "PCM",
-        isSupportedByDevice = true,
-        supportedSampleRates = intArrayOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
-            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
-            default = PcmBitDepthOption.PCM_16BIT_INT,
-        ),
-    );
-
     val bitDepthOrRateForCodecPrefKey
         get() = "$value-bit"
 
@@ -209,21 +138,117 @@ enum class Codec(
     fun supportsSampleRate(rate: Int) = rate in supportedSampleRates
 
     fun getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
-        if(this == Codec.PCM) {
+        if(this.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues) {
             return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
         } else {
             throw Error("this codec does not support setting bit depths")
         }
     }
 
-    companion object {
-
-        private val map by lazy {
-            Codec.entries.associateBy { it.value }
-        }
-
-        fun getByValue(value: Int) = map[value]!!
-
-    }
+    companion object // needed for extension functions
 
 }
+
+    private val Codec.Companion.map by lazy {
+        codecs.associateBy { it.value }
+    }
+
+    fun Codec.Companion.getByValue(value: Int) = map[value]!!
+
+
+val codecAmrNb = Codec(
+    id = CodecId.AMR_NB,
+    MediaRecorder.AudioEncoder.AMR_NB,
+    "AMR Narrowband",
+    //true,
+    // todo: intersect with device supported sample rates
+    supportedSampleRates = listOf(8_000),
+    bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+        default = 12.20f,
+        bitRateOptions = listOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
+    ),
+
+    //supportsStereo = false,
+)
+
+val codecs = buildList {
+
+    // todo: check support some other way too
+
+    add(codecAmrNb)
+
+    add(Codec(
+        id = CodecId.AMR_WB,
+        MediaRecorder.AudioEncoder.AMR_WB,
+        "AMR Wideband",
+        //true,
+        supportedSampleRates = listOf(16_000),
+
+        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+            bitRateOptions = listOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
+            default = 23.85f,
+        ),
+        //supportsStereo = false,
+    ))
+
+    // todo: vbr, cbr, etc?
+    add(Codec(
+        id = CodecId.AAC,
+        MediaRecorder.AudioEncoder.AAC,
+        "AAC-LC",
+        //true,
+        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
+    ))
+
+    add(Codec(
+        id = CodecId.HE_AAC,
+        MediaRecorder.AudioEncoder.HE_AAC,
+        "HE-AAC",
+        //true,
+        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
+    ))
+
+    add(Codec(
+        id = CodecId.AAC_ELD,
+        MediaRecorder.AudioEncoder.AAC_ELD,
+        "AAC-ELD",
+        //true,
+        supportedSampleRates = listOf(16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.None,
+    ))
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+        add(Codec(
+            id = CodecId.OPUS,
+            MediaRecorder.AudioEncoder.OPUS,
+            "Opus",
+            //Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
+            // https://hydrogenaud.io/index.php/topic,115663.0.html
+            supportedSampleRates = listOf(8000, 12000, 16000, 24000, 48000),
+            bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
+                min = 6f,
+                max = 510f,
+                default = 128f,
+            ),
+        ))
+    }
+
+
+    add(Codec(
+        id = CodecId.PCM,
+        value = -1,
+        displayName = "PCM",
+        //isSupportedByDevice = true,
+        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
+        bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
+            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
+            default = PcmBitDepthOption.PCM_16BIT_INT,
+        ),
+    ))
+
+}
+
+val codecById = codecs.associateBy { it.id }

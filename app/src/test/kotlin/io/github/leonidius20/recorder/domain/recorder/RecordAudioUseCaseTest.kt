@@ -1,12 +1,12 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
-import io.github.leonidius20.recorder.data.settings.Codec
 import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.data.settings.SettingsInterface
+import io.github.leonidius20.recorder.data.settings.codecAmrNb
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.IsInstanceOf.instanceOf
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -27,7 +29,7 @@ class RecordAudioUseCaseTest {
         false,
         false,
         0, Container.THREE_GPP,
-        Codec.AMR_NB, AudioChannels.MONO, 0, null,0f
+        codecAmrNb, AudioChannels.MONO, 0, null,0f
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,9 +55,6 @@ class RecordAudioUseCaseTest {
             fun sendEvent() = scope.launch {
                 eventsFlow.emit(SystemEvent.LOW_BATTERY)
             }
-
-            override fun register() {}
-            override fun unregister() {}
 
         }
 
@@ -97,7 +96,7 @@ class RecordAudioUseCaseTest {
 
         observer.sendEvent().join()
 
-        assertEquals(RecordingState.STOP, useCase.state.value)
+        assertEquals(RecordingState.Stopping, useCase.state.value)
 
         useCase.stop()
 
@@ -110,7 +109,7 @@ class RecordAudioUseCaseTest {
 
         observer.sendEvent().join()
 
-        assertEquals(RecordingState.RECORDING, useCase.state.value)
+        assertThat(useCase.state.value, instanceOf(RecordingState.Recording::class.java))
     }
 
 }

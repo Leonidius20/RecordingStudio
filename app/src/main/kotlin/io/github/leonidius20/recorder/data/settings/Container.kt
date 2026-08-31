@@ -3,6 +3,7 @@ package io.github.leonidius20.recorder.data.settings
 import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.RequiresApi
+import io.github.leonidius20.recorder.entities.audio_settings.CodecId
 
 // todo: replace w/ sealed interface?
 enum class Container(
@@ -16,21 +17,21 @@ enum class Container(
     /**
      * determined based on https://developer.android.com/media/platform/supported-formats
      */
-    private val supportedCodecs: List<Codec>,
+    private val supportedCodecIds: List<CodecId>,
 ) {
 
     THREE_GPP(
         MediaRecorder.OutputFormat.THREE_GPP,
         "3GPP", "audio/3gpp",
         true,
-        listOf(Codec.AAC, Codec.HE_AAC, Codec.AAC_ELD, Codec.AMR_NB, Codec.AMR_WB)
+        listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD, CodecId.AMR_NB, CodecId.AMR_WB)
     ),
 
     MPEG4(
         MediaRecorder.OutputFormat.MPEG_4,
         "MPEG4", "audio/mp4",
         true,
-        listOf(Codec.AAC, Codec.HE_AAC, Codec.AAC_ELD)
+        listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD)
     ),
 
     AAC_ADTS(
@@ -38,10 +39,10 @@ enum class Container(
         "AAC ADTS", "audio/aac-adts",
         true,
         listOf(
-            Codec.AAC,
+            CodecId.AAC,
             // todo fix and bring back
-            // Codec.HE_AAC,
-            // Codec.AAC_ELD,
+            // CodecId.HE_AAC,
+            // CodecId.AAC_ELD,
         )
     ),
 
@@ -49,14 +50,14 @@ enum class Container(
         MediaRecorder.OutputFormat.AMR_NB,
         "AMR Narrowband", "audio/amr",
         true,
-        listOf(Codec.AMR_NB)
+        listOf(CodecId.AMR_NB)
     ),
 
     AMR_WB(
         MediaRecorder.OutputFormat.AMR_WB,
         "AMR Wideband", "audio/amr-wb",
         true,
-        listOf(Codec.AMR_WB)
+        listOf(CodecId.AMR_WB)
     ),
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -64,7 +65,7 @@ enum class Container(
         MediaRecorder.OutputFormat.OGG,
         "OGG", "audio/ogg",
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-        listOf(Codec.OPUS)
+        listOf(CodecId.OPUS)
     ),
 
 
@@ -72,28 +73,31 @@ enum class Container(
         value = -1,
         displayName = "WAV", mimeType = "audio/x-wav",
         isSupportedByDevice = true,
-        supportedCodecs = listOf(Codec.PCM)
+        supportedCodecIds = listOf(CodecId.PCM)
     );
 
     /**
      * we consider the container to be supported if the API level of the device is high
-     * enough (isSupportedByDevice) and if there is at least one codec that can be put
+     * enough (isSupportedByDevice) and if there is at least one CodecId that can be put
      * in this container that is supported by the device.
      */
     val isSupported: Boolean
         get() = isSupportedByDevice && availableCodecs.isNotEmpty()
 
     /**
-     * default codec for this container
+     * default CodecId for this container
      */
     val defaultCodec: Codec
-        get() = supportedCodecs.first { it.isSupportedByDevice }
+        get() = codecById[supportedCodecIds.first { id ->
+            // exists in the list of codecs available on device
+            codecs.any { it.id == id }
+        }]!!
 
     /**
-     * codecs that can be put into this container and that are supported by device
+     * CodecIds that can be put into this container and that are supported by device
      */
     val availableCodecs: List<Codec>
-        get() = supportedCodecs.filter { it.isSupportedByDevice }
+        get() = supportedCodecIds.mapNotNull { codecById[it] }
 
     fun supports(codec: Codec) = availableCodecs.contains(codec)
 
