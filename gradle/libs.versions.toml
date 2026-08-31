@@ -29,7 +29,7 @@ aap = "0.8.3.9.4"
 ndk = "26.1.10909125"
 viewpager2 = "1.1.0"
 jetbrainsKotlinJvm = "2.2.0"
-lifecycle = "2.11.0"
+lifecycle = "2.9.4" # last version to support android 5
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
