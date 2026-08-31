@@ -1,9 +1,9 @@
 [versions]
-agp = "8.10.1"
+agp = "9.3.0"
 customactivityoncrash = "2.4.0"
 flexbox = "3.0.0"
 fragmentTesting = "1.8.1"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -12,13 +12,11 @@ appcompat = "1.7.0"
 coroutines = "1.11.0"
 material = "1.12.0"
 constraintlayout = "2.1.4"
-lifecycleLivedataKtx = "2.7.0"
-lifecycleViewmodelKtx = "2.7.0"
 mockk = "1.13.12"
 navigation = "2.8.0"
 robolectric = "4.12.2"
-hilt = "2.57.2"
-ksp = "2.2.0-2.0.2"
+hilt = "2.60.1"
+ksp = "2.3.6"
 okLayoutInflater = "1.0.2"
 timber = "5.0.1"
 timeit = "1.2.0"
@@ -31,6 +29,7 @@ aap = "0.8.3.9.4"
 ndk = "26.1.10909125"
 viewpager2 = "1.1.0"
 jetbrainsKotlinJvm = "2.2.0"
+lifecycle = "2.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,8 +45,8 @@ kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
@@ -71,6 +70,7 @@ mviKotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", v
 mviKotlin-logging = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-logging", version.ref = "mviKotlin" }
 mviKotlin-timetravel = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-timetravel", version.ref = "mviKotlin" }
 mviKotlin-extensions-coroutines = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-extensions-coroutines", version.ref = "mviKotlin" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycle" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

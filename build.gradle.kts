@@ -23,7 +23,7 @@ buildscript {
     dependencies {
         classpath("com.github.alexfu:androidautoversion:3.3.0")
 
-        val nav_version = "2.8.0"
+        val nav_version = "2.9.6"
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version")
     }
 }
