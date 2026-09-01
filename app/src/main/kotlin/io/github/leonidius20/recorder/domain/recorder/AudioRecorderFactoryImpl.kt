@@ -1,25 +1,15 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.data.common.di.Scope
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
-import io.github.leonidius20.recorder.data.settings.BitRateSettingType
-import io.github.leonidius20.recorder.data.settings.Container
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.di.Scope
+import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.ContainerId
 import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import javax.inject.Inject
-
-// todo: replace with a lambda?
-interface AudioRecorderFactory {
-
-    @Throws(IOException::class)
-    fun create(
-        file: OutputFile,
-    ): AudioRecorder
-
-}
 
 class AudioRecorderFactoryImpl @Inject constructor(
     private val settings: Settings, // todo maybe pass in method instead of injecting
@@ -37,7 +27,7 @@ class AudioRecorderFactoryImpl @Inject constructor(
         // todo: do something about this
         val file = file as OutputFileImpl
 
-        return if (fileFormat == Container.WAV) {
+        return if (fileFormat.id == ContainerId.WAV) {
             PcmAudioRecorder(
                 descriptor = file.descriptor,
                 audioSource = settingsState.audioSource,

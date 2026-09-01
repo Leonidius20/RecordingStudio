@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Theme.RecordingStudio.MaterialPreferencesFragment.Style"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    style="@style/Theme.RecordingStudio.MaterialPreferencesFragment.Style"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    tools:viewBindingIgnore="true">
 
-    <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/settingsScrollView">
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/settingsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
         <LinearLayout
-            android:layout_height="match_parent"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical">
             <!-- <TextView
                 android:id="@+id/textViewTitle"

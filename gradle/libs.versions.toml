@@ -1,9 +1,10 @@
 [versions]
-agp = "8.10.1"
+agp = "9.3.0"
 customactivityoncrash = "2.4.0"
 flexbox = "3.0.0"
 fragmentTesting = "1.8.1"
-kotlin = "2.2.0"
+javaxInject = "1"
+kotlin = "2.2.10"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -12,14 +13,11 @@ appcompat = "1.7.0"
 coroutines = "1.11.0"
 material = "1.12.0"
 constraintlayout = "2.1.4"
-lifecycleLivedataKtx = "2.7.0"
-lifecycleViewmodelKtx = "2.7.0"
 mockk = "1.13.12"
 navigation = "2.8.0"
 robolectric = "4.12.2"
-hilt = "2.56.2"
-ksp = "2.2.0-2.0.2"
-materialLists = "0.5.3"
+hilt = "2.60.1"
+ksp = "2.3.6"
 okLayoutInflater = "1.0.2"
 timber = "5.0.1"
 timeit = "1.2.0"
@@ -31,6 +29,8 @@ mviKotlin = "4.4.0"
 aap = "0.8.3.9.4"
 ndk = "26.1.10909125"
 viewpager2 = "1.1.0"
+jetbrainsKotlinJvm = "2.2.0"
+lifecycle = "2.9.4" # last version to support android 5
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,22 +38,23 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 customactivityoncrash = { module = "cat.ereza:customactivityoncrash", version.ref = "customactivityoncrash" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
-material-lists = { group = "net.nicbell.material-lists", name = "listitem", version.ref = "materialLists"}
 ok-layoutinflater = { group = "com.github.okcredit", name = "OkLayoutInflater", version.ref = "okLayoutInflater" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 timeit = { group = "com.github.yashovardhan99", name = "TimeIt", version.ref="timeit" }
@@ -71,12 +72,11 @@ mviKotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", v
 mviKotlin-logging = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-logging", version.ref = "mviKotlin" }
 mviKotlin-timetravel = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-timetravel", version.ref = "mviKotlin" }
 mviKotlin-extensions-coroutines = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-extensions-coroutines", version.ref = "mviKotlin" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycle" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }

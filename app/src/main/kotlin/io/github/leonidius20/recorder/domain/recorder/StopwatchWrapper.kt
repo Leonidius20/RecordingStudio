@@ -5,24 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
-interface StopwatchInterface {
-
-    val timer: StateFlow<Long>
-
-    fun start()
-
-    fun stop()
-
-    fun pause()
-
-    fun resume()
-
-    /** prepare for next run **/
-    fun clear()
-
-}
-
-class StopwatchWrapper @Inject constructor() : StopwatchInterface {
+class StopwatchWrapper @Inject constructor() :
+    io.github.leonidius20.recorder.domain.recorder.Stopwatch {
 
     private val _timer = MutableStateFlow(0L)
     override val timer: StateFlow<Long>

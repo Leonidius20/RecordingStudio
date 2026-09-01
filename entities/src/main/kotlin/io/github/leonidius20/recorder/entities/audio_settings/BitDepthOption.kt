@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.recorder.entities.audio_settings
 
 interface BitDepthOption {
 

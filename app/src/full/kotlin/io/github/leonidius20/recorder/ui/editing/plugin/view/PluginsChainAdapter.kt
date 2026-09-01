@@ -2,6 +2,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.view
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.databinding.PluginChainItemBinding
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginChainItem
@@ -46,7 +47,13 @@ class PluginsChainAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: PluginChainItem, position: Int) {
-            binding.item = item
+            binding.pluginName.text = item.pluginName()
+            binding.expandOrClosePluginParams.setImageResource(
+                item.expandContractBtnIcon()
+            )
+            binding.progressCircle.isVisible = item.progressBarVisibility()
+            binding.pluginParamsList.isVisible = item.paramsListVisibility()
+
             binding.expandOrClosePluginParams.setOnClickListener {
                 toggleParamsVisibility(position)
             }

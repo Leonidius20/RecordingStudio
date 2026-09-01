@@ -23,9 +23,9 @@ private const val REC_STOPPED_LOW_BATTERY_OR_STORAGE_NOTIFICATION_ID = 1
 private const val REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID = 2
 const val PERSISTENT_NOTIFICATION_ID = 100
 
-class RecordingNotificationsManager @Inject constructor(
+class RecordingNotificationsManagerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
-) {
+) : RecordingNotificationsManager {
 
     /**
      * create a notification channel for the persistent notification that is
@@ -62,7 +62,7 @@ class RecordingNotificationsManager @Inject constructor(
         }
     }
 
-    fun sendNotificationAboutPausingOnCall() {
+    override fun sendNotificationAboutPausingOnCall() {
         if (PermissionX.isGranted(context, PermissionX.permission.POST_NOTIFICATIONS)) {
             NotificationCompat.Builder(context, REC_ABRUPT_STOP_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -85,11 +85,11 @@ class RecordingNotificationsManager @Inject constructor(
         }
     }
 
-    fun cancelPausedOnIncomingCallNotification() {
+    override fun cancelPausedOnIncomingCallNotification() {
         NotificationManagerCompat.from(context).cancel(REC_PAUSED_INCOMING_CALL_NOTIFICATION_ID)
     }
 
-    fun sendAbruptStopNotification(explanation: String) {
+    override fun sendAbruptStopNotification(explanation: String) {
 // todo: can we somehow make it so that PermissionX check
         //  tells compiler that permission is granted and removes this highlight?
         if (PermissionX.isGranted(context, PermissionX.permission.POST_NOTIFICATIONS)) {
@@ -117,7 +117,7 @@ class RecordingNotificationsManager @Inject constructor(
     /**
      * should happen after toggling rec/pause or every second to update timer
      */
-    fun updateNotification(
+    override fun updateNotification(
         state: RecordingState,
         supportsPausing: Boolean,
     ) {

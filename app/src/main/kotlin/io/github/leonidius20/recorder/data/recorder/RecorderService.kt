@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
 import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
-import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManagerImpl
 import io.github.leonidius20.recorder.domain.recorder.RecordingState
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,10 +22,14 @@ class RecorderService : LifecycleService() {
     lateinit var recordAudioUseCase: RecordAudioUseCase
 
     @Inject
-    lateinit var notificationsManager: RecordingNotificationsManager
+    lateinit var notificationsManager: RecordingNotificationsManagerImpl
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+
+        // todo: move elsewhere? only need to happen once, really
+        notificationsManager.createRecInProgressNotificationChannel()
+        notificationsManager.createPrematureStopNotificationChannel()
 
         lifecycleScope.launch {
             recordAudioUseCase.state.collect {

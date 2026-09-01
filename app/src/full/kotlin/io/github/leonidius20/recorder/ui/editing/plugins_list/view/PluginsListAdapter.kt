@@ -19,7 +19,7 @@ class PluginsListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(plugin: PluginModel) {
-            binding.plugin = plugin
+            binding.pluginName.text = plugin.name
             binding.root.setOnClickListener {
                 onItemClick(plugin)
             }

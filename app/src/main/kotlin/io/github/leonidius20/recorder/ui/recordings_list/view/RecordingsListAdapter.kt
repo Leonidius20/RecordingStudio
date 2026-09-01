@@ -114,7 +114,9 @@ class RecordingsListAdapter(
                     true
                 }
 
-                this.binding.recording = recording
+                updateName(recording.name)
+                updateSize(recording.size)
+                updateDuration(recording.duration)
                 this.binding.root.isSelected = recording.isSelected
 
                 isRecordSelected = recording.isSelected
@@ -131,7 +133,7 @@ class RecordingsListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)
-        root.inflateAsync(R.layout.recording_list_item2)
+        root.inflateAsync(R.layout.recording_list_item)
         return ViewHolder(root)
     }
 

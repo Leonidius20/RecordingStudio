@@ -1,82 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <data>
-        <import type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState.Connected"/>
-        <import type="io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState.Connecting"/>
-        <import type="android.view.View"/>
-        <variable
-            name="vm"
-            type="io.github.leonidius20.recorder.ui.editing.plugin.viewmodel.PluginDetailsViewModel" />
-    </data>
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progress_circle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/plugin_and_playback_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="plugin_chain_list,play_pause_btn,add_plugin_btn" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/add_plugin_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_normal"
+        android:layout_marginEnd="@dimen/margin_normal"
+        android:text="Add plugin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- todo: prob. replace w/ GridLayoutManager -->
+    <!-- todo: use Groupie or some other lib to create list of params for multiple plugins -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/plugin_chain_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/add_plugin_btn"
+        tools:listitem="@layout/plugin_chain_item" />
 
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:visibility="@{vm.uiState instanceof Connecting ? View.VISIBLE : View.GONE}" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/play_pause_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Start/stop processing"
+        android:src="@drawable/media3_icon_play"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <androidx.constraintlayout.widget.Group
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="plugin_chain_list,play_pause_btn,add_plugin_btn"
-            android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/save_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Start/stop processing"
+        android:src="@drawable/ic_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/add_plugin_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginEnd="@dimen/margin_normal"
-            android:layout_marginTop="@dimen/margin_normal"
-            android:text="Add plugin"/>
-
-        <!-- todo: prob. replace w/ GridLayoutManager -->
-        <!-- todo: use Groupie or some other lib to create list of params for multiple plugins -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/plugin_chain_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            tools:listitem="@layout/plugin_chain_item"
-            app:layout_constraintTop_toBottomOf="@id/add_plugin_btn"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="@{vm.uiState instanceof Connected ? View.VISIBLE : View.GONE}"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/play_pause_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:src="@drawable/media3_icon_play"
-            android:visibility="@{vm.uiState.playBtnVisibility()}"
-            android:contentDescription="Start/stop processing"
-            android:onClick="@{() -> vm.toggleProcessing()}"
-            android:layout_margin="16dp" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/save_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:src="@drawable/ic_save"
-            android:visibility="@{vm.uiState.saveBtnVisibility()}"
-            android:contentDescription="Start/stop processing"
-            android:onClick="@{() -> vm.saveFile()}"
-            android:layout_margin="16dp" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

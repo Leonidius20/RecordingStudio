@@ -2,9 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kapt)
     alias(libs.plugins.hilt)
     id("com.github.alexfu.androidautoversion")
     id("androidx.navigation.safeargs.kotlin")
@@ -28,6 +26,16 @@ android {
         // translated only into english and ukrainian languages,
         // exclude strings from libraries in other languages
         resourceConfigurations.addAll(listOf("en", "uk"))
+
+        // for optimizing build times
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "dagger.fastInit" to "enabled",
+                    "dagger.hilt.disableModulesHaveInstallInCheck" to "true"
+                )
+            }
+        }
     }
 
     signingConfigs {
@@ -80,12 +88,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
     buildFeatures {
-        dataBinding = true
+        viewBinding = true
         buildConfig = true
+        resValues = true
     }
 
     testOptions.unitTests.isIncludeAndroidResources = true
@@ -115,10 +122,17 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.service)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
@@ -140,8 +154,6 @@ dependencies {
 
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
-
-    implementation(libs.material.lists)
 
     implementation(libs.ok.layoutinflater)
 
@@ -176,4 +188,8 @@ dependencies {
     implementation(libs.timber)
 
     implementation(libs.flexbox)
+
+    implementation(project(":entities"))
+    implementation(project(":domain:recorder"))
+    implementation(project(":di"))
 }

@@ -1,11 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.kapt) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.jetbrainsKotlinJvm) apply false
 }
 
 buildscript {
@@ -23,7 +22,7 @@ buildscript {
     dependencies {
         classpath("com.github.alexfu:androidautoversion:3.3.0")
 
-        val nav_version = "2.8.0"
+        val nav_version = "2.9.6"
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version")
     }
 }

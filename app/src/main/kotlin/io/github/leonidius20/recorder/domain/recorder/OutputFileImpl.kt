@@ -6,21 +6,11 @@ import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Container
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-
-interface OutputFile {
-
-    fun open()
-
-    fun close()
-
-    fun updateMetadata(duration: Long)
-
-}
 
 class OutputFileImpl(
     private val context: Context,
@@ -53,13 +43,6 @@ class OutputFileImpl(
         }, null, null)
     }
 
-}
-
-interface OutputFileFactory {
-    fun create(
-        namePattern: String,
-        format: Container,
-    ) : OutputFile
 }
 
 class OutputFileFactoryImpl @Inject constructor(

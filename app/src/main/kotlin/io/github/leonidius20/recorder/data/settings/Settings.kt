@@ -8,23 +8,114 @@ import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
-import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.di.Dispatcher
+import io.github.leonidius20.recorder.di.Scope
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
+import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
+import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
+import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.roundToInt
 
-interface SettingsInterface {
+// todo: lift to domain
+data class UserSettings(
+    val stopOnLowBattery: Boolean = true,
+    val stopOnLowStorage: Boolean = true,
+    val pauseOnCall: Boolean = false,
+)
 
-    val state: StateFlow<Settings.SettingsState>
+data class AudioConfig(
+    val audioSource: Int,
+    val outputFormat: Container,
+    val encoder: Codec,
+    val numOfChannels: AudioChannels,
+    val sampleRate: Int,
+    val audioResolution: BitRateSettingType,
+)
+
+
+interface UserSettingsReadRepository {
+
+    val userSettings: StateFlow<UserSettings>
+
+}
+
+@Singleton
+class UserSettingsRepositoryImpl @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    @param:Dispatcher.Io private val ioDispatcher: CoroutineDispatcher,
+    @param:Scope.App private val appScope: CoroutineScope,
+) : UserSettingsReadRepository {
+
+    private val pref = PreferenceManager.getDefaultSharedPreferences(context)
+
+    // stored here so that it's not garbage collected.
+    // prefs only store weak ref
+    lateinit var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
+
+    override val userSettings = callbackFlow {
+        val scope = this
+        trySend(getData())
+
+        prefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+            scope.launch {
+                trySend(getData())
+            }
+        }
+
+        pref.registerOnSharedPreferenceChangeListener(prefListener)
+
+        awaitClose {
+            pref.unregisterOnSharedPreferenceChangeListener(prefListener)
+            // todo: delete ref
+        }
+    }.stateIn(appScope, SharingStarted.Eagerly, UserSettings())
+
+    private suspend fun getData() = withContext(ioDispatcher) {
+        UserSettings(
+            stopOnLowBattery = pref.getBoolean(
+                R.string.stop_on_low_battery_pref_key,
+                R.bool.stop_on_low_battery_default
+            ),
+            stopOnLowStorage = pref.getBoolean(
+                R.string.stop_on_low_storage_pref_key,
+                R.bool.stop_on_storage_default
+            ),
+            pauseOnCall = pref.getBoolean(
+                R.string.pause_on_call_pref_key,
+                R.bool.pause_on_call_default
+            ),
+        )
+    }
+
+    // todo: move default values and keys into code
+    //  so as not to depend on context here?
+    private fun SharedPreferences.getBoolean(
+        @StringRes key: Int,
+        @BoolRes defaultValue: Int,
+    ) = getBoolean(
+        context.getString(key),
+        context.resources.getBoolean(defaultValue)
+    )
 
 }
 
@@ -32,26 +123,6 @@ interface SettingsInterface {
 class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : SettingsInterface {
-
-    data class SettingsState(
-        val stopOnLowBattery: Boolean,
-        val stopOnLowStorage: Boolean,
-        val pauseOnCall: Boolean,
-        val audioSource: Int,
-        val outputFormat: Container,
-        val encoder: Codec,
-        val numOfChannels: AudioChannels,
-        val sampleRate: Int,
-
-        // todo: have an AudioConfig class with some sealed heirarchy that
-        //  does away with the nullable things like that
-        val bitDepth: BitDepthOption?,
-        val bitRate: Float?,
-
-        // todo: maybe we instead should make Codec a proper class with subsclasses,
-        // where each instance is a codec with certain parameters set up (sample rate, bit rate)
-        // and the class itself will be checking if these parameters work together?
-    )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -80,41 +151,8 @@ class Settings @Inject constructor(
 
     override val state = _state.asStateFlow()
 
-    private val pauseOnCallKey = context.getString(R.string.pause_on_call_pref_key)
-
-    fun onSharedPreferenceChanged(
-        key: String?, fragment: PreferenceFragmentCompat?,
-    ) {
+    fun onSharedPreferenceChanged() {
         _state.value = getCurrentSettingsState()
-
-        // if pausing on incoming call was just enabled
-        if (key == pauseOnCallKey && state.value.pauseOnCall) {
-            // check or get call monitoring permission
-            PermissionX.init(fragment!!)
-                .permissions(android.Manifest.permission.READ_PHONE_STATE)
-                .onExplainRequestReason { scope, deniedList ->
-                    scope.showRequestReasonDialog(
-                        deniedList,
-                        message = fragment.getString(R.string.phone_state_permission_rationale),
-                        positiveText = fragment.getString(android.R.string.ok)
-                    )
-                }.onForwardToSettings { scope, deniedList ->
-                    scope.showForwardToSettingsDialog(
-                        deniedList,
-                        message = fragment.getString(
-                            R.string.permissions_rationale_grant_in_settings,
-                            fragment.getString(R.string.phone_state_permission_rationale)
-                        ),
-                        positiveText = fragment.getString(android.R.string.ok),
-                        negativeText = fragment.getString(android.R.string.cancel)
-                    )
-                }.request { allGranted: Boolean, grantedList, deniedList ->
-                    if (!allGranted) {
-                        // disable the setting
-                        pref.edit().putBoolean(pauseOnCallKey, false).apply()
-                    }
-                }
-        }
     }
 
     private fun getCurrentSettingsState(): SettingsState {
@@ -278,7 +316,7 @@ class Settings @Inject constructor(
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
-        onSharedPreferenceChanged(key, null)
+        onSharedPreferenceChanged()
     }
 
     fun setOutputFormat(format: Container) {
@@ -297,7 +335,7 @@ class Settings @Inject constructor(
 
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
-        onSharedPreferenceChanged(key, null)
+        onSharedPreferenceChanged()
         // we don't need to call this for the changed codec, as long as
         // this function reloads all of the settings every time
     }
@@ -321,7 +359,7 @@ class Settings @Inject constructor(
         // the listener only exists while the SettingsFragment is started,
         // so we call manually.
         if (fireChangeListener)
-            onSharedPreferenceChanged(key, null)
+            onSharedPreferenceChanged()
     }
 
     fun setNumberOfChannels(channels: AudioChannels) {
@@ -330,7 +368,7 @@ class Settings @Inject constructor(
         pref.edit().putInt(key, channels.numberOfChannels())
             .apply()
 
-        onSharedPreferenceChanged(key, null)
+        onSharedPreferenceChanged()
     }
 
     fun setSampleRate(rate: Int, fireChangeListener: Boolean = true) {
@@ -341,7 +379,7 @@ class Settings @Inject constructor(
             .apply()
 
         if (fireChangeListener)
-            onSharedPreferenceChanged(key, null)
+            onSharedPreferenceChanged()
     }
 
 
@@ -356,7 +394,7 @@ class Settings @Inject constructor(
         pref.edit().putInt(key, bitDepth.valueForPref)
             .apply()
 
-        onSharedPreferenceChanged(key, null)
+        onSharedPreferenceChanged()
     }
 
     fun setBitRate(rate: Float) {
@@ -368,7 +406,7 @@ class Settings @Inject constructor(
         pref.edit().putFloat(key, rate)
             .apply()
 
-        onSharedPreferenceChanged(key, null)
+        onSharedPreferenceChanged()
     }
 
     /**

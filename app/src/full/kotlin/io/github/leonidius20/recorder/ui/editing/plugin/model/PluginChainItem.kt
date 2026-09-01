@@ -12,8 +12,7 @@ data class PluginChainItem(
     val params: List<ParameterInformation>,
 ) {
 
-    fun progressBarVisibility() =
-        if (isConnected) View.GONE else View.VISIBLE
+    fun progressBarVisibility() = !isConnected
 
     fun pluginName() = info.displayName
 
@@ -21,7 +20,6 @@ data class PluginChainItem(
         R.drawable.ic_contract else R.drawable.ic_expand
 
     // todo: re-enable expaand-contract functionality
-    fun paramsListVisibility() = //if (isExpanded && isConnected)
-        View.VISIBLE //else View.GONE
+    fun paramsListVisibility() = true
 
 }

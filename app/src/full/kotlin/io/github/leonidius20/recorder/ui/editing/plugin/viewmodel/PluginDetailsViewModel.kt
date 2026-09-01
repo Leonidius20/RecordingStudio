@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.recorder.data.common.di.Dispatcher
 import io.github.leonidius20.recorder.data.plugins.PluginModel
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
@@ -25,18 +26,16 @@ import kotlinx.coroutines.withContext
 import org.androidaudioplugin.hosting.AudioPluginClientBase
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Named
 
 @HiltViewModel
 class PluginDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val pluginsRepository: PluginsRepository,
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val recordingsRepo: RecordingsListRepository,
-    @Named("cpu") private val defaultDispatcher: CoroutineDispatcher,
+    @param:Dispatcher.Default private val defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     // todo: expose flow of PluginChainItem-s. Also update parameter lists in them
