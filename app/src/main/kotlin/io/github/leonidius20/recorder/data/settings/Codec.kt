@@ -109,6 +109,39 @@ fun Codec<*>.supportedSampleRateClosestTo(rate: Int): Int {
 
 fun Codec<*>.supportsSampleRate(rate: Int) = rate in supportedSampleRates
 
+fun Codec<BitRateSettingType.BitRateValues>.supportedBitRateClosestTo(rate: Float): Float {
+    return when (val option = resolutionOptions) {
+        is BitRateSettingType.BitRateDiscreteValues -> {
+            option.bitRateOptions.mapIndexed { index, supportedRate ->
+                val distance = abs(rate - supportedRate)
+                index to distance
+            }.minBy { it.second }.let { (index, _) -> option.bitRateOptions[index] }
+        }
+
+        is BitRateSettingType.BitRateContinuousRange -> {
+            rate.coerceIn(option.min, option.max)
+        }
+
+        else -> throw IllegalStateException()
+    }
+}
+
+fun Codec<BitRateSettingType.BitRateValues>.supportsBitrate(rate: Float) =
+    when (val option = resolutionOptions) {
+        is BitRateSettingType.BitRateContinuousRange -> {
+            rate >= option.min && rate <= option.max
+        }
+
+        is BitRateSettingType.BitRateDiscreteValues -> {
+            option.bitRateOptions.contains(rate)
+        }
+
+        else -> {
+            throw IllegalStateException()
+        }
+    }
+
+
 fun Codec<BitRateSettingType.BitDepthDiscreteValues>.getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
     return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
 }

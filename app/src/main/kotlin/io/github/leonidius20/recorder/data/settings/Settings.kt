@@ -8,7 +8,6 @@ import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
-import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
@@ -124,7 +123,8 @@ class UserSettingsRepositoryImpl @Inject constructor(
 @Singleton
 class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
-) : SettingsInterface {
+    private val dataSource: AudioSettingsDataSource,
+    ) : SettingsInterface {
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -190,7 +190,12 @@ class Settings @Inject constructor(
                 value = pref.getFloat(
                     codec.bitDepthOrRateForCodecPrefKey,
                     options.default,
-                )
+                ).run {
+                    val codec = (codec as Codec<BitRateSettingType.BitRateValues>)
+                    if (!codec.supportsBitrate(this)) {
+                        codec.supportedBitRateClosestTo(this)
+                    } else this
+                }
             )
             is BitRateSettingType.BitDepthDiscreteValues -> Resolution.BitDepth(
                 (codec as (Codec<BitRateSettingType.BitDepthDiscreteValues>)).getBitDepthOptionFromPrefValue(
@@ -254,140 +259,34 @@ class Settings @Inject constructor(
         defaultValue
     )
 
-    data class AudioSourceOption(
-        /**
-         * value expected by MediaRecorder.setAudioSource()
-         */
-        val value: Int,
-        val name: String,
-        val description: String,
-    ) {
-
-        companion object {
-            val DEFAULT = AudioSourceOption(
-                MediaRecorder.AudioSource.DEFAULT,
-                "Default",
-                "Default audio input. Some processing may be applied by device"
-            )
-        }
-
-    }
-
-    val audioSourceOptions = buildList {
-        // todo: localize
-        addAll(
-            listOf(
-                AudioSourceOption.DEFAULT,
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.MIC,
-                    "Mic",
-                    "Regular microphone input (some processing may be applied by device)"
-                ),
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.CAMCORDER,
-                    "Camcorder",
-                    "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
-                ),
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
-                    "Voice recognition",
-                    "Tuned for voice recognition"
-                ),
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                    "Voice communication",
-                    "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
-                ),
-            )
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            add(
-                AudioSourceOption(
-                    MediaRecorder.AudioSource.UNPROCESSED,
-                    "Unprocessed",
-                    "No processing if the phone supports it, default otherwise"
-                )
-            )
-        }
-    }
-
     fun setAudioSource(value: Int) {
-        val key = context.getString(R.string.pref_audio_source_key)
-
-        // todo: migrate to datastore that provides async api.
-        //  we can do away with the change listeners too
-        pref.edit().putInt(
-            key,
-            value
-        ).apply()
-
-        // the listener only exists while the SettingsFragment is started,
-        // so we call manually.
-        onSharedPreferenceChanged()
+        sanitizeAndWriteSettings(state.value, audioSource = value)
     }
 
     fun setOutputFormat(format: Container) {
-        val key = context.getString(R.string.pref_output_format_key)
-
-        val editingPref = pref.edit().putInt(
-            key, format.value
-        )
-
-        val currentCodec = state.value.encoder
-        if (!format.supports(currentCodec)) {
-            setCodec(format.defaultCodec, fireChangeListener = false)
-        }
-
-        editingPref.apply()
-
-        // the listener only exists while the SettingsFragment is started,
-        // so we call manually.
-        onSharedPreferenceChanged()
-        // we don't need to call this for the changed codec, as long as
-        // this function reloads all of the settings every time
+        sanitizeAndWriteSettings(state.value,
+            outputFormat = format)
     }
 
-    fun setCodec(codec: Codec<*>, fireChangeListener: Boolean = true) {
-        val key = context.getString(R.string.pref_encoder_key)
-
-        pref.edit().putInt(
-            key, codec.value
-        ).apply()
-
-        val currentSampleRate = state.value.sampleRate
-
-        if (!codec.supportsSampleRate(currentSampleRate)) {
-            setSampleRate(
-                codec.supportedSampleRateClosestTo(currentSampleRate),
-                fireChangeListener = false
-            )
-        }
-
-        // the listener only exists while the SettingsFragment is started,
-        // so we call manually.
-        if (fireChangeListener)
-            onSharedPreferenceChanged()
+    fun setCodec(codec: Codec<*>) {
+        sanitizeAndWriteSettings(
+            state.value,
+            encoder = codec
+        )
     }
 
     fun setNumberOfChannels(channels: AudioChannels) {
-        val key = context.getString(R.string.num_channels_pref_key)
-
-        pref.edit().putInt(key, channels.numberOfChannels())
-            .apply()
-
-        onSharedPreferenceChanged()
+        sanitizeAndWriteSettings(
+            state.value,
+            numOfChannels = channels
+        )
     }
 
-    fun setSampleRate(rate: Int, fireChangeListener: Boolean = true) {
-
-        val key = context.getString(R.string.sample_rate_pref_key)
-
-        pref.edit().putInt(key, rate)
-            .apply()
-
-        if (fireChangeListener)
-            onSharedPreferenceChanged()
+    fun setSampleRate(rate: Int) {
+        sanitizeAndWriteSettings(
+            state.value,
+            sampleRate = rate
+        )
     }
 
 
@@ -397,24 +296,20 @@ class Settings @Inject constructor(
                     is BitRateSettingType.BitDepthDiscreteValues
         )
 
-        val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
-
-        pref.edit().putInt(key, bitDepth.valueForPref)
-            .apply()
-
-        onSharedPreferenceChanged()
+        sanitizeAndWriteSettings(
+            state.value,
+            resolution = Resolution.BitDepth(bitDepth)
+        )
     }
 
     fun setBitRate(rate: Float) {
         require(state.value.encoder.resolutionOptions
                 is BitRateSettingType.BitRateValues)
 
-        val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
-
-        pref.edit().putFloat(key, rate)
-            .apply()
-
-        onSharedPreferenceChanged()
+        sanitizeAndWriteSettings(
+            state.value,
+            resolution = Resolution.Bitrate(rate)
+        )
     }
 
     /**
@@ -436,10 +331,92 @@ class Settings @Inject constructor(
     // todo: one function to update (write updated) the settings.
     //  one function to sanitize
 
-    // todo: move to datasource
-    fun saveSettingsToDisk(settings: SettingsState<*>) {
-        pref.edit {
-            // write all
+    fun sanitizeAndWriteSettings(
+        settings: SettingsState<*>,
+        audioSource: Int = settings.audioSource,
+        outputFormat: Container = settings.outputFormat,
+        encoder: Codec<*> = settings.encoder,
+        numOfChannels: AudioChannels = settings.numOfChannels,
+        sampleRate: Int = settings.sampleRate,
+        resolution: Resolution<*> = settings.resolution,
+    ) {
+        dataSource.saveSettingsToDisk(
+            sanitizeSettings(
+                settings, audioSource, outputFormat, encoder, numOfChannels, sampleRate, resolution
+            )
+        )
+        onSharedPreferenceChanged()
+    }
+
+    private fun sanitizeSettings(
+        settings: SettingsState<*>,
+        audioSource: Int = settings.audioSource,
+        outputFormat: Container = settings.outputFormat,
+        encoder: Codec<*> = settings.encoder,
+        numOfChannels: AudioChannels = settings.numOfChannels,
+        sampleRate: Int = settings.sampleRate,
+        resolution: Resolution<*> = settings.resolution,
+    ): SettingsState<*> {
+
+        val encoder = if (!outputFormat.supports(encoder)) {
+            outputFormat.defaultCodec
+        } else encoder
+
+        val sampleRate = if (!encoder.supportsSampleRate(sampleRate)) {
+            encoder.supportedSampleRateClosestTo(sampleRate)
+        } else sampleRate
+
+        return when(encoder.resolutionOptions) {
+            is BitRateSettingType.None -> {
+                SettingsState(
+                    stopOnLowBattery = settings.stopOnLowBattery,
+                    stopOnLowStorage = settings.stopOnLowStorage,
+                    pauseOnCall = settings.pauseOnCall,
+                    audioSource = audioSource,
+                    outputFormat = outputFormat,
+                    encoder = encoder as Codec<BitRateSettingType.None>,
+                    numOfChannels = numOfChannels,
+                    sampleRate = sampleRate,
+                    resolution = Resolution.None
+                )
+            }
+            is BitRateSettingType.BitRateValues -> {
+                SettingsState(
+                    stopOnLowBattery = settings.stopOnLowBattery,
+                    stopOnLowStorage = settings.stopOnLowStorage,
+                    pauseOnCall = settings.pauseOnCall,
+                    audioSource = audioSource,
+                    outputFormat = outputFormat,
+                    encoder = encoder as Codec<BitRateSettingType.BitRateValues>,
+                    numOfChannels = numOfChannels,
+                    sampleRate = sampleRate,
+                    resolution = Resolution.Bitrate(
+                        if (resolution is Resolution.Bitrate) {
+                            val prev = resolution.value
+
+                            if (!encoder.supportsBitrate(prev)) {
+                                encoder.supportedBitRateClosestTo(prev)
+                            } else prev
+                        } else encoder.resolutionOptions.default
+                    )
+                )
+            }
+            is BitRateSettingType.BitDepthDiscreteValues -> {
+                SettingsState(
+                    stopOnLowBattery = settings.stopOnLowBattery,
+                    stopOnLowStorage = settings.stopOnLowStorage,
+                    pauseOnCall = settings.pauseOnCall,
+                    audioSource = audioSource,
+                    outputFormat = outputFormat,
+                    encoder = encoder as Codec<BitRateSettingType.BitDepthDiscreteValues>,
+                    numOfChannels = numOfChannels,
+                    sampleRate = sampleRate,
+                    resolution = Resolution.BitDepth(
+                        if (resolution is Resolution.BitDepth) resolution.value
+                        else encoder.resolutionOptions.default
+                    )
+                )
+            }
         }
     }
 

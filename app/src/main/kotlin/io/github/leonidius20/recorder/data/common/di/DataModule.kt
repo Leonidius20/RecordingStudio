@@ -1,9 +1,13 @@
 package io.github.leonidius20.recorder.data.common.di
 
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.di.Dispatcher
@@ -43,6 +47,12 @@ class DataModule {
     @Provides
     @Scope.App
     fun provideAppScope(): CoroutineScope = MainScope()
+
+    @Provides
+    @Singleton
+    fun providePref(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
 
 }

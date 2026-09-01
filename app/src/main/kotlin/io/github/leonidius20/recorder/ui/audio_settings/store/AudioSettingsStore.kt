@@ -4,11 +4,13 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import io.github.leonidius20.recorder.data.settings.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.data.settings.audioSourceOptions
 import io.github.leonidius20.recorder.data.settings.availableCodecs
 import io.github.leonidius20.recorder.data.settings.supportedContainers
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
@@ -25,7 +27,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
     sealed interface Intent {
 
         data class SetAudioSource(
-            val source: Settings.AudioSourceOption,
+            val source: AudioSourceOption,
         ) : Intent
 
         data class SetContainerFormat(
@@ -56,9 +58,9 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
 
     data class AudioSourceSetting(
-        override val option: Settings.AudioSourceOption,
+        override val option: AudioSourceOption,
         override val isSelected: Boolean,
-    ) : ChipSetting<Settings.AudioSourceOption> {
+    ) : ChipSetting<AudioSourceOption> {
 
         override val id: Int
             get() = option.value
@@ -124,7 +126,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
     data class State(
         val audioSources: List<AudioSourceSetting> = emptyList(),
-        val audioSource: Settings.AudioSourceOption? = null,
+        val audioSource: AudioSourceOption? = null,
         val containers: List<ContainerSetting> = emptyList(),
         val codecs: List<CodecSetting> = emptyList(),
         val channelOptions: List<ChannelsSetting> = emptyList(),
@@ -211,7 +213,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val bitRateSettingType = codec.resolutionOptions
 
-                            val audioSources = settings.audioSourceOptions.map {
+                            val audioSources = audioSourceOptions.map {
                                 AudioSettingsStore.AudioSourceSetting(
                                     option = it,
                                     // todo: have settings expose enum value and not int?
@@ -221,9 +223,9 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val newState = State(
                                 audioSources = audioSources,
-                                audioSource = settings.audioSourceOptions.find {
+                                audioSource = audioSourceOptions.find {
                                     it.value == newSettings.audioSource
-                                } ?: Settings.AudioSourceOption.DEFAULT, // todo: move this logic to Settings
+                                } ?: AudioSourceOption.DEFAULT, // todo: move this logic to Settings
 
                                 containers = Container.supportedContainers().map {
                                     AudioSettingsStore.ContainerSetting(
