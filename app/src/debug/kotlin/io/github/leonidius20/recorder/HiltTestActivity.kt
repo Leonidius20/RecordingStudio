@@ -9,5 +9,5 @@ import dagger.hilt.android.AndroidEntryPoint
 * which is not annotated with @AndroidEntryPoint for Hilt. For a workaround this
  * activity is used.
 **/
-/*@AndroidEntryPoint
-class HiltTestActivity : AppCompatActivity()*/
+@AndroidEntryPoint
+class HiltTestActivity : AppCompatActivity()

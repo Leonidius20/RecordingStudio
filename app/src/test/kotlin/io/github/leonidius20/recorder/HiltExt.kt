@@ -32,7 +32,7 @@ import androidx.test.core.app.ApplicationProvider
  * [HiltTestActivity] in the debug folder and include it in the debug AndroidManifest.xml file
  * as can be found in this project.
  */
-/*inline fun <reified T : Fragment> launchFragmentInHiltContainer(
+inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     fragmentArgs: Bundle? = null,
 
     crossinline action: Fragment.() -> Unit = {}
@@ -60,4 +60,4 @@ import androidx.test.core.app.ApplicationProvider
 
         fragment.action()
     }
-}*/
+}
