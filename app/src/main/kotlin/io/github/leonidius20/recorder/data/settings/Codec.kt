@@ -97,31 +97,27 @@ add(object : ICodec.CompressedCodec.WithDiscreteBitrate(
 ),)
 }*/
 
-val Codec.bitDepthOrRateForCodecPrefKey
+val Codec<*>.bitDepthOrRateForCodecPrefKey
     get() = "$value-bit"
 
-fun Codec.supportedSampleRateClosestTo(rate: Int): Int {
+fun Codec<*>.supportedSampleRateClosestTo(rate: Int): Int {
     return supportedSampleRates.mapIndexed { index, supportedRate ->
         val distance = abs(rate - supportedRate)
         index to distance
     }.minBy { it.second }.let { (index, _) -> supportedSampleRates[index] }
 }
 
-fun Codec.supportsSampleRate(rate: Int) = rate in supportedSampleRates
+fun Codec<*>.supportsSampleRate(rate: Int) = rate in supportedSampleRates
 
-fun Codec.getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
-    if(this.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues) {
-        return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
-    } else {
-        throw Error("this codec does not support setting bit depths")
-    }
+fun Codec<BitRateSettingType.BitDepthDiscreteValues>.getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
+    return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
 }
 
-    private val Codec.Companion.map by lazy {
-        codecs.associateBy { it.value }
-    }
+private val Codec.Companion.map by lazy {
+    codecs.associateBy { it.value }
+}
 
-    fun Codec.Companion.getByValue(value: Int) = map[value]!!
+fun Codec.Companion.getByValue(value: Int) = map[value]!!
 
 
 val codecAmrNb = Codec(
@@ -131,7 +127,7 @@ val codecAmrNb = Codec(
     //true,
     // todo: intersect with device supported sample rates
     supportedSampleRates = listOf(8_000),
-    bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+    resolutionOptions = BitRateSettingType.BitRateDiscreteValues(
         default = 12.20f,
         bitRateOptions = listOf(4.75f, 5.15f, 5.90f, 6.70f, 7.40f, 7.95f, 10.20f, 12.20f),
     ),
@@ -153,7 +149,7 @@ val codecs = buildList {
             //true,
             supportedSampleRates = listOf(16_000),
 
-            bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+            resolutionOptions = BitRateSettingType.BitRateDiscreteValues(
                 bitRateOptions = listOf(
                     6.6f,
                     8.85f,
@@ -189,7 +185,7 @@ val codecs = buildList {
                 44100,
                 48000
             ),
-            bitRateSettingType = BitRateSettingType.None,
+            resolutionOptions = BitRateSettingType.None,
         )
     )
 
@@ -210,7 +206,7 @@ val codecs = buildList {
                 44100,
                 48000
             ),
-            bitRateSettingType = BitRateSettingType.None,
+            resolutionOptions = BitRateSettingType.None,
         )
     )
 
@@ -221,7 +217,7 @@ val codecs = buildList {
             "AAC-ELD",
             //true,
             supportedSampleRates = listOf(16000, 22050, 24000, 32000, 44100, 48000),
-            bitRateSettingType = BitRateSettingType.None,
+            resolutionOptions = BitRateSettingType.None,
         )
     )
 
@@ -235,7 +231,7 @@ val codecs = buildList {
                 //Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
                 // https://hydrogenaud.io/index.php/topic,115663.0.html
                 supportedSampleRates = listOf(8000, 12000, 16000, 24000, 48000),
-                bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
+                resolutionOptions = BitRateSettingType.BitRateContinuousRange(
                     min = 6f,
                     max = 510f,
                     default = 128f,
@@ -262,7 +258,7 @@ val codecs = buildList {
                 44100,
                 48000
             ),
-            bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
+            resolutionOptions = BitRateSettingType.BitDepthDiscreteValues(
                 availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
                 default = PcmBitDepthOption.PCM_16BIT_INT,
             ),

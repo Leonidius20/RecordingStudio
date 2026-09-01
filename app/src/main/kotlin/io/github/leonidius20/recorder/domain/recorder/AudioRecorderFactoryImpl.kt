@@ -5,8 +5,7 @@ import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
-import io.github.leonidius20.recorder.entities.audio_settings.ContainerId
+import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import javax.inject.Inject
@@ -27,17 +26,27 @@ class AudioRecorderFactoryImpl @Inject constructor(
         // todo: do something about this
         val file = file as OutputFileImpl
 
-        return if (fileFormat.id == ContainerId.WAV) {
-            PcmAudioRecorder(
-                descriptor = file.descriptor,
-                audioSource = settingsState.audioSource,
-                sampleRate = settingsState.sampleRate,
-                monoOrStereo = settingsState.numOfChannels,
-                bitDepth = settingsState.bitDepth as? PcmBitDepthOption
-                    ?: PcmBitDepthOption.PCM_16BIT_INT,
-                coroutineScope = scope,
-            )
-        } else {
+        // todo: support for other codecs with bit depth, etc
+        //  or remove mediarecorderwrapper at all
+        return when(val resolution = settingsState.resolution) {
+            is Resolution.BitDepth -> {
+                PcmAudioRecorder(
+                    descriptor = file.descriptor,
+                    audioSource = settingsState.audioSource,
+                    sampleRate = settingsState.sampleRate,
+                    monoOrStereo = settingsState.numOfChannels,
+                    // todo: redo when settings allow
+                    bitDepth = resolution.value as? PcmBitDepthOption
+                        ?: PcmBitDepthOption.PCM_16BIT_INT,
+                    coroutineScope = scope,
+                )
+            }
+            else -> {
+                val bitrate = when(resolution) {
+                    is Resolution.None -> null
+                    is Resolution.Bitrate -> resolution.value
+                    else -> throw IllegalStateException() // todo: can we remove?
+                }
 
                 MediaRecorderWrapper(
                     audioSource = settingsState.audioSource,
@@ -46,13 +55,9 @@ class AudioRecorderFactoryImpl @Inject constructor(
                     encoder = settingsState.encoder,
                     channels = settingsState.numOfChannels,
                     sampleRate = settingsState.sampleRate,
-                    bitRate =
-                        if (settingsState.encoder.bitRateSettingType is BitRateSettingType.BitRateValues)
-                            settingsState.bitRate
-                        else null
+                    bitRate = bitrate
                 )
-
-
+            }
         }
     }
 

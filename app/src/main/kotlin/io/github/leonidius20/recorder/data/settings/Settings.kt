@@ -8,6 +8,7 @@ import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
@@ -19,6 +20,7 @@ import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -31,7 +33,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,10 +44,11 @@ data class UserSettings(
     val pauseOnCall: Boolean = false,
 )
 
+// todo: parametrize properly
 data class AudioConfig(
     val audioSource: Int,
     val outputFormat: Container,
-    val encoder: Codec,
+    val encoder: Codec<*>,
     val numOfChannels: AudioChannels,
     val sampleRate: Int,
     val audioResolution: BitRateSettingType,
@@ -155,7 +157,7 @@ class Settings @Inject constructor(
         _state.value = getCurrentSettingsState()
     }
 
-    private fun getCurrentSettingsState(): SettingsState {
+    private fun getCurrentSettingsState(): SettingsState<*> {
         val container = Container.getByValue(
             pref.getInt(
                 R.string.pref_output_format_key,
@@ -173,26 +175,33 @@ class Settings @Inject constructor(
             codec = container.defaultCodec
         }
 
-        val bitDepth = (codec.bitRateSettingType as? BitRateSettingType.BitDepthDiscreteValues)?.let {
-            try {
-                codec.getBitDepthOptionFromPrefValue(
+
+        return buildTypedSettings(container, codec)
+    }
+
+    private fun <T: BitRateSettingType> buildTypedSettings(
+        container: Container,
+        codec: Codec<T>,
+    ): SettingsState<T> {
+        // todo: find better way?
+        @Suppress("UNCHECKED_CAST")
+        val resolution = when(val options = codec.resolutionOptions) {
+            is BitRateSettingType.BitRateValues -> Resolution.Bitrate(
+                value = pref.getFloat(
+                    codec.bitDepthOrRateForCodecPrefKey,
+                    options.default,
+                )
+            )
+            is BitRateSettingType.BitDepthDiscreteValues -> Resolution.BitDepth(
+                (codec as (Codec<BitRateSettingType.BitDepthDiscreteValues>)).getBitDepthOptionFromPrefValue(
                     pref.getInt(
                         codec.bitDepthOrRateForCodecPrefKey,
-                        it.default.valueForPref
+                        options.default.valueForPref
                     )
                 )
-            } catch (t: Throwable) {
-                Timber.e(t)
-                it.default
-            }
-        }
-
-        val bitRate = (codec.bitRateSettingType as? BitRateSettingType.BitRateValues)?.let {
-            pref.getFloat(
-                codec.bitDepthOrRateForCodecPrefKey,
-                it.default,
             )
-        }
+            is BitRateSettingType.None -> Resolution.None
+        } as Resolution<T>
 
         return SettingsState(
             stopOnLowBattery = pref.getBoolean(
@@ -223,8 +232,7 @@ class Settings @Inject constructor(
                 R.string.sample_rate_pref_key,
                 medianSampleRateSupportedByCodecAndDevice(codec)
             ),
-            bitDepth = bitDepth,
-            bitRate = bitRate,
+            resolution = resolution,
         )
     }
 
@@ -340,7 +348,7 @@ class Settings @Inject constructor(
         // this function reloads all of the settings every time
     }
 
-    fun setCodec(codec: Codec, fireChangeListener: Boolean = true) {
+    fun setCodec(codec: Codec<*>, fireChangeListener: Boolean = true) {
         val key = context.getString(R.string.pref_encoder_key)
 
         pref.edit().putInt(
@@ -385,7 +393,7 @@ class Settings @Inject constructor(
 
     fun setBitDepth(bitDepth: BitDepthOption) {
         require(
-            state.value.encoder.bitRateSettingType
+            state.value.encoder.resolutionOptions
                     is BitRateSettingType.BitDepthDiscreteValues
         )
 
@@ -398,7 +406,7 @@ class Settings @Inject constructor(
     }
 
     fun setBitRate(rate: Float) {
-        require(state.value.encoder.bitRateSettingType
+        require(state.value.encoder.resolutionOptions
                 is BitRateSettingType.BitRateValues)
 
         val key = state.value.encoder.bitDepthOrRateForCodecPrefKey
@@ -415,7 +423,7 @@ class Settings @Inject constructor(
      * rate sounds bad with the default bitrate, and we have not implemented changing
      * the latter yet.
      */
-    private fun medianSampleRateSupportedByCodecAndDevice(codec: Codec): Int {
+    private fun medianSampleRateSupportedByCodecAndDevice(codec: Codec<*>): Int {
         val rates = codec.supportedSampleRates.intersect(
             sampleRatesSupportedByDevice
         ).toIntArray()
@@ -423,6 +431,16 @@ class Settings @Inject constructor(
         val middleIndex = rates.size / 2
 
         return rates[middleIndex]
+    }
+
+    // todo: one function to update (write updated) the settings.
+    //  one function to sanitize
+
+    // todo: move to datasource
+    fun saveSettingsToDisk(settings: SettingsState<*>) {
+        pref.edit {
+            // write all
+        }
     }
 
 }

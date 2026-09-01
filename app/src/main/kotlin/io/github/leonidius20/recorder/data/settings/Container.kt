@@ -18,7 +18,7 @@ val Container.isSupported: Boolean
 /**
  * default CodecId for this container
  */
-val Container.defaultCodec: Codec
+val Container.defaultCodec: Codec<*>
     get() = codecById[supportedCodecIds.first { id ->
         // exists in the list of codecs available on device
         codecs.any { it.id == id }
@@ -27,10 +27,10 @@ val Container.defaultCodec: Codec
 /**
  * CodecIds that can be put into this container and that are supported by device
  */
-val Container.availableCodecs: List<Codec>
+val Container.availableCodecs: List<Codec<*>>
     get() = supportedCodecIds.mapNotNull { codecById[it] }
 
-fun Container.supports(codec: Codec) = availableCodecs.contains(codec)
+fun Container.supports(codec: Codec<*>) = availableCodecs.contains(codec)
 
 private val Container.Companion.map by lazy {
     containers.associateBy {

@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface SettingsInterface {
 
-    val state: StateFlow<SettingsState>
+    val state: StateFlow<SettingsState<*>>
 
 }

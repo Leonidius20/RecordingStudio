@@ -17,7 +17,7 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
     audioSource: Int,
     container: Container,
     descriptor: ParcelFileDescriptor,
-    encoder: Codec,
+    encoder: Codec<*>,
     channels: AudioChannels,
     sampleRate: Int,
     /**

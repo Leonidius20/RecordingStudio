@@ -35,7 +35,7 @@ class AudioSettingsViewImpl(
         dispatch(Intent.SetContainerFormat(container))
     }
 
-    private val codecsAdapter = ChipSettingsAdapter<Codec> { codec ->
+    private val codecsAdapter = ChipSettingsAdapter<Codec<*>> { codec ->
         dispatch(Intent.SetCodec(codec))
     }
 
