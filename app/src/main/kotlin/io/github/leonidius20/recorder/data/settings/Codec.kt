@@ -4,8 +4,8 @@ import android.media.MediaRecorder
 import android.os.Build
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.CodecId
-import kotlin.collections.List
 import kotlin.collections.associateBy
 import kotlin.collections.buildList
 import kotlin.collections.find
@@ -97,56 +97,24 @@ add(object : ICodec.CompressedCodec.WithDiscreteBitrate(
 ),)
 }*/
 
-data class Codec(
-    val id: CodecId,
-    /**
-     * value as expected by MediaRecorder.setAudioEncoder()
-     */
-    val value: Int,
-    val displayName: String,
-    //val isSupportedByDevice: Boolean,
-    val supportedSampleRates: List<Int>,
+val Codec.bitDepthOrRateForCodecPrefKey
+    get() = "$value-bit"
 
-    // val supportsStereo: Boolean = true,
+fun Codec.supportedSampleRateClosestTo(rate: Int): Int {
+    return supportedSampleRates.mapIndexed { index, supportedRate ->
+        val distance = abs(rate - supportedRate)
+        index to distance
+    }.minBy { it.second }.let { (index, _) -> supportedSampleRates[index] }
+}
 
-    val bitRateSettingType: BitRateSettingType,
+fun Codec.supportsSampleRate(rate: Int) = rate in supportedSampleRates
 
-    //val supportsSettingBitDepth: Boolean = false,
-    //val supportsSettingBitRate: Boolean = false,
-
-    //val bitDepthOptions: Array<BitDepthOption>? = null,
-    //val defaultBitDepth: BitDepthOption? = null,
-
-    /**
-     * in kbps (MediaRecorder asks for bps so there has to be multiplication)
-     */
-    //val bitRateOptions: Array<Float>? = null,
-   // val defaultBitRate: Float? = null,
-
-    // val isBitRateContinuous : Boolean? = null,
-) {
-    val bitDepthOrRateForCodecPrefKey
-        get() = "$value-bit"
-
-    fun supportedSampleRateClosestTo(rate: Int): Int {
-        return supportedSampleRates.mapIndexed { index, supportedRate ->
-            val distance = abs(rate - supportedRate)
-            index to distance
-        }.minBy { it.second }.let { (index, _) -> supportedSampleRates[index] }
+fun Codec.getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
+    if(this.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues) {
+        return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
+    } else {
+        throw Error("this codec does not support setting bit depths")
     }
-
-    fun supportsSampleRate(rate: Int) = rate in supportedSampleRates
-
-    fun getBitDepthOptionFromPrefValue(prefValue: Int): BitDepthOption {
-        if(this.bitRateSettingType is BitRateSettingType.BitDepthDiscreteValues) {
-            return PcmBitDepthOption.entries.find { it.valueForPref == prefValue }!!
-        } else {
-            throw Error("this codec does not support setting bit depths")
-        }
-    }
-
-    companion object // needed for extension functions
-
 }
 
     private val Codec.Companion.map by lazy {
@@ -177,77 +145,129 @@ val codecs = buildList {
 
     add(codecAmrNb)
 
-    add(Codec(
-        id = CodecId.AMR_WB,
-        MediaRecorder.AudioEncoder.AMR_WB,
-        "AMR Wideband",
-        //true,
-        supportedSampleRates = listOf(16_000),
+    add(
+        Codec(
+            id = CodecId.AMR_WB,
+            MediaRecorder.AudioEncoder.AMR_WB,
+            "AMR Wideband",
+            //true,
+            supportedSampleRates = listOf(16_000),
 
-        bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
-            bitRateOptions = listOf(6.6f, 8.85f, 12.65f, 14.25f, 15.85f, 18.25f, 19.85f, 23.05f, 23.85f),
-            default = 23.85f,
-        ),
-        //supportsStereo = false,
-    ))
+            bitRateSettingType = BitRateSettingType.BitRateDiscreteValues(
+                bitRateOptions = listOf(
+                    6.6f,
+                    8.85f,
+                    12.65f,
+                    14.25f,
+                    15.85f,
+                    18.25f,
+                    19.85f,
+                    23.05f,
+                    23.85f
+                ),
+                default = 23.85f,
+            ),
+            //supportsStereo = false,
+        )
+    )
 
     // todo: vbr, cbr, etc?
-    add(Codec(
-        id = CodecId.AAC,
-        MediaRecorder.AudioEncoder.AAC,
-        "AAC-LC",
-        //true,
-        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ))
+    add(
+        Codec(
+            id = CodecId.AAC,
+            MediaRecorder.AudioEncoder.AAC,
+            "AAC-LC",
+            //true,
+            supportedSampleRates = listOf(
+                8000,
+                11025,
+                12000,
+                16000,
+                22050,
+                24000,
+                32000,
+                44100,
+                48000
+            ),
+            bitRateSettingType = BitRateSettingType.None,
+        )
+    )
 
-    add(Codec(
-        id = CodecId.HE_AAC,
-        MediaRecorder.AudioEncoder.HE_AAC,
-        "HE-AAC",
-        //true,
-        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ))
+    add(
+        Codec(
+            id = CodecId.HE_AAC,
+            MediaRecorder.AudioEncoder.HE_AAC,
+            "HE-AAC",
+            //true,
+            supportedSampleRates = listOf(
+                8000,
+                11025,
+                12000,
+                16000,
+                22050,
+                24000,
+                32000,
+                44100,
+                48000
+            ),
+            bitRateSettingType = BitRateSettingType.None,
+        )
+    )
 
-    add(Codec(
-        id = CodecId.AAC_ELD,
-        MediaRecorder.AudioEncoder.AAC_ELD,
-        "AAC-ELD",
-        //true,
-        supportedSampleRates = listOf(16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.None,
-    ))
+    add(
+        Codec(
+            id = CodecId.AAC_ELD,
+            MediaRecorder.AudioEncoder.AAC_ELD,
+            "AAC-ELD",
+            //true,
+            supportedSampleRates = listOf(16000, 22050, 24000, 32000, 44100, 48000),
+            bitRateSettingType = BitRateSettingType.None,
+        )
+    )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-        add(Codec(
-            id = CodecId.OPUS,
-            MediaRecorder.AudioEncoder.OPUS,
-            "Opus",
-            //Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-            // https://hydrogenaud.io/index.php/topic,115663.0.html
-            supportedSampleRates = listOf(8000, 12000, 16000, 24000, 48000),
-            bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
-                min = 6f,
-                max = 510f,
-                default = 128f,
-            ),
-        ))
+        add(
+            Codec(
+                id = CodecId.OPUS,
+                MediaRecorder.AudioEncoder.OPUS,
+                "Opus",
+                //Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
+                // https://hydrogenaud.io/index.php/topic,115663.0.html
+                supportedSampleRates = listOf(8000, 12000, 16000, 24000, 48000),
+                bitRateSettingType = BitRateSettingType.BitRateContinuousRange(
+                    min = 6f,
+                    max = 510f,
+                    default = 128f,
+                ),
+            )
+        )
     }
 
 
-    add(Codec(
-        id = CodecId.PCM,
-        value = -1,
-        displayName = "PCM",
-        //isSupportedByDevice = true,
-        supportedSampleRates = listOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000),
-        bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
-            availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
-            default = PcmBitDepthOption.PCM_16BIT_INT,
-        ),
-    ))
+    add(
+        Codec(
+            id = CodecId.PCM,
+            value = -1,
+            displayName = "PCM",
+            //isSupportedByDevice = true,
+            supportedSampleRates = listOf(
+                8000,
+                11025,
+                12000,
+                16000,
+                22050,
+                24000,
+                32000,
+                44100,
+                48000
+            ),
+            bitRateSettingType = BitRateSettingType.BitDepthDiscreteValues(
+                availableOptions = PcmBitDepthOption.entries.map { it as BitDepthOption },
+                default = PcmBitDepthOption.PCM_16BIT_INT,
+            ),
+        )
+    )
 
 }
 

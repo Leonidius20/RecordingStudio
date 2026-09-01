@@ -2,117 +2,116 @@ package io.github.leonidius20.recorder.data.settings
 
 import android.media.MediaRecorder
 import android.os.Build
-import androidx.annotation.RequiresApi
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.CodecId
+import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.ContainerId
 
-// todo: replace w/ sealed interface?
-enum class Container(
-    /**
-     * value as expected by MediaRecorder.setOutputFormat()
-     */
-    val value: Int,
-    val displayName: String,
-    val mimeType: String,
-    private val isSupportedByDevice: Boolean,
-    /**
-     * determined based on https://developer.android.com/media/platform/supported-formats
-     */
-    private val supportedCodecIds: List<CodecId>,
-) {
+/**
+ * we consider the container to be supported if the API level of the device is high
+ * enough (isSupportedByDevice) and if there is at least one CodecId that can be put
+ * in this container that is supported by the device.
+ */
+val Container.isSupported: Boolean
+    get() = availableCodecs.isNotEmpty()
 
-    THREE_GPP(
-        MediaRecorder.OutputFormat.THREE_GPP,
-        "3GPP", "audio/3gpp",
-        true,
-        listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD, CodecId.AMR_NB, CodecId.AMR_WB)
-    ),
+/**
+ * default CodecId for this container
+ */
+val Container.defaultCodec: Codec
+    get() = codecById[supportedCodecIds.first { id ->
+        // exists in the list of codecs available on device
+        codecs.any { it.id == id }
+    }]!!
 
-    MPEG4(
-        MediaRecorder.OutputFormat.MPEG_4,
-        "MPEG4", "audio/mp4",
-        true,
-        listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD)
-    ),
+/**
+ * CodecIds that can be put into this container and that are supported by device
+ */
+val Container.availableCodecs: List<Codec>
+    get() = supportedCodecIds.mapNotNull { codecById[it] }
 
-    AAC_ADTS(
-        MediaRecorder.OutputFormat.AAC_ADTS,
-        "AAC ADTS", "audio/aac-adts",
-        true,
-        listOf(
-            CodecId.AAC,
-            // todo fix and bring back
-            // CodecId.HE_AAC,
-            // CodecId.AAC_ELD,
+fun Container.supports(codec: Codec) = availableCodecs.contains(codec)
+
+private val Container.Companion.map by lazy {
+    containers.associateBy {
+        it.value
+    }
+}
+
+fun Container.Companion.getByValue(value: Int) = map[value]!!
+
+fun Container.Companion.supportedContainers() = containers.filter { it.isSupported }
+
+val container3gpp = Container(
+    id = ContainerId.THREE_GPP,
+    MediaRecorder.OutputFormat.THREE_GPP,
+    "3GPP", "audio/3gpp",
+    listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD, CodecId.AMR_NB, CodecId.AMR_WB)
+)
+
+val containers = buildList {
+
+    add(container3gpp)
+
+    add(
+        Container(
+            id = ContainerId.MPEG4,
+            MediaRecorder.OutputFormat.MPEG_4,
+            "MPEG4", "audio/mp4",
+            listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD)
         )
-    ),
+    )
 
-    AMR_NB(
-        MediaRecorder.OutputFormat.AMR_NB,
-        "AMR Narrowband", "audio/amr",
-        true,
-        listOf(CodecId.AMR_NB)
-    ),
+    add(
+        Container(
+            id = ContainerId.AAC_ADTS,
+            MediaRecorder.OutputFormat.AAC_ADTS,
+            "AAC ADTS", "audio/aac-adts",
+            listOf(
+                CodecId.AAC,
+                // todo fix and bring back
+                // CodecId.HE_AAC,
+                // CodecId.AAC_ELD,
+            )
+        )
+    )
 
-    AMR_WB(
-        MediaRecorder.OutputFormat.AMR_WB,
-        "AMR Wideband", "audio/amr-wb",
-        true,
-        listOf(CodecId.AMR_WB)
-    ),
+    add(
+        Container(
+            id = ContainerId.AMR_NB,
+            MediaRecorder.OutputFormat.AMR_NB,
+            "AMR Narrowband", "audio/amr",
+            listOf(CodecId.AMR_NB)
+        )
+    )
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    OGG(
-        MediaRecorder.OutputFormat.OGG,
-        "OGG", "audio/ogg",
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
-        listOf(CodecId.OPUS)
-    ),
+    add(
+        Container(
+            id = ContainerId.AMR_WB,
+            MediaRecorder.OutputFormat.AMR_WB,
+            "AMR Wideband", "audio/amr-wb",
+            listOf(CodecId.AMR_WB)
+        )
+    )
 
-
-    WAV(
-        value = -1,
-        displayName = "WAV", mimeType = "audio/x-wav",
-        isSupportedByDevice = true,
-        supportedCodecIds = listOf(CodecId.PCM)
-    );
-
-    /**
-     * we consider the container to be supported if the API level of the device is high
-     * enough (isSupportedByDevice) and if there is at least one CodecId that can be put
-     * in this container that is supported by the device.
-     */
-    val isSupported: Boolean
-        get() = isSupportedByDevice && availableCodecs.isNotEmpty()
-
-    /**
-     * default CodecId for this container
-     */
-    val defaultCodec: Codec
-        get() = codecById[supportedCodecIds.first { id ->
-            // exists in the list of codecs available on device
-            codecs.any { it.id == id }
-        }]!!
-
-    /**
-     * CodecIds that can be put into this container and that are supported by device
-     */
-    val availableCodecs: List<Codec>
-        get() = supportedCodecIds.mapNotNull { codecById[it] }
-
-    fun supports(codec: Codec) = availableCodecs.contains(codec)
-
-    companion object {
-
-        private val map by lazy {
-            Container.entries.associateBy {
-                it.value
-            }
-        }
-
-        fun getByValue(value: Int) = map[value]!!
-
-        fun supportedContainers() = entries.filter { it.isSupported }
-
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        add(
+            Container(
+                id = ContainerId.OGG,
+                MediaRecorder.OutputFormat.OGG,
+                "OGG", "audio/ogg",
+                listOf(CodecId.OPUS)
+            )
+        )
     }
 
+
+    add(
+        Container(
+            id = ContainerId.WAV,
+            value = -1,
+            displayName = "WAV", mimeType = "audio/x-wav",
+            supportedCodecIds = listOf(CodecId.PCM)
+        )
+    )
 }

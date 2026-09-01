@@ -6,9 +6,11 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
-import io.github.leonidius20.recorder.data.settings.Codec
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
+import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.data.settings.availableCodecs
+import io.github.leonidius20.recorder.data.settings.supportedContainers
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State

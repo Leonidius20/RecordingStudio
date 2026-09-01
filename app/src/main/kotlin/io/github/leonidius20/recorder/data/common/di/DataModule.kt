@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
-import io.github.leonidius20.recorder.data.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl

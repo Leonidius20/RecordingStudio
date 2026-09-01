@@ -10,8 +10,8 @@ import com.google.android.material.slider.Slider
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
-import io.github.leonidius20.recorder.data.settings.Codec
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
+import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent

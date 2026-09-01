@@ -5,8 +5,8 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
-import io.github.leonidius20.recorder.data.settings.Codec
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
+import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
 import java.io.IOException
 

@@ -13,9 +13,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.common.di.Dispatcher
 import io.github.leonidius20.recorder.data.common.di.Scope
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.Codec
+import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -52,12 +56,6 @@ data class AudioConfig(
 interface UserSettingsReadRepository {
 
     val userSettings: StateFlow<UserSettings>
-
-}
-
-interface SettingsInterface {
-
-    val state: StateFlow<Settings.SettingsState>
 
 }
 
@@ -125,28 +123,6 @@ class UserSettingsRepositoryImpl @Inject constructor(
 class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : SettingsInterface {
-
-    // todo: separate audio config and user settings into different classes
-
-    data class SettingsState(
-        val stopOnLowBattery: Boolean,
-        val stopOnLowStorage: Boolean,
-        val pauseOnCall: Boolean,
-        val audioSource: Int,
-        val outputFormat: Container,
-        val encoder: Codec,
-        val numOfChannels: AudioChannels,
-        val sampleRate: Int,
-
-        // todo: have an AudioConfig class with some sealed heirarchy that
-        //  does away with the nullable things like that
-        val bitDepth: BitDepthOption?,
-        val bitRate: Float?,
-
-        // todo: maybe we instead should make Codec a proper class with subsclasses,
-        // where each instance is a codec with certain parameters set up (sample rate, bit rate)
-        // and the class itself will be checking if these parameters work together?
-    )
 
     private val pref = PreferenceManager.getDefaultSharedPreferences(context)
 

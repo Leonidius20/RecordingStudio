@@ -2,7 +2,7 @@ package io.github.leonidius20.recorder.domain.recorder
 
 import io.github.leonidius20.recorder.data.common.di.Dispatcher
 import io.github.leonidius20.recorder.data.common.di.Scope
-import io.github.leonidius20.recorder.data.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.CoroutineDispatcher

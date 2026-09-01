@@ -15,4 +15,5 @@ kotlin {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(libs.kotlinx.coroutines)
+    implementation(project(":entities"))
 }

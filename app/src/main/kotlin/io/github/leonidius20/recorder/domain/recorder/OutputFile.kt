@@ -1,6 +1,6 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.entities.audio_settings.Container
 
 interface OutputFile {
 

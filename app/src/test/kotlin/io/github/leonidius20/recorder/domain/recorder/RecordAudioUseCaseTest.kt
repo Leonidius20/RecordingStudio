@@ -1,12 +1,13 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.data.settings.Container
-import io.github.leonidius20.recorder.data.settings.Settings
-import io.github.leonidius20.recorder.data.settings.SettingsInterface
+import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.data.settings.codecAmrNb
+import io.github.leonidius20.recorder.data.settings.container3gpp
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
+import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,12 +25,12 @@ import org.junit.Test
 
 class RecordAudioUseCaseTest {
 
-    val fakeSettings = Settings.SettingsState (
+    val fakeSettings = SettingsState(
         stopOnLowBattery = false,
         false,
         false,
-        0, Container.THREE_GPP,
-        codecAmrNb, AudioChannels.MONO, 0, null,0f
+        0, container3gpp,
+        codecAmrNb, AudioChannels.MONO, 0, null, 0f
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,7 +44,7 @@ class RecordAudioUseCaseTest {
 
         val settingsProvider = object : SettingsInterface {
             val _state = MutableStateFlow(settings)
-            override val state: StateFlow<Settings.SettingsState>
+            override val state: StateFlow<SettingsState>
                 get() = _state
         }
 
