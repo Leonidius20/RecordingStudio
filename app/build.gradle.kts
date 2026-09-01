@@ -191,4 +191,5 @@ dependencies {
 
     implementation(project(":entities"))
     implementation(project(":domain:recorder"))
+    implementation(project(":di"))
 }

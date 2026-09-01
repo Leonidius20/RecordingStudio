@@ -11,8 +11,8 @@ import androidx.annotation.StringRes
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.data.common.di.Dispatcher
-import io.github.leonidius20.recorder.data.common.di.Scope
+import io.github.leonidius20.recorder.di.Dispatcher
+import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption

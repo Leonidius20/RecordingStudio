@@ -6,6 +6,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.di.Dispatcher
+import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
@@ -21,30 +23,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-class Dispatcher {
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class Default
-
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class Io
-
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class Main
-}
-
-class Scope {
-
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class App
-
-}
 
 @Module
 @InstallIn(SingletonComponent::class)

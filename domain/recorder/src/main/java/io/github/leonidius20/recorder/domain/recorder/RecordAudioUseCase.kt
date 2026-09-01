@@ -1,13 +1,12 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.data.common.di.Dispatcher
-import io.github.leonidius20.recorder.data.common.di.Scope
-import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.di.Dispatcher
+import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -21,6 +20,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 // todo: unit tests for business logic?
 // todo: remove all the fucking notifications from here
@@ -29,6 +29,7 @@ class RecordAudioUseCase @Inject constructor(
     private val settings: SettingsInterface,
     @param:Scope.App private val scope: CoroutineScope,
     @param:Dispatcher.Main private val dispatcher: CoroutineDispatcher,
+    @param:Dispatcher.Default private val defaultDispatcher: CoroutineDispatcher,
     private val notificationsManager: RecordingNotificationsManager, // todo: instead somewhere subscribe to states and update notifications accordingliy
     private val systemEventObserver: SystemEventObserver,
     private val outputFileFactory: OutputFileFactory,
@@ -133,12 +134,12 @@ class RecordAudioUseCase @Inject constructor(
         stopwatch.start()
 
 
-        amplitudeVizUpdateJob = scope.launch(Dispatchers.Default) {
+        amplitudeVizUpdateJob = scope.launch(defaultDispatcher) {
             // every 100ms, emit maxAmplitude
             while (isActive) {
                 if (state.value is RecordingState.Recording) {
                     _amplitudes.emit(recorder.maxAmplitude())
-                    delay(100)
+                    delay(100.milliseconds)
                 } else {
                     // first() supposed to be cancellable?
                     state.first { it is RecordingState.Recording }

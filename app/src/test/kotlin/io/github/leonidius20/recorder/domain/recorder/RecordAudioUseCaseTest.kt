@@ -22,7 +22,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 // todo: make all mocks relaxed
-
+// todo: move to domain/recorder module
+// todo: refactor Codec and Container to remove references to MediaRecorder ints
 class RecordAudioUseCaseTest {
 
     val fakeSettings = SettingsState(
@@ -63,6 +64,7 @@ class RecordAudioUseCaseTest {
             settingsProvider,
             scope = backgroundScope,
             dispatcher = UnconfinedTestDispatcher(testScheduler),
+            defaultDispatcher = UnconfinedTestDispatcher(testScheduler),
             notificationsManager = mockk(relaxed = true), // todo: remove mocking and this dependency too
             systemEventObserver = observer,
             outputFileFactory = object : OutputFileFactory {

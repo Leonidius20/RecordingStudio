@@ -1,11 +1,11 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.data.common.di.Scope
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
-import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.data.settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.di.Scope
+import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.ContainerId
 import kotlinx.coroutines.CoroutineScope
 import java.io.IOException

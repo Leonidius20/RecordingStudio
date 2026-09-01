@@ -3,6 +3,7 @@ agp = "9.3.0"
 customactivityoncrash = "2.4.0"
 flexbox = "3.0.0"
 fragmentTesting = "1.8.1"
+javaxInject = "1"
 kotlin = "2.2.10"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -37,6 +38,7 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 customactivityoncrash = { module = "cat.ereza:customactivityoncrash", version.ref = "customactivityoncrash" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
