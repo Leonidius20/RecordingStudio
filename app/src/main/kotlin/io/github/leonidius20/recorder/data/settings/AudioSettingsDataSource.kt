@@ -103,18 +103,6 @@ class AudioSettingsDataSource @Inject constructor(
         } as Resolution<T>
 
         return SettingsState(
-            stopOnLowBattery = pref.getBoolean(
-                R.string.stop_on_low_battery_pref_key,
-                R.bool.stop_on_low_battery_default
-            ),
-            stopOnLowStorage = pref.getBoolean(
-                R.string.stop_on_low_storage_pref_key,
-                R.bool.stop_on_storage_default
-            ),
-            pauseOnCall = pref.getBoolean(
-                R.string.pause_on_call_pref_key,
-                R.bool.pause_on_call_default
-            ),
             audioSource = pref.getInt(
                 R.string.pref_audio_source_key,
                 MediaRecorder.AudioSource.MIC,

@@ -10,9 +10,10 @@ import androidx.annotation.StringRes
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.UserSettings
+import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
@@ -20,26 +21,15 @@ import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
-
-// todo: lift to domain
-data class UserSettings(
-    val stopOnLowBattery: Boolean = true,
-    val stopOnLowStorage: Boolean = true,
-    val pauseOnCall: Boolean = false,
-)
 
 // todo: parametrize properly
 data class AudioConfig(
@@ -52,16 +42,9 @@ data class AudioConfig(
 )
 
 
-interface UserSettingsReadRepository {
-
-    val userSettings: StateFlow<UserSettings>
-
-}
-
 @Singleton
 class UserSettingsRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    @param:Dispatcher.Io private val ioDispatcher: CoroutineDispatcher,
     @param:Scope.App private val appScope: CoroutineScope,
 ) : UserSettingsReadRepository {
 
@@ -71,14 +54,12 @@ class UserSettingsRepositoryImpl @Inject constructor(
     // prefs only store weak ref
     lateinit var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
 
+    // todo: also split data source and repo?
     override val userSettings = callbackFlow {
-        val scope = this
         trySend(getData())
 
         prefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
-            scope.launch {
-                trySend(getData())
-            }
+            trySend(getData())
         }
 
         pref.registerOnSharedPreferenceChangeListener(prefListener)
@@ -87,9 +68,9 @@ class UserSettingsRepositoryImpl @Inject constructor(
             pref.unregisterOnSharedPreferenceChangeListener(prefListener)
             // todo: delete ref
         }
-    }.stateIn(appScope, SharingStarted.Eagerly, UserSettings())
+    }.stateIn(appScope, SharingStarted.Eagerly, getData())
 
-    private suspend fun getData() = withContext(ioDispatcher) {
+    private fun getData() =
         UserSettings(
             stopOnLowBattery = pref.getBoolean(
                 R.string.stop_on_low_battery_pref_key,
@@ -104,7 +85,6 @@ class UserSettingsRepositoryImpl @Inject constructor(
                 R.bool.pause_on_call_default
             ),
         )
-    }
 
     // todo: move default values and keys into code
     //  so as not to depend on context here?
@@ -123,9 +103,7 @@ class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
     @param:Scope.App private val appScope: CoroutineScope,
     private val dataSource: AudioSettingsDataSource,
-    ) : SettingsInterface {
-
-    private val pref = PreferenceManager.getDefaultSharedPreferences(context)
+) : SettingsInterface {
 
     /**
      * sample rates supported by device. There is also a separate thing which is
@@ -150,8 +128,8 @@ class Settings @Inject constructor(
     override val state = dataSource.settings.map {
         sanitizeSettings(it)
     }.stateIn(appScope, SharingStarted.Eagerly,
-        // it's not sanitized. todo: fix somehow??
-        dataSource.getCurrentSettingsState()
+        // todo: async?
+        sanitizeSettings(dataSource.getCurrentSettingsState())
     )
 
     fun onSharedPreferenceChanged() {
@@ -187,7 +165,6 @@ class Settings @Inject constructor(
             sampleRate = rate
         )
     }
-
 
     fun setBitDepth(bitDepth: BitDepthOption) {
         require(
@@ -275,9 +252,6 @@ class Settings @Inject constructor(
         return when(encoder.resolutionOptions) {
             is BitRateSettingType.None -> {
                 SettingsState(
-                    stopOnLowBattery = settings.stopOnLowBattery,
-                    stopOnLowStorage = settings.stopOnLowStorage,
-                    pauseOnCall = settings.pauseOnCall,
                     audioSource = audioSource,
                     outputFormat = outputFormat,
                     encoder = encoder as Codec<BitRateSettingType.None>,
@@ -288,9 +262,6 @@ class Settings @Inject constructor(
             }
             is BitRateSettingType.BitRateValues -> {
                 SettingsState(
-                    stopOnLowBattery = settings.stopOnLowBattery,
-                    stopOnLowStorage = settings.stopOnLowStorage,
-                    pauseOnCall = settings.pauseOnCall,
                     audioSource = audioSource,
                     outputFormat = outputFormat,
                     encoder = encoder as Codec<BitRateSettingType.BitRateValues>,
@@ -309,9 +280,6 @@ class Settings @Inject constructor(
             }
             is BitRateSettingType.BitDepthDiscreteValues -> {
                 SettingsState(
-                    stopOnLowBattery = settings.stopOnLowBattery,
-                    stopOnLowStorage = settings.stopOnLowStorage,
-                    pauseOnCall = settings.pauseOnCall,
                     audioSource = audioSource,
                     outputFormat = outputFormat,
                     encoder = encoder as Codec<BitRateSettingType.BitDepthDiscreteValues>,

@@ -5,6 +5,7 @@ import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Singleton
 class RecordAudioUseCase @Inject constructor(
     private val settings: SettingsInterface,
+    private val userSettings: UserSettingsReadRepository,
     @param:Scope.App private val scope: CoroutineScope,
     @param:Dispatcher.Main private val dispatcher: CoroutineDispatcher,
     @param:Dispatcher.Default private val defaultDispatcher: CoroutineDispatcher,
@@ -71,19 +73,19 @@ class RecordAudioUseCase @Inject constructor(
             }
 
             SystemEvent.LOW_STORAGE -> {
-                if (settings.state.value.stopOnLowStorage) {
+                if (userSettings.userSettings.value.stopOnLowStorage) {
                     stopAbruptly("The device is running out of storage.")
                 }
             }
 
             SystemEvent.LOW_BATTERY -> {
-                if (settings.state.value.stopOnLowBattery) {
+                if (userSettings.userSettings.value.stopOnLowBattery) {
                     stopAbruptly(explanation = "The device is running out of battery.")
                 }
             }
 
             SystemEvent.INCOMING_CALL -> {
-                if (settings.state.value.pauseOnCall) {
+                if (userSettings.userSettings.value.pauseOnCall) {
                     pause()
                     notificationsManager.sendNotificationAboutPausingOnCall()
                 }

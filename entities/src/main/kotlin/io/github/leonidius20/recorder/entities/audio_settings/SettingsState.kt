@@ -2,9 +2,6 @@ package io.github.leonidius20.recorder.entities.audio_settings
 
 // todo: separate audio config and user settings into different classes
 data class SettingsState<T: BitRateSettingType>(
-    val stopOnLowBattery: Boolean,
-    val stopOnLowStorage: Boolean,
-    val pauseOnCall: Boolean,
     val audioSource: Int,
     val outputFormat: Container,
     val encoder: Codec<T>,
@@ -33,4 +30,3 @@ sealed interface Resolution<T: BitRateSettingType> {
     ) : Resolution<BitRateSettingType.BitDepthDiscreteValues>
 
 }
-

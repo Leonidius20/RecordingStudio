@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.data.settings.UserSettingsRepositoryImpl
 import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.settings.SettingsInterface
@@ -23,6 +24,7 @@ import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsMana
 import io.github.leonidius20.recorder.domain.recorder.Stopwatch
 import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
 import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
+import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +66,10 @@ interface SettingsModule {
     @Singleton
     @Binds
     fun bindSettings(settings: Settings): SettingsInterface
+
+    @Singleton
+    @Binds
+    fun bindUserSettings(impl: UserSettingsRepositoryImpl): UserSettingsReadRepository
 
 }
 

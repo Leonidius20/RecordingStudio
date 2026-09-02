@@ -14,14 +14,14 @@ import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
 
     @Inject
-    lateinit var settings: Settings
+    lateinit var settings: UserSettingsReadRepository
 
     @Inject
     lateinit var importHandler: ImportFileSettingHandler
@@ -88,6 +88,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                                 preferenceManager.sharedPreferences?.edit {
                                     putBoolean(getString(R.string.pause_on_call_pref_key), true)
                                 }
+                                findPreference<SwitchPreferenceCompat>(getString(R.string.pause_on_call_pref_key))!!.isChecked = true
                             }
                         }
 
@@ -133,10 +134,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         sharedPreferences: SharedPreferences?,
         key: String?
     ) {
-        settings.onSharedPreferenceChanged()
-        // refresh the "pause on call" setting in case it was enabled after the user granted permissions
-        findPreference<SwitchPreferenceCompat>(getString(R.string.pause_on_call_pref_key))!!.isChecked = settings.state.value.pauseOnCall
-    }
 
+    }
 
 }
