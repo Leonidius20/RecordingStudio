@@ -7,6 +7,14 @@ import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.domain.audio_settings.AudioSettingsDataSource
+import io.github.leonidius20.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.domain.audio_settings.bitDepthOrRateForCodecPrefKey
+import io.github.leonidius20.domain.audio_settings.defaultCodec
+import io.github.leonidius20.domain.audio_settings.getByValue
+import io.github.leonidius20.domain.audio_settings.supportedBitRateClosestTo
+import io.github.leonidius20.domain.audio_settings.supports
+import io.github.leonidius20.domain.audio_settings.supportsBitrate
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
@@ -19,16 +27,17 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class AudioSettingsDataSource @Inject constructor(
+class AudioSettingsDataSourceImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val pref: SharedPreferences,
-) {
+    private val capabilities: DeviceAudioCapabilities,
+) : AudioSettingsDataSource {
 
     // stored here so that it's not garbage collected.
     // prefs only store weak ref
     lateinit var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
 
-    val settings = callbackFlow {
+    override val settings = callbackFlow {
         val scope = this
         trySend(getCurrentSettingsState())
 
@@ -51,22 +60,22 @@ class AudioSettingsDataSource @Inject constructor(
     /**
      * no validation, just reading
      */
-    fun getCurrentSettingsState(): SettingsState<*> {
+    override fun getCurrentSettingsState(): SettingsState<*> {
         val container = Container.getByValue(
             pref.getInt(
                 R.string.pref_output_format_key,
                 MediaRecorder.OutputFormat.THREE_GPP, // todo: remove reference to android here, Use enum with IDs
-            )
+            ), capabilities
         )
 
         var codec = Codec.getByValue(
             pref.getInt(
                 R.string.pref_encoder_key,
-                container.defaultCodec.value,
-            )
+                container.defaultCodec(capabilities).value,
+            ), capabilities
         )
-        if (!container.supports(codec)) {
-            codec = container.defaultCodec
+        if (!container.supports(codec, capabilities)) {
+            codec = container.defaultCodec(capabilities)
         }
 
 
@@ -128,7 +137,7 @@ class AudioSettingsDataSource @Inject constructor(
      * no validation, just writing
      */
     // todo: make it async and datastore
-    fun saveSettingsToDisk(settings: SettingsState<*>) {
+    override fun saveSettingsToDisk(settings: SettingsState<*>) {
         pref.edit {
             putInt(
                 context.getString(R.string.pref_audio_source_key),

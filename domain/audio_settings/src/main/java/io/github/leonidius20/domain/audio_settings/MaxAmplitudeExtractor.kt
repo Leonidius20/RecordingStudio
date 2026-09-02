@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.data.recorder.amplitudes
+package io.github.leonidius20.domain.audio_settings
 
 import java.nio.ByteBuffer
 

@@ -1,14 +1,12 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.domain.audio_settings
 
-import android.media.AudioFormat
-import io.github.leonidius20.recorder.data.recorder.amplitudes.Float32BitMaxAmpExtractor
-import io.github.leonidius20.recorder.data.recorder.amplitudes.Int16BitMaxAmpExtractor
-import io.github.leonidius20.recorder.data.recorder.amplitudes.Int8BitMaxAmpExtractor
-import io.github.leonidius20.recorder.data.recorder.amplitudes.MaxAmplitudeExtractor
+import io.github.leonidius20.domain.audio_settings.amplitudes.Float32BitMaxAmpExtractor
+import io.github.leonidius20.domain.audio_settings.amplitudes.Int16BitMaxAmpExtractor
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 
+// todo: move values out of domain?
 enum class PcmBitDepthOption(
-    val valueForAudioRecordApi: Int,
+    //val valueForAudioRecordApi: Int,
     override val displayName: String,
     val bitsPerSample: Short,
     /**
@@ -29,7 +27,7 @@ enum class PcmBitDepthOption(
 
     PCM_16BIT_INT(
         displayName = "16 bit int",
-        valueForAudioRecordApi = AudioFormat.ENCODING_PCM_16BIT,
+        //valueForAudioRecordApi = AudioFormat.ENCODING_PCM_16BIT,
         bitsPerSample = 16,
         isFloat = false,
         maxAmplitudeExtractorFactory = { Int16BitMaxAmpExtractor() },
@@ -37,7 +35,7 @@ enum class PcmBitDepthOption(
 
     PCM_BIT_FLOAT(
         displayName = "32 bit float",
-        valueForAudioRecordApi = AudioFormat.ENCODING_PCM_FLOAT,
+        //valueForAudioRecordApi = AudioFormat.ENCODING_PCM_FLOAT,
         bitsPerSample = 32,
         isFloat = true,
         maxAmplitudeExtractorFactory = { Float32BitMaxAmpExtractor() },
@@ -45,7 +43,7 @@ enum class PcmBitDepthOption(
 
     // todo: 24 and 32 bit
 
-    override val valueForPref: Int
-        get() = valueForAudioRecordApi
+    //override val valueForPref: Int
+    //    get() = valueForAudioRecordApi
 
 }

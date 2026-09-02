@@ -1,19 +1,7 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.domain.audio_settings
 
-import android.app.Application.AUDIO_SERVICE
-import android.content.Context
-import android.content.SharedPreferences
-import android.media.AudioManager
-import android.os.Build
-import androidx.annotation.BoolRes
-import androidx.annotation.StringRes
-import androidx.preference.PreferenceManager
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.domain.settings.SettingsInterface
-import io.github.leonidius20.recorder.domain.settings.UserSettings
-import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
+import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
@@ -22,108 +10,19 @@ import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.util.SortedSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// todo: parametrize properly
-data class AudioConfig(
-    val audioSource: Int,
-    val outputFormat: Container,
-    val encoder: Codec<*>,
-    val numOfChannels: AudioChannels,
-    val sampleRate: Int,
-    val audioResolution: BitRateSettingType,
-)
-
-
+// todo: move to own module??
 @Singleton
-class UserSettingsRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-    @param:Scope.App private val appScope: CoroutineScope,
-) : UserSettingsReadRepository {
-
-    private val pref = PreferenceManager.getDefaultSharedPreferences(context)
-
-    // stored here so that it's not garbage collected.
-    // prefs only store weak ref
-    lateinit var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
-
-    // todo: also split data source and repo?
-    override val userSettings = callbackFlow {
-        trySend(getData())
-
-        prefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
-            trySend(getData())
-        }
-
-        pref.registerOnSharedPreferenceChangeListener(prefListener)
-
-        awaitClose {
-            pref.unregisterOnSharedPreferenceChangeListener(prefListener)
-            // todo: delete ref
-        }
-    }.stateIn(appScope, SharingStarted.Eagerly, getData())
-
-    private fun getData() =
-        UserSettings(
-            stopOnLowBattery = pref.getBoolean(
-                R.string.stop_on_low_battery_pref_key,
-                R.bool.stop_on_low_battery_default
-            ),
-            stopOnLowStorage = pref.getBoolean(
-                R.string.stop_on_low_storage_pref_key,
-                R.bool.stop_on_storage_default
-            ),
-            pauseOnCall = pref.getBoolean(
-                R.string.pause_on_call_pref_key,
-                R.bool.pause_on_call_default
-            ),
-        )
-
-    // todo: move default values and keys into code
-    //  so as not to depend on context here?
-    private fun SharedPreferences.getBoolean(
-        @StringRes key: Int,
-        @BoolRes defaultValue: Int,
-    ) = getBoolean(
-        context.getString(key),
-        context.resources.getBoolean(defaultValue)
-    )
-
-}
-
-@Singleton
-class Settings @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+class AudioConfigRepositoryImpl @Inject constructor(
     @param:Scope.App private val appScope: CoroutineScope,
     private val dataSource: AudioSettingsDataSource,
-) : SettingsInterface {
-
-    /**
-     * sample rates supported by device. There is also a separate thing which is
-     * sample rates supported by various codecs.
-     */
-    val sampleRatesSupportedByDevice: SortedSet<Int> =
-        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            (context.getSystemService(AUDIO_SERVICE) as AudioManager)
-                .getDevices(AudioManager.GET_DEVICES_INPUTS)
-                .firstOrNull()
-                ?.sampleRates
-                ?.toSortedSet()
-                ?.let {
-                    // if empty, means the device supports arbitrary values with resampling.
-                    // we will just stick to some standard ones
-                    if (it.isEmpty()) null else it
-                }
-        } else {
-            null
-        }) ?: sortedSetOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
+    private val deviceAudioCapabilities: DeviceAudioCapabilities,
+) : AudioConfigReadRepository {
 
     override val state = dataSource.settings.map {
         sanitizeSettings(it)
@@ -131,10 +30,6 @@ class Settings @Inject constructor(
         // todo: async?
         sanitizeSettings(dataSource.getCurrentSettingsState())
     )
-
-    fun onSharedPreferenceChanged() {
-        //_state.value = getCurrentSettingsState()
-    }
 
     fun setAudioSource(value: Int) {
         sanitizeAndWriteSettings(state.value, audioSource = value)
@@ -196,7 +91,7 @@ class Settings @Inject constructor(
      */
     private fun medianSampleRateSupportedByCodecAndDevice(codec: Codec<*>): Int {
         val rates = codec.supportedSampleRates.intersect(
-            sampleRatesSupportedByDevice
+            deviceAudioCapabilities.sampleRatesSupportedByDevice
         ).toIntArray()
 
         val middleIndex = rates.size / 2
@@ -221,7 +116,6 @@ class Settings @Inject constructor(
                 settings, audioSource, outputFormat, encoder, numOfChannels, sampleRate, resolution
             )
         )
-        onSharedPreferenceChanged()
     }
 
     // todo: can we resuse this same function for
@@ -237,15 +131,15 @@ class Settings @Inject constructor(
         sampleRate: Int = settings.sampleRate,
         resolution: Resolution<*> = settings.resolution,
     ): SettingsState<*> {
-        val encoder = if (!outputFormat.supports(encoder)) {
-            outputFormat.defaultCodec
+        val encoder = if (!outputFormat.supports(encoder, deviceAudioCapabilities)) {
+            outputFormat.defaultCodec(deviceAudioCapabilities)
         } else encoder
 
         var sampleRate = if (!encoder.supportsSampleRate(sampleRate)) {
             encoder.supportedSampleRateClosestTo(sampleRate)
         } else sampleRate
 
-        if (!sampleRatesSupportedByDevice.contains(sampleRate)) {
+        if (!deviceAudioCapabilities.sampleRatesSupportedByDevice.contains(sampleRate)) {
             sampleRate = medianSampleRateSupportedByCodecAndDevice(encoder)
         }
 

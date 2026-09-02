@@ -4,15 +4,16 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import io.github.leonidius20.domain.audio_settings.AudioConfigRepositoryImpl
+import io.github.leonidius20.domain.audio_settings.DeviceAudioCapabilities
 import io.github.leonidius20.recorder.data.settings.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.data.settings.audioSourceOptions
-import io.github.leonidius20.recorder.data.settings.availableCodecs
-import io.github.leonidius20.recorder.data.settings.supportedContainers
+import io.github.leonidius20.domain.audio_settings.availableCodecs
+import io.github.leonidius20.domain.audio_settings.supportedContainers
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
@@ -158,7 +159,8 @@ class AudioSettingsStoreFactory @Inject constructor(
 
 
     class ExecutorImpl @Inject constructor(
-        private val settings: Settings,
+        private val settings: AudioConfigRepositoryImpl,
+        private val capabilities: DeviceAudioCapabilities,
     ): CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 
         override fun executeIntent(intent: Intent) {
@@ -207,7 +209,9 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val supportedSampleRates = run {
                                 codec.supportedSampleRates
-                                    .intersect(settings.sampleRatesSupportedByDevice)
+                                    // todo: move this logic out of UI; remove dependency on
+                                    //  capabilities; also - redesign whole audio  settings api
+                                    .intersect(capabilities.sampleRatesSupportedByDevice)
                                     .sorted()
                             }
 
@@ -227,14 +231,14 @@ class AudioSettingsStoreFactory @Inject constructor(
                                     it.value == newSettings.audioSource
                                 } ?: AudioSourceOption.DEFAULT, // todo: move this logic to Settings
 
-                                containers = Container.supportedContainers().map {
+                                containers = Container.supportedContainers(capabilities).map {
                                     AudioSettingsStore.ContainerSetting(
                                         option = it,
                                         isSelected = newSettings.outputFormat == it,
                                     )
                                 },
 
-                                codecs = container.availableCodecs.map {
+                                codecs = container.availableCodecs(capabilities).map {
                                     AudioSettingsStore.CodecSetting(
                                         option = it,
                                         isSelected = it == codec,

@@ -4,7 +4,7 @@ import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
 import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.milliseconds
 // todo: remove all the fucking notifications from here
 @Singleton
 class RecordAudioUseCase @Inject constructor(
-    private val settings: SettingsInterface,
+    private val settings: AudioConfigReadRepository,
     private val userSettings: UserSettingsReadRepository,
     @param:Scope.App private val scope: CoroutineScope,
     @param:Dispatcher.Main private val dispatcher: CoroutineDispatcher,
