@@ -4,7 +4,6 @@ import android.app.Application.AUDIO_SERVICE
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.AudioManager
-import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
@@ -24,11 +23,10 @@ import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,6 +121,7 @@ class UserSettingsRepositoryImpl @Inject constructor(
 @Singleton
 class Settings @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @param:Scope.App private val appScope: CoroutineScope,
     private val dataSource: AudioSettingsDataSource,
     ) : SettingsInterface {
 
@@ -148,116 +147,16 @@ class Settings @Inject constructor(
             null
         }) ?: sortedSetOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
 
-
-    private val _state = MutableStateFlow(getCurrentSettingsState())
-
-    override val state = _state.asStateFlow()
+    override val state = dataSource.settings.map {
+        sanitizeSettings(it)
+    }.stateIn(appScope, SharingStarted.Eagerly,
+        // it's not sanitized. todo: fix somehow??
+        dataSource.getCurrentSettingsState()
+    )
 
     fun onSharedPreferenceChanged() {
-        _state.value = getCurrentSettingsState()
+        //_state.value = getCurrentSettingsState()
     }
-
-    private fun getCurrentSettingsState(): SettingsState<*> {
-        val container = Container.getByValue(
-            pref.getInt(
-                R.string.pref_output_format_key,
-                MediaRecorder.OutputFormat.THREE_GPP,
-            )
-        )
-
-        var codec = Codec.getByValue(
-            pref.getInt(
-                R.string.pref_encoder_key,
-                container.defaultCodec.value,
-            )
-        )
-        if (!container.supports(codec)) {
-            codec = container.defaultCodec
-        }
-
-
-        return buildTypedSettings(container, codec)
-    }
-
-    private fun <T: BitRateSettingType> buildTypedSettings(
-        container: Container,
-        codec: Codec<T>,
-    ): SettingsState<T> {
-        // todo: find better way?
-        @Suppress("UNCHECKED_CAST")
-        val resolution = when(val options = codec.resolutionOptions) {
-            is BitRateSettingType.BitRateValues -> Resolution.Bitrate(
-                value = pref.getFloat(
-                    codec.bitDepthOrRateForCodecPrefKey,
-                    options.default,
-                ).run {
-                    val codec = (codec as Codec<BitRateSettingType.BitRateValues>)
-                    if (!codec.supportsBitrate(this)) {
-                        codec.supportedBitRateClosestTo(this)
-                    } else this
-                }
-            )
-            is BitRateSettingType.BitDepthDiscreteValues -> Resolution.BitDepth(
-                (codec as (Codec<BitRateSettingType.BitDepthDiscreteValues>)).getBitDepthOptionFromPrefValue(
-                    pref.getInt(
-                        codec.bitDepthOrRateForCodecPrefKey,
-                        options.default.valueForPref
-                    )
-                )
-            )
-            is BitRateSettingType.None -> Resolution.None
-        } as Resolution<T>
-
-        return SettingsState(
-            stopOnLowBattery = pref.getBoolean(
-                R.string.stop_on_low_battery_pref_key,
-                R.bool.stop_on_low_battery_default
-            ),
-            stopOnLowStorage = pref.getBoolean(
-                R.string.stop_on_low_storage_pref_key,
-                R.bool.stop_on_storage_default
-            ),
-            pauseOnCall = pref.getBoolean(
-                R.string.pause_on_call_pref_key,
-                R.bool.pause_on_call_default
-            ),
-            audioSource = pref.getInt(
-                R.string.pref_audio_source_key,
-                MediaRecorder.AudioSource.MIC,
-            ),
-            outputFormat = container,
-            encoder = codec,
-            numOfChannels = AudioChannels.fromInt(
-                pref.getInt(
-                    R.string.num_channels_pref_key,
-                    AudioChannels.MONO.numberOfChannels()
-                )
-            ),
-            sampleRate = pref.getInt(
-                R.string.sample_rate_pref_key,
-                medianSampleRateSupportedByCodecAndDevice(codec)
-            ),
-            resolution = resolution,
-        )
-    }
-
-    // todo: move default values and keys into code
-    //  so as not to depend on context here?
-    private fun SharedPreferences.getBoolean(
-        @StringRes key: Int,
-        @BoolRes defaultValue: Int,
-    ) = getBoolean(
-        context.getString(key),
-        context.resources.getBoolean(defaultValue)
-    )
-
-    private fun SharedPreferences.getInt(
-        @StringRes key: Int,
-        defaultValue: Int,
-    ) = getInt(
-        context.getString(key),
-        defaultValue
-    )
 
     fun setAudioSource(value: Int) {
         sanitizeAndWriteSettings(state.value, audioSource = value)
@@ -348,6 +247,10 @@ class Settings @Inject constructor(
         onSharedPreferenceChanged()
     }
 
+    // todo: can we resuse this same function for
+    // reading data?? in data source we will simply read
+    //  current state from pref, then pass though this function
+    //  (using default SettingsState() as base)
     private fun sanitizeSettings(
         settings: SettingsState<*>,
         audioSource: Int = settings.audioSource,
@@ -357,14 +260,17 @@ class Settings @Inject constructor(
         sampleRate: Int = settings.sampleRate,
         resolution: Resolution<*> = settings.resolution,
     ): SettingsState<*> {
-
         val encoder = if (!outputFormat.supports(encoder)) {
             outputFormat.defaultCodec
         } else encoder
 
-        val sampleRate = if (!encoder.supportsSampleRate(sampleRate)) {
+        var sampleRate = if (!encoder.supportsSampleRate(sampleRate)) {
             encoder.supportedSampleRateClosestTo(sampleRate)
         } else sampleRate
+
+        if (!sampleRatesSupportedByDevice.contains(sampleRate)) {
+            sampleRate = medianSampleRateSupportedByCodecAndDevice(encoder)
+        }
 
         return when(encoder.resolutionOptions) {
             is BitRateSettingType.None -> {
