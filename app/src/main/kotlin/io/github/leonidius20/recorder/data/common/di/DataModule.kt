@@ -9,9 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.leonidius20.domain.audio_settings.AudioConfigRepositoryImpl
-import io.github.leonidius20.domain.audio_settings.AudioSettingsDataSource
-import io.github.leonidius20.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.domain.audio_settings.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.domain.audio_settings.AudioSettingsDataSource
+import io.github.leonidius20.recorder.domain.audio_settings.DeviceAudioCapabilities
 import io.github.leonidius20.recorder.data.settings.AudioSettingsDataSourceImpl
 import io.github.leonidius20.recorder.data.settings.DeviceAudioCapabilitiesImpl
 import io.github.leonidius20.recorder.data.settings.UserSettingsRepositoryImpl

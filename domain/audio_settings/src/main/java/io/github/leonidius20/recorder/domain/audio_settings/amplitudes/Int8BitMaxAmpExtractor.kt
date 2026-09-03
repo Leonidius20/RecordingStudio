@@ -1,6 +1,6 @@
-package io.github.leonidius20.domain.audio_settings.amplitudes
+package io.github.leonidius20.recorder.domain.audio_settings.amplitudes
 
-import io.github.leonidius20.domain.audio_settings.MaxAmplitudeExtractor
+import io.github.leonidius20.recorder.domain.audio_settings.MaxAmplitudeExtractor
 import java.nio.ByteBuffer
 
 /**

@@ -6,8 +6,8 @@ import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.domain.audio_settings.DeviceAudioCapabilities
-import io.github.leonidius20.domain.audio_settings.PcmBitDepthOption
+import io.github.leonidius20.recorder.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.domain.audio_settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec

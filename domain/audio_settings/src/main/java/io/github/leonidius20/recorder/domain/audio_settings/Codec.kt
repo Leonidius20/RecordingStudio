@@ -1,6 +1,5 @@
-package io.github.leonidius20.domain.audio_settings
+package io.github.leonidius20.recorder.domain.audio_settings
 
-import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import kotlin.math.abs
@@ -134,5 +133,6 @@ fun Codec<BitRateSettingType.BitRateValues>.supportsBitrate(rate: Float) =
 
 
 fun Codec.Companion.getByValue(value: Int,
-                               capabilities: DeviceAudioCapabilities) =
+                               capabilities: DeviceAudioCapabilities
+) =
     capabilities.codecByValue[value]!!

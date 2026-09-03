@@ -1,9 +1,9 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.domain.audio_settings.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.domain.audio_settings.AudioConfigRepositoryImpl
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
-import io.github.leonidius20.domain.audio_settings.PcmBitDepthOption
+import io.github.leonidius20.recorder.domain.audio_settings.PcmBitDepthOption
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import kotlinx.coroutines.CoroutineScope

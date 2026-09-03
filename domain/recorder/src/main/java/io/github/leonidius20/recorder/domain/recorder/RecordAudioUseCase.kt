@@ -195,11 +195,11 @@ class RecordAudioUseCase @Inject constructor(
         return state.value
     }
 
-    fun stop() {
+    fun stop(): Job {
         amplitudeVizUpdateJob.cancel()
         stopwatch.stop()
 
-        scope.launch {
+        return scope.launch {
             recorder.stop()
             stopSelf()
         }

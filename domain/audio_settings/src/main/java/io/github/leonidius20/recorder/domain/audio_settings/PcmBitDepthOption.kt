@@ -1,7 +1,7 @@
-package io.github.leonidius20.domain.audio_settings
+package io.github.leonidius20.recorder.domain.audio_settings
 
-import io.github.leonidius20.domain.audio_settings.amplitudes.Float32BitMaxAmpExtractor
-import io.github.leonidius20.domain.audio_settings.amplitudes.Int16BitMaxAmpExtractor
+import io.github.leonidius20.recorder.domain.audio_settings.amplitudes.Float32BitMaxAmpExtractor
+import io.github.leonidius20.recorder.domain.audio_settings.amplitudes.Int16BitMaxAmpExtractor
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 
 // todo: move values out of domain?

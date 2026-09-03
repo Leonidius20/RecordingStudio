@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.viewModels
 import com.arkivanov.essenty.instancekeeper.instanceKeeper
 import com.arkivanov.essenty.lifecycle.essentyLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -14,7 +13,6 @@ import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
 import io.github.leonidius20.recorder.doOnApplyWindowInsets
 import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsController
-import io.github.leonidius20.recorder.ui.home.HomeViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -25,8 +23,6 @@ class AudioSettingsBottomSheet : BottomSheetDialogFragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-
-    private val viewModel: HomeViewModel by viewModels(ownerProducer = { requireParentFragment() })
 
     private lateinit var controller: AudioSettingsController
 

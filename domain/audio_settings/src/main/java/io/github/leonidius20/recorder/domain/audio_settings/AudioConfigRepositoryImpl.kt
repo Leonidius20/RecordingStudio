@@ -1,4 +1,4 @@
-package io.github.leonidius20.domain.audio_settings
+package io.github.leonidius20.recorder.domain.audio_settings
 
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
