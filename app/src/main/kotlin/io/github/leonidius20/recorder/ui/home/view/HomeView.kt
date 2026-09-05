@@ -16,6 +16,7 @@ interface HomeView : MviView<Model, Intent> {
         val isStopButtonVisible: Boolean,
         val isTimerVisible: Boolean,
         val audioSettingsButtonVisible: Boolean,
+        val loadingIndicatorVisible: Boolean,
     )
 
     fun handleLabel(label: Label)
@@ -28,12 +29,13 @@ interface HomeView : MviView<Model, Intent> {
 
 internal val stateToModel: State.() -> Model = {
     when (this.recordingState) {
-        is RecordingState.Idle, RecordingState.Preparing, RecordingState.Error -> Model(
+        is RecordingState.Idle, RecordingState.Error -> Model(
             isRecPauseBtnVisible = true,
             recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = false,
             isTimerVisible = false,
             audioSettingsButtonVisible = true,
+            loadingIndicatorVisible = false,
         )
 
         is RecordingState.Recording -> Model(
@@ -42,15 +44,17 @@ internal val stateToModel: State.() -> Model = {
             isStopButtonVisible = true,
             isTimerVisible = true,
             audioSettingsButtonVisible = false,
+            loadingIndicatorVisible = false,
         )
 
-        // todo: better ui for stopping, preparing (loading) and error
-        is RecordingState.Stopping -> Model(
+        // todo: better ui for error - or maybe do a label with toast / snakbar
+        is RecordingState.Stopping, RecordingState.Preparing -> Model(
             isRecPauseBtnVisible = false,
             recPauseBtnState = RecPauseBtnState.PAUSE,
-            isStopButtonVisible = true,
-            isTimerVisible = true,
+            isStopButtonVisible = false,
+            isTimerVisible = false,
             audioSettingsButtonVisible = false,
+            loadingIndicatorVisible = true,
         )
 
         is RecordingState.Paused -> Model(
@@ -59,6 +63,7 @@ internal val stateToModel: State.() -> Model = {
             isStopButtonVisible = true,
             isTimerVisible = true,
             audioSettingsButtonVisible = false,
+            loadingIndicatorVisible = false,
         )
     }
 }

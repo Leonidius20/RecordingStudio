@@ -78,6 +78,10 @@ class HomeViewImpl(
                     })
                 }
             }
+
+            diff(Model::loadingIndicatorVisible) {
+                binding.loadingIndicator.isVisible = it
+            }
         }
 
     override fun handleLabel(label: Label) {
