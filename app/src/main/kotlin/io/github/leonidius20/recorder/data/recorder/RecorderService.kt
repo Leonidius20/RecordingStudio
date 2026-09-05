@@ -27,6 +27,30 @@ class RecorderService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
+        val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
+
+        // we only move service to foreground after the recording was successfully started
+        try {
+            ServiceCompat.startForeground(
+                this, PERSISTENT_NOTIFICATION_ID,
+                notificationsManager.buildPersistentNotification(
+                    RecordingState.Recording(false),
+                    false,
+                ), foregroundServiceType
+            )
+        } catch (e: Exception) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && e is ForegroundServiceStartNotAllowedException
+            ) {
+                e.printStackTrace()
+                // App not in a valid state to start foreground service
+                // (e.g. started from bg)
+            }
+            e.printStackTrace()
+            stopSelf()
+        }
+
         // todo: move elsewhere? only need to happen once, really
         notificationsManager.createRecInProgressNotificationChannel()
         notificationsManager.createPrematureStopNotificationChannel()
@@ -41,29 +65,10 @@ class RecorderService : LifecycleService() {
 
         val supportsPausing = recordAudioUseCase.start()
 
-        val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
-
-        // we only move service to foreground after the recording was successfully started
-        try {
-            ServiceCompat.startForeground(
-                this, PERSISTENT_NOTIFICATION_ID,
-                notificationsManager.buildPersistentNotification(
-                    RecordingState.Recording(supportsPausing),
-                    supportsPausing,
-                ), foregroundServiceType
-            )
-        } catch (e: Exception) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && e is ForegroundServiceStartNotAllowedException
-            ) {
-                e.printStackTrace()
-                // App not in a valid state to start foreground service
-                // (e.g. started from bg)
-            }
-            e.printStackTrace()
-            stopSelf()
-        }
+        // update to add pause btn if supported
+        notificationsManager.updateNotification(
+            recordAudioUseCase.state.value, supportsPausing
+        )
 
         return START_NOT_STICKY
     }

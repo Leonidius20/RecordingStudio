@@ -8,11 +8,11 @@ import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.slider.Slider
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.settings.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.data.settings.Settings
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
@@ -27,7 +27,7 @@ class AudioSettingsViewImpl(
 
     private val context get() = binding.root.context
 
-    private val audioSourcesAdapter = ChipSettingsAdapter<Settings.AudioSourceOption> { source ->
+    private val audioSourcesAdapter = ChipSettingsAdapter<AudioSourceOption> { source ->
         dispatch(Intent.SetAudioSource(source))
     }
 
@@ -35,7 +35,7 @@ class AudioSettingsViewImpl(
         dispatch(Intent.SetContainerFormat(container))
     }
 
-    private val codecsAdapter = ChipSettingsAdapter<Codec> { codec ->
+    private val codecsAdapter = ChipSettingsAdapter<Codec<*>> { codec ->
         dispatch(Intent.SetCodec(codec))
     }
 

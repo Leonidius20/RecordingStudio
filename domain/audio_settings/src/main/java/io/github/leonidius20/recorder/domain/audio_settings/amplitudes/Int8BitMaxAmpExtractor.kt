@@ -1,6 +1,6 @@
-package io.github.leonidius20.recorder.data.recorder.amplitudes
+package io.github.leonidius20.recorder.domain.audio_settings.amplitudes
 
-import android.util.Log
+import io.github.leonidius20.recorder.domain.audio_settings.MaxAmplitudeExtractor
 import java.nio.ByteBuffer
 
 /**
@@ -30,8 +30,6 @@ class Int8BitMaxAmpExtractor : MaxAmplitudeExtractor {
         
         // todo: for some mother trucking reason we get the max value here all the time
         val ampScaled = ((amp / Byte.MAX_VALUE) * Short.MAX_VALUE).toInt()
-
-        Log.d("amps", "getting $ampScaled")
 
         return ampScaled
     }

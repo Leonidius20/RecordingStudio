@@ -10,7 +10,9 @@ sealed interface RecordingState {
 
     data object Paused : RecordingState
 
-    data object Error : RecordingState
+    data class Error(
+        val t: Throwable
+    ) : RecordingState
 
     data object Stopping : RecordingState
 

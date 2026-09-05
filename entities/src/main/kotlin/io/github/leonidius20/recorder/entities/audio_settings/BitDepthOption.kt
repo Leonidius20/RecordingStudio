@@ -4,6 +4,6 @@ interface BitDepthOption {
 
     val displayName: String
 
-    val valueForPref: Int
+    // val valueForPref: Int
 
 }

@@ -4,14 +4,18 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import io.github.leonidius20.recorder.domain.audio_settings.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.data.settings.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.data.settings.Settings
-import io.github.leonidius20.recorder.data.settings.availableCodecs
-import io.github.leonidius20.recorder.data.settings.supportedContainers
+import io.github.leonidius20.recorder.data.settings.audioSourceOptions
+import io.github.leonidius20.recorder.domain.audio_settings.availableCodecs
+import io.github.leonidius20.recorder.domain.audio_settings.supportedContainers
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
+import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.ChipSetting
@@ -24,7 +28,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
     sealed interface Intent {
 
         data class SetAudioSource(
-            val source: Settings.AudioSourceOption,
+            val source: AudioSourceOption,
         ) : Intent
 
         data class SetContainerFormat(
@@ -32,7 +36,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
         ) : Intent
 
         data class SetCodec(
-            val codec: Codec,
+            val codec: Codec<*>,
         ) : Intent
 
         data class SetChannels(
@@ -55,9 +59,9 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
 
     data class AudioSourceSetting(
-        override val option: Settings.AudioSourceOption,
+        override val option: AudioSourceOption,
         override val isSelected: Boolean,
-    ) : ChipSetting<Settings.AudioSourceOption> {
+    ) : ChipSetting<AudioSourceOption> {
 
         override val id: Int
             get() = option.value
@@ -81,9 +85,9 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
     }
 
     data class CodecSetting(
-        override val option: Codec,
+        override val option: Codec<*>,
         override val isSelected: Boolean,
-    ) : ChipSetting<Codec> {
+    ) : ChipSetting<Codec<*>> {
 
         override val id: Int
             get() = option.value
@@ -123,7 +127,7 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
     data class State(
         val audioSources: List<AudioSourceSetting> = emptyList(),
-        val audioSource: Settings.AudioSourceOption? = null,
+        val audioSource: AudioSourceOption? = null,
         val containers: List<ContainerSetting> = emptyList(),
         val codecs: List<CodecSetting> = emptyList(),
         val channelOptions: List<ChannelsSetting> = emptyList(),
@@ -155,7 +159,8 @@ class AudioSettingsStoreFactory @Inject constructor(
 
 
     class ExecutorImpl @Inject constructor(
-        private val settings: Settings,
+        private val settings: AudioConfigRepositoryImpl,
+        private val capabilities: DeviceAudioCapabilities,
     ): CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 
         override fun executeIntent(intent: Intent) {
@@ -193,8 +198,9 @@ class AudioSettingsStoreFactory @Inject constructor(
                             val container = newSettings.outputFormat
                             val codec = newSettings.encoder
 
+                            // todo: redo without type comparisons
                             val availableBitDepths = run {
-                                val bitRateSetting = codec.bitRateSettingType
+                                val bitRateSetting = codec.resolutionOptions
                                 if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
                                     bitRateSetting.availableOptions
                                 } else null
@@ -203,14 +209,15 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val supportedSampleRates = run {
                                 codec.supportedSampleRates
-                                    .intersect(settings.sampleRatesSupportedByDevice)
+                                    // todo: move this logic out of UI; remove dependency on
+                                    //  capabilities; also - redesign whole audio  settings api
+                                    .intersect(capabilities.sampleRatesSupportedByDevice)
                                     .sorted()
                             }
 
-                            val bitRateSettingType = codec.bitRateSettingType
+                            val bitRateSettingType = codec.resolutionOptions
 
-
-                            val audioSources = settings.audioSourceOptions.map {
+                            val audioSources = audioSourceOptions.map {
                                 AudioSettingsStore.AudioSourceSetting(
                                     option = it,
                                     // todo: have settings expose enum value and not int?
@@ -220,18 +227,18 @@ class AudioSettingsStoreFactory @Inject constructor(
 
                             val newState = State(
                                 audioSources = audioSources,
-                                audioSource = settings.audioSourceOptions.find {
+                                audioSource = audioSourceOptions.find {
                                     it.value == newSettings.audioSource
-                                } ?: Settings.AudioSourceOption.DEFAULT, // todo: move this logic to Settings
+                                } ?: AudioSourceOption.DEFAULT, // todo: move this logic to Settings
 
-                                containers = Container.supportedContainers().map {
+                                containers = Container.supportedContainers(capabilities).map {
                                     AudioSettingsStore.ContainerSetting(
                                         option = it,
                                         isSelected = newSettings.outputFormat == it,
                                     )
                                 },
 
-                                codecs = container.availableCodecs.map {
+                                codecs = container.availableCodecs(capabilities).map {
                                     AudioSettingsStore.CodecSetting(
                                         option = it,
                                         isSelected = it == codec,
@@ -257,10 +264,10 @@ class AudioSettingsStoreFactory @Inject constructor(
                                     BitRateSettingType.None -> null
 
                                     is BitRateSettingType.BitRateValues -> {
-                                        newSettings.bitRate?.let {
+                                        (newSettings.resolution as? Resolution.Bitrate)?.let {
                                             AudioSettingsStore.BitRateSettings(
                                                 type = bitRateSettingType,
-                                                current = it
+                                                current = it.value
                                             )
                                         }
                                     }
@@ -269,7 +276,7 @@ class AudioSettingsStoreFactory @Inject constructor(
                                 bitDepths = availableBitDepths?.map {
                                     AudioSettingsStore.BitDepthSetting(
                                         depth = it,
-                                        isSelected = it == newSettings.bitDepth
+                                        isSelected = it == (newSettings.resolution as? Resolution.BitDepth)?.value
                                     )
                                 },
                             )

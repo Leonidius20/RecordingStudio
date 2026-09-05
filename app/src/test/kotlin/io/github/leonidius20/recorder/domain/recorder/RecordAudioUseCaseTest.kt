@@ -1,7 +1,7 @@
 package io.github.leonidius20.recorder.domain.recorder
 
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.domain.settings.SettingsInterface
+import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
 import io.github.leonidius20.recorder.data.settings.codecAmrNb
 import io.github.leonidius20.recorder.data.settings.container3gpp
 import io.github.leonidius20.recorder.domain.events.SystemEvent
@@ -43,7 +43,7 @@ class RecordAudioUseCaseTest {
             stopOnLowBattery = true
         )
 
-        val settingsProvider = object : SettingsInterface {
+        val settingsProvider = object : AudioConfigReadRepository {
             val _state = MutableStateFlow(settings)
             override val state: StateFlow<SettingsState>
                 get() = _state

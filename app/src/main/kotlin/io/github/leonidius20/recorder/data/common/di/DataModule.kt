@@ -1,14 +1,22 @@
 package io.github.leonidius20.recorder.data.common.di
 
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.leonidius20.recorder.data.settings.Settings
+import io.github.leonidius20.recorder.domain.audio_settings.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.domain.audio_settings.AudioSettingsDataSource
+import io.github.leonidius20.recorder.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.data.settings.AudioSettingsDataSourceImpl
+import io.github.leonidius20.recorder.data.settings.DeviceAudioCapabilitiesImpl
+import io.github.leonidius20.recorder.data.settings.UserSettingsRepositoryImpl
 import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.domain.settings.SettingsInterface
 import io.github.leonidius20.recorder.domain.events.SystemEventObserver
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactory
 import io.github.leonidius20.recorder.domain.recorder.AudioRecorderFactoryImpl
@@ -19,6 +27,8 @@ import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsMana
 import io.github.leonidius20.recorder.domain.recorder.Stopwatch
 import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
 import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
+import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
+import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +54,12 @@ class DataModule {
     @Scope.App
     fun provideAppScope(): CoroutineScope = MainScope()
 
+    @Provides
+    @Singleton
+    fun providePref(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
 
 }
 
@@ -53,7 +69,19 @@ interface SettingsModule {
 
     @Singleton
     @Binds
-    fun bindSettings(settings: Settings): SettingsInterface
+    fun bindSettings(settings: AudioConfigRepositoryImpl): AudioConfigReadRepository
+
+    @Singleton
+    @Binds
+    fun bindUserSettings(impl: UserSettingsRepositoryImpl): UserSettingsReadRepository
+
+    @Singleton
+    @Binds
+    fun bindAudioConfigDataSource(impl: AudioSettingsDataSourceImpl): AudioSettingsDataSource
+
+    @Singleton
+    @Binds
+    fun bindDeviceAudioCapabilities(impl: DeviceAudioCapabilitiesImpl): DeviceAudioCapabilities
 
 }
 
