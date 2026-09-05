@@ -130,6 +130,11 @@ class HomeViewImpl(
                     android.content.Intent(context, RecorderService::class.java)
                 )
             }
+
+            is Label.Error -> {
+                // todo: Localize; add snakbar with btn with reporting capability
+                Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

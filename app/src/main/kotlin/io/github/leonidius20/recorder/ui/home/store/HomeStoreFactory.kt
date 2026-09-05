@@ -14,6 +14,7 @@ import io.github.leonidius20.recorder.ui.home.store.HomeStore.State
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -124,6 +125,11 @@ class HomeStoreFactory @Inject constructor(
                     scope.launch {
                         recorderServiceLauncher.state.collect {
                             dispatch(Msg.UpdateRecordingState(it))
+
+                            if (it is RecordingState.Error) {
+                                Timber.d("Error state dispatched")
+                                publish(Label.Error(it.t))
+                            }
                         }
                     }
                 }

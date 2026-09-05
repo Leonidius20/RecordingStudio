@@ -29,7 +29,7 @@ interface HomeView : MviView<Model, Intent> {
 
 internal val stateToModel: State.() -> Model = {
     when (this.recordingState) {
-        is RecordingState.Idle, RecordingState.Error -> Model(
+        is RecordingState.Idle, is RecordingState.Error -> Model(
             isRecPauseBtnVisible = true,
             recPauseBtnState = RecPauseBtnState.RECORD,
             isStopButtonVisible = false,
@@ -47,7 +47,6 @@ internal val stateToModel: State.() -> Model = {
             loadingIndicatorVisible = false,
         )
 
-        // todo: better ui for error - or maybe do a label with toast / snakbar
         is RecordingState.Stopping, RecordingState.Preparing -> Model(
             isRecPauseBtnVisible = false,
             recPauseBtnState = RecPauseBtnState.PAUSE,

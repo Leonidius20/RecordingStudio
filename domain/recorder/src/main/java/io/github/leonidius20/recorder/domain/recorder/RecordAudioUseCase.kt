@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
@@ -121,9 +120,10 @@ class RecordAudioUseCase @Inject constructor(
             recorder = recorderFactory.create(
                 file
             )
-        } catch (e: IOException) {
+
+        } catch (e: Throwable) {
             e.printStackTrace()
-            stopOnError()
+            stopOnError(e)
             return false
         }
 
@@ -152,11 +152,14 @@ class RecordAudioUseCase @Inject constructor(
         return recorder.supportsPausing()
     }
 
-    fun stopOnError() {
-        _state.value = RecordingState.Error
-        // todo: have the service subscribe to state and
-        //  kill itself on ERROR
-        stopSelf()
+    fun stopOnError(t: Throwable) {
+        _state.value = RecordingState.Error(t)
+
+        // let the subscribers handle the error state
+        // before setting Stopping state
+        scope.launch {
+            stopSelf()
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

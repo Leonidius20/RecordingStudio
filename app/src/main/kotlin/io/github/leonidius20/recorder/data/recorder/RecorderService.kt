@@ -13,6 +13,7 @@ import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManagerImpl
 import io.github.leonidius20.recorder.domain.recorder.RecordingState
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,20 +28,6 @@ class RecorderService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        // todo: move elsewhere? only need to happen once, really
-        notificationsManager.createRecInProgressNotificationChannel()
-        notificationsManager.createPrematureStopNotificationChannel()
-
-        lifecycleScope.launch {
-            recordAudioUseCase.state.collect {
-                if (it is RecordingState.Stopping) {
-                    stopSelf()
-                }
-            }
-        }
-
-        val supportsPausing = recordAudioUseCase.start()
-
         val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
 
@@ -49,8 +36,8 @@ class RecorderService : LifecycleService() {
             ServiceCompat.startForeground(
                 this, PERSISTENT_NOTIFICATION_ID,
                 notificationsManager.buildPersistentNotification(
-                    RecordingState.Recording(supportsPausing),
-                    supportsPausing,
+                    RecordingState.Recording(false),
+                    false,
                 ), foregroundServiceType
             )
         } catch (e: Exception) {
@@ -64,6 +51,26 @@ class RecorderService : LifecycleService() {
             e.printStackTrace()
             stopSelf()
         }
+
+        // todo: move elsewhere? only need to happen once, really
+        notificationsManager.createRecInProgressNotificationChannel()
+        notificationsManager.createPrematureStopNotificationChannel()
+
+        lifecycleScope.launch {
+            recordAudioUseCase.state.collect {
+                if (it is RecordingState.Stopping) {
+                    Timber.d("Stopping service")
+                    stopSelf()
+                }
+            }
+        }
+
+        val supportsPausing = recordAudioUseCase.start()
+
+        // update to add pause btn if supported
+        notificationsManager.updateNotification(
+            recordAudioUseCase.state.value, supportsPausing
+        )
 
         return START_NOT_STICKY
     }

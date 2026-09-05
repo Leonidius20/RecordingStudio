@@ -43,6 +43,10 @@ interface HomeStore : Store<Intent, State, Label> {
 
         data object LaunchRecordingService : Label
 
+        data class Error(
+            val t: Throwable,
+        ) : Label
+
     }
 
     data class State(
