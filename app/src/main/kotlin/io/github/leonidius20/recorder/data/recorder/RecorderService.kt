@@ -13,7 +13,6 @@ import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManagerImpl
 import io.github.leonidius20.recorder.domain.recorder.RecordingState
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -59,7 +58,6 @@ class RecorderService : LifecycleService() {
         lifecycleScope.launch {
             recordAudioUseCase.state.collect {
                 if (it is RecordingState.Stopping) {
-                    Timber.d("Stopping service")
                     stopSelf()
                 }
             }

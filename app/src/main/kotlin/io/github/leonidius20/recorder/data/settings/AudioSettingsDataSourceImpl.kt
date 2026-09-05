@@ -3,7 +3,6 @@ package io.github.leonidius20.recorder.data.settings
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaRecorder
-import androidx.annotation.BoolRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -54,8 +53,6 @@ class AudioSettingsDataSourceImpl @Inject constructor(
             // todo: delete ref
         }
     }
-
-    // todo: read function (or better - state flow with on change subscription) here too
 
     /**
      * no validation, just reading
@@ -126,8 +123,8 @@ class AudioSettingsDataSourceImpl @Inject constructor(
             ),
             sampleRate = pref.getInt(
                 R.string.sample_rate_pref_key,
-                codec.supportedSampleRates.first() // todo in sanitization check if device supports this sample rate
-                // medianSampleRateSupportedByCodecAndDevice(codec)
+                // in sanitation, we will check if device supports this sample rate
+                codec.supportedSampleRates.first()
             ),
             resolution = resolution,
         )
@@ -181,16 +178,6 @@ class AudioSettingsDataSourceImpl @Inject constructor(
             }
         }
     }
-
-    // todo: move default values and keys into code
-    //  so as not to depend on context here?
-    private fun SharedPreferences.getBoolean(
-        @StringRes key: Int,
-        @BoolRes defaultValue: Int,
-    ) = getBoolean(
-        context.getString(key),
-        context.resources.getBoolean(defaultValue)
-    )
 
     private fun SharedPreferences.getInt(
         @StringRes key: Int,

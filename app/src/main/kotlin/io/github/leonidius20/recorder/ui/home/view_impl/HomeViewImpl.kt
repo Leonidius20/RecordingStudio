@@ -16,7 +16,7 @@ import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recorder.RecorderService
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
-import io.github.leonidius20.recorder.ui.home.HomeViewModel
+import io.github.leonidius20.recorder.ui.home.RecPauseBtnState
 import io.github.leonidius20.recorder.ui.home.RecPermissionManager
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Intent
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Label
@@ -68,13 +68,13 @@ class HomeViewImpl(
                 binding.recordButton.apply {
                     setIconResource(
                         when(it) {
-                            HomeViewModel.UiState.RecPauseBtnState.RECORD -> R.drawable.ic_record
-                            HomeViewModel.UiState.RecPauseBtnState.PAUSE -> R.drawable.ic_pause
+                            RecPauseBtnState.RECORD -> R.drawable.ic_record
+                            RecPauseBtnState.PAUSE -> R.drawable.ic_pause
                         }
                     )
                     contentDescription = context.getString(when(it) {
-                        HomeViewModel.UiState.RecPauseBtnState.RECORD -> R.string.btn_rec_desc
-                        HomeViewModel.UiState.RecPauseBtnState.PAUSE -> R.string.btn_pause_desc
+                        RecPauseBtnState.RECORD -> R.string.btn_rec_desc
+                        RecPauseBtnState.PAUSE -> R.string.btn_pause_desc
                     })
                 }
             }

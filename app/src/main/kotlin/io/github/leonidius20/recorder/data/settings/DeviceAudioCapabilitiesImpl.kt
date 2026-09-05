@@ -41,7 +41,6 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             null
         }) ?: sortedSetOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
 
-    // todo: this is part of interface. use it in Settings domain
     override val containers = buildList {
 
         add(container3gpp)
@@ -262,7 +261,6 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             id = CodecId.AMR_NB,
             MediaRecorder.AudioEncoder.AMR_NB,
             "AMR Narrowband",
-            //true,
             // todo: intersect with device supported sample rates
             supportedSampleRates = listOf(8_000),
             resolutionOptions = BitRateSettingType.BitRateDiscreteValues(

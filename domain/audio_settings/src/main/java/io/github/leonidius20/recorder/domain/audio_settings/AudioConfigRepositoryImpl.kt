@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// todo: move to own module??
 @Singleton
 class AudioConfigRepositoryImpl @Inject constructor(
     @param:Scope.App private val appScope: CoroutineScope,
@@ -99,9 +98,6 @@ class AudioConfigRepositoryImpl @Inject constructor(
         return rates[middleIndex]
     }
 
-    // todo: one function to update (write updated) the settings.
-    //  one function to sanitize
-
     fun sanitizeAndWriteSettings(
         settings: SettingsState<*>,
         audioSource: Int = settings.audioSource,
@@ -118,10 +114,7 @@ class AudioConfigRepositoryImpl @Inject constructor(
         )
     }
 
-    // todo: can we resuse this same function for
-    // reading data?? in data source we will simply read
-    //  current state from pref, then pass though this function
-    //  (using default SettingsState() as base)
+    // todo: move to some use case or something; test
     private fun sanitizeSettings(
         settings: SettingsState<*>,
         audioSource: Int = settings.audioSource,
