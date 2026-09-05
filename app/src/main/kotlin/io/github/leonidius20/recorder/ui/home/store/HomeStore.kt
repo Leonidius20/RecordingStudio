@@ -41,6 +41,8 @@ interface HomeStore : Store<Intent, State, Label> {
 
         data object RecreateVisualizer : Label
 
+        data object LaunchRecordingService : Label
+
     }
 
     data class State(

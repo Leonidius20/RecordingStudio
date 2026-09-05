@@ -90,7 +90,7 @@ class HomeStoreFactory @Inject constructor(
                 }
 
                 is Intent.NotifyRecordingPermissionsConfirmed -> {
-                    recorderServiceLauncher.start()
+                    publish(Label.LaunchRecordingService)
                 }
 
                 is Intent.StopRecording -> {

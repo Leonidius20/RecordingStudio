@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +13,7 @@ import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.ViewRenderer
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.data.recorder.RecorderService
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
 import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.ui.home.HomeViewModel
@@ -116,6 +118,13 @@ class HomeViewImpl(
 
             is Label.RecreateVisualizer -> {
                 binding.audioVisualizer.recreate()
+            }
+
+            is Label.LaunchRecordingService -> {
+                ContextCompat.startForegroundService(
+                    context,
+                    android.content.Intent(context, RecorderService::class.java)
+                )
             }
         }
     }
