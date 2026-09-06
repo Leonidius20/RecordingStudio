@@ -4,21 +4,16 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import io.github.leonidius20.recorder.audio_config.data.AudioSourceOption
-import io.github.leonidius20.recorder.audio_config.data.audioSourceOptions
 import io.github.leonidius20.recorder.audio_config.data.repository.AudioConfigRepositoryImpl
-import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSourceOption
+import io.github.leonidius20.recorder.audio_config.domain.impl.GetAvailableSettingsUseCase
+import io.github.leonidius20.recorder.audio_config.domain.impl.options.AudioConfigSettings
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
-import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
+import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.audio_config.domain.impl.availableCodecs
-import io.github.leonidius20.recorder.audio_config.domain.impl.supportedContainers
-import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
-import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
-import io.github.leonidius20.recorder.ui.audio_settings.view_impl.ChipSetting
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
@@ -57,83 +52,8 @@ interface AudioSettingsStore : Store<Intent, State, Nothing> {
 
     }
 
-
-    data class AudioSourceSetting(
-        override val option: AudioSourceOption,
-        override val isSelected: Boolean,
-    ) : ChipSetting<AudioSourceOption> {
-
-        override val id: Int
-            get() = option.value
-
-        override val displayName: String
-            get() = option.name
-
-    }
-
-    data class ContainerSetting(
-        override val option: Container,
-        override val isSelected: Boolean,
-    ) : ChipSetting<Container> {
-
-        override val id: Int
-            get() = option.value
-
-        override val displayName: String
-            get() = option.displayName
-
-    }
-
-    data class CodecSetting(
-        override val option: Codec<*>,
-        override val isSelected: Boolean,
-    ) : ChipSetting<Codec<*>> {
-
-        override val id: Int
-            get() = option.value
-
-        override val displayName: String
-            get() = option.displayName
-
-    }
-
-    data class ChannelsSetting(
-        override val option: AudioChannels,
-        override val isSelected: Boolean
-    ) : ChipSetting<AudioChannels> {
-
-        override val id: Int
-            get() = option.value
-
-        override val displayName: String
-            get() = option.name // todo: replace with display name, but need context for that
-
-    }
-
-    data class SampleRateSetting(
-        val rate: Int,
-        val isSelected: Boolean,
-    )
-
-    data class BitDepthSetting(
-        val depth: BitDepthOption,
-        val isSelected: Boolean,
-    )
-
-    data class BitRateSettings(
-        val type: BitRateSettingType.BitRateValues,
-        val current: Float,
-    )
-
     data class State(
-        val audioSources: List<AudioSourceSetting> = emptyList(),
-        val audioSource: AudioSourceOption? = null,
-        val containers: List<ContainerSetting> = emptyList(),
-        val codecs: List<CodecSetting> = emptyList(),
-        val channelOptions: List<ChannelsSetting> = emptyList(),
-        val sampleRates: List<SampleRateSetting> = emptyList(),
-        val bitRateSettings: BitRateSettings? = null,
-        val bitDepths: List<BitDepthSetting>? = null,
+        val audioConfigSettings: AudioConfigSettings = AudioConfigSettings(),
     )
 
 }
@@ -152,15 +72,17 @@ class AudioSettingsStoreFactory @Inject constructor(
     sealed interface Msg {
 
         data class SettingsUpdated(
-            val newSettings: State,
+            val newSettings: AudioConfigSettings,
         ) : Msg
 
     }
 
 
     class ExecutorImpl @Inject constructor(
+        // todo: also move write capabilities to use case.
+        //  and make repo internal if we add DI to data modules
         private val settings: AudioConfigRepositoryImpl,
-        private val capabilities: DeviceAudioCapabilities,
+        private val getAvailableSettings: GetAvailableSettingsUseCase
     ): CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 
         override fun executeIntent(intent: Intent) {
@@ -194,94 +116,8 @@ class AudioSettingsStoreFactory @Inject constructor(
             when(action) {
                 is Action.SubscribeToUpdates -> {
                     scope.launch {
-                        settings.state.collect { newSettings ->
-                            val container = newSettings.outputFormat
-                            val codec = newSettings.encoder
-
-                            // todo: redo without type comparisons
-                            val availableBitDepths = run {
-                                val bitRateSetting = codec.resolutionOptions
-                                if (bitRateSetting is BitRateSettingType.BitDepthDiscreteValues) {
-                                    bitRateSetting.availableOptions
-                                } else null
-                            }
-
-
-                            val supportedSampleRates = run {
-                                codec.supportedSampleRates
-                                    // todo: move this logic out of UI; remove dependency on
-                                    //  capabilities; also - redesign whole audio  settings api
-                                    .intersect(capabilities.sampleRatesSupportedByDevice)
-                                    .sorted()
-                            }
-
-                            val bitRateSettingType = codec.resolutionOptions
-
-                            val audioSources = audioSourceOptions.map {
-                                AudioSettingsStore.AudioSourceSetting(
-                                    option = it,
-                                    // todo: have settings expose enum value and not int?
-                                    isSelected = it.value == newSettings.audioSource
-                                )
-                            }
-
-                            val newState = State(
-                                audioSources = audioSources,
-                                audioSource = audioSourceOptions.find {
-                                    it.value == newSettings.audioSource
-                                } ?: AudioSourceOption.DEFAULT, // todo: move this logic to Settings
-
-                                containers = Container.supportedContainers(capabilities).map {
-                                    AudioSettingsStore.ContainerSetting(
-                                        option = it,
-                                        isSelected = newSettings.outputFormat == it,
-                                    )
-                                },
-
-                                codecs = container.availableCodecs(capabilities).map {
-                                    AudioSettingsStore.CodecSetting(
-                                        option = it,
-                                        isSelected = it == codec,
-                                    )
-                                },
-
-                                channelOptions = AudioChannels.entries.map {
-                                    AudioSettingsStore.ChannelsSetting(
-                                        option = it,
-                                        isSelected = newSettings.numOfChannels == it
-                                    )
-                                }, // todo: do all phones support stereo?
-
-                                sampleRates = supportedSampleRates.map {
-                                    AudioSettingsStore.SampleRateSetting(
-                                        rate = it,
-                                        isSelected = it == newSettings.sampleRate,
-                                    )
-                                },
-
-                                bitRateSettings = when (bitRateSettingType) {
-                                    is BitRateSettingType.BitDepthDiscreteValues,
-                                    BitRateSettingType.None -> null
-
-                                    is BitRateSettingType.BitRateValues -> {
-                                        (newSettings.resolution as? Resolution.Bitrate)?.let {
-                                            AudioSettingsStore.BitRateSettings(
-                                                type = bitRateSettingType,
-                                                current = it.value
-                                            )
-                                        }
-                                    }
-                                },
-
-                                bitDepths = availableBitDepths?.map {
-                                    AudioSettingsStore.BitDepthSetting(
-                                        depth = it,
-                                        isSelected = it == (newSettings.resolution as? Resolution.BitDepth)?.value
-                                    )
-                                },
-                            )
-
-                            dispatch(Msg.SettingsUpdated(newState))
+                        getAvailableSettings.settings.collect {
+                            dispatch(Msg.SettingsUpdated(it))
                         }
                     }
                 }
@@ -298,7 +134,7 @@ class AudioSettingsStoreFactory @Inject constructor(
         reducer = { msg ->
             when(msg) {
                 is Msg.SettingsUpdated -> {
-                    msg.newSettings
+                    copy(audioConfigSettings = msg.newSettings)
                 }
             }
         }

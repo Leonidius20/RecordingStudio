@@ -6,6 +6,7 @@ import android.media.AudioManager
 import android.media.MediaRecorder
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSourceOption
 import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
 import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
@@ -249,6 +250,47 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
     // todo remove
     override val codecByValue = codecs.associateBy { it.value }
 
+    override val audioSourceOptions = buildList {
+        // todo: localize
+        addAll(
+            listOf(
+                defaultAudioSource,
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.MIC,
+                    "Mic",
+                    "Regular microphone input (some processing may be applied by device)"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.CAMCORDER,
+                    "Camcorder",
+                    "Input tuned for video recording. If there are many microphones, this would be the one with the same orientation as the camera"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                    "Voice recognition",
+                    "Tuned for voice recognition"
+                ),
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    "Voice communication",
+                    "Tuned for VoIP and the like. Applies processing like echo cancellation or gain control (determined by device manufacturer)"
+                ),
+            )
+        )
+
+        // todo: check if phone supports.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            add(
+                AudioSourceOption(
+                    MediaRecorder.AudioSource.UNPROCESSED,
+                    "Unprocessed",
+                    "No processing if the phone supports it, default otherwise"
+                )
+            )
+        }
+    }
+
+
     companion object {
         val container3gpp = Container(
             id = ContainerId.THREE_GPP,
@@ -269,6 +311,12 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             ),
 
             //supportsStereo = false,
+        )
+
+        val defaultAudioSource = AudioSourceOption(
+            MediaRecorder.AudioSource.DEFAULT,
+            "Default",
+            "Default audio input. Some processing may be applied by device"
         )
     }
 

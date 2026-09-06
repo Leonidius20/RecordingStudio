@@ -23,4 +23,6 @@ interface DeviceAudioCapabilities {
 
     val codecByValue: Map<Int, Codec<out BitRateSettingType>>
 
+    val audioSourceOptions: List<AudioSourceOption>
+
 }

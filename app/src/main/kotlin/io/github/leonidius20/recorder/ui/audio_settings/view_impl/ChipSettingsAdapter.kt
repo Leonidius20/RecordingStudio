@@ -9,25 +9,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.audio_config.domain.impl.options.DiscreteAudioSetting
 import io.github.leonidius20.recorder.ui.common.ifDifferentFrom
-
-// todo: rename into checkable setting or something,
-//  lift from here. so as not to tie to UI logically
-interface ChipSetting<T> {
-    val id: Int
-
-    val isSelected: Boolean
-
-    // todo: create a mapper to get R.string value for this
-    val displayName: String
-
-    val option: T
-}
 
 // todo: T: ChipSetting
 class ChipSettingsAdapter<T>(
     private val onClick: (option: T) -> Unit,
-) : ListAdapter<ChipSetting<T>, ChipSettingsAdapter<T>.ViewHolder>(
+) : ListAdapter<DiscreteAudioSetting<T>, ChipSettingsAdapter<T>.ViewHolder>(
     ChipSettingsDiffUtilCallback()
 ) {
 
@@ -61,7 +49,7 @@ class ChipSettingsAdapter<T>(
             }
         }
 
-        fun bind(item: ChipSetting<T>) {
+        fun bind(item: DiscreteAudioSetting<T>) {
             updateTitle(item.displayName)
             updateSelectionState(item.isSelected)
             chip.setOnClickListener {
@@ -114,18 +102,18 @@ class ChipSettingsAdapter<T>(
     }
 
 
-    class ChipSettingsDiffUtilCallback<T> : DiffUtil.ItemCallback<ChipSetting<T>>() {
+    class ChipSettingsDiffUtilCallback<T> : DiffUtil.ItemCallback<DiscreteAudioSetting<T>>() {
 
-        override fun areItemsTheSame(oldItem: ChipSetting<T>, newItem: ChipSetting<T>): Boolean {
+        override fun areItemsTheSame(oldItem: DiscreteAudioSetting<T>, newItem: DiscreteAudioSetting<T>): Boolean {
             return oldItem.id == newItem.id // uri is the unique identifier
         }
 
-        override fun areContentsTheSame(oldItem: ChipSetting<T>, newItem: ChipSetting<T>): Boolean {
+        override fun areContentsTheSame(oldItem: DiscreteAudioSetting<T>, newItem: DiscreteAudioSetting<T>): Boolean {
             return oldItem.displayName == newItem.displayName &&
                     oldItem.isSelected == newItem.isSelected
         }
 
-        override fun getChangePayload(oldItem: ChipSetting<T>, newItem: ChipSetting<T>): Any {
+        override fun getChangePayload(oldItem: DiscreteAudioSetting<T>, newItem: DiscreteAudioSetting<T>): Any {
             return ChipSettingChangePayload(
                 newName = newItem.displayName.ifDifferentFrom(oldItem.displayName),
                 newIsSelected = newItem.isSelected.ifDifferentFrom(oldItem.isSelected),

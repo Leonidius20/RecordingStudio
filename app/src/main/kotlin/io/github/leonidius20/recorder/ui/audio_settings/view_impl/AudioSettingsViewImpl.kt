@@ -8,7 +8,7 @@ import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.slider.Slider
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.audio_config.data.AudioSourceOption
+import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
@@ -98,27 +98,27 @@ class AudioSettingsViewImpl(
     }
 
     override val renderer: ViewRenderer<State> = diff {
-        diff(get = { it.audioSources }, set = {
+        diff(get = { it.audioConfigSettings.audioSources }, set = {
             audioSourcesAdapter.submitList(it)
         })
 
-        diff(get = { it.audioSource }, set = {
+        diff(get = { it.audioConfigSettings.audioSource }, set = {
             binding.audioSourceDescriptionText.text = it?.description
         })
 
-        diff(get = { it.containers }, set = {
+        diff(get = { it.audioConfigSettings.containers }, set = {
             containersAdapter.submitList(it)
         })
 
-        diff(get = { it.codecs }, set = {
+        diff(get = { it.audioConfigSettings.codecs }, set = {
             codecsAdapter.submitList(it)
         })
 
-        diff(get = { it.channelOptions }, set = {
+        diff(get = { it.audioConfigSettings.channelOptions }, set = {
             channelsAdapter.submitList(it)
         })
 
-        diff(get = { it.sampleRates }, set = { values ->
+        diff(get = { it.audioConfigSettings.sampleRates }, set = { values ->
             // todo: should we remove this search here?
             // todo: maybe set adapter in slider??
             val selectedIndex = values.indexOfFirst { it.isSelected }
@@ -139,7 +139,7 @@ class AudioSettingsViewImpl(
 
         })
 
-        diff(get = { it.bitDepths }, set = { availableBitDepths ->
+        diff(get = { it.audioConfigSettings.bitDepths }, set = { availableBitDepths ->
             if (availableBitDepths.isNullOrEmpty()) {
                 binding.bitDepthSettingsBlock.isVisible = false
             } else {
@@ -164,7 +164,7 @@ class AudioSettingsViewImpl(
             }
         })
 
-        diff(get = { it.bitRateSettings }, set = { bitRateSettings ->
+        diff(get = { it.audioConfigSettings.bitRateSettings }, set = { bitRateSettings ->
             binding.bitRateSettingsBlock.isVisible = bitRateSettings != null
 
             if (bitRateSettings == null) return@diff
