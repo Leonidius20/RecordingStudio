@@ -1,9 +1,9 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.audio_config.data.repository.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
+import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
-import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
 import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
@@ -14,7 +14,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 class AudioRecorderFactoryImpl @Inject constructor(
-    private val settings: AudioConfigRepositoryImpl, // todo maybe pass in method instead of injecting
+    private val settings: AudioConfigReadRepository, // todo maybe pass in method instead of injecting
     @param:Scope.App private val scope: CoroutineScope,
 ) : AudioRecorderFactory {
 

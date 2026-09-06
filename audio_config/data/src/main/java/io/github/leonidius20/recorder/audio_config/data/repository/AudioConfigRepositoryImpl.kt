@@ -1,7 +1,8 @@
 package io.github.leonidius20.recorder.audio_config.data.repository
 
 import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
-import io.github.leonidius20.recorder.audio_config.domain.impl.SanitizeSettingsUseCase
+import io.github.leonidius20.recorder.audio_config.domain.impl.repository.AudioConfigWriteRepository
+import io.github.leonidius20.recorder.audio_config.domain.impl.use_cases.SanitizeSettingsUseCase
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
@@ -18,11 +19,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudioConfigRepositoryImpl @Inject constructor(
+internal class AudioConfigRepositoryImpl @Inject constructor(
     @param:Scope.App private val appScope: CoroutineScope,
     private val dataSource: AudioSettingsDataSource,
     private val sanitizeSettings: SanitizeSettingsUseCase,
-) : AudioConfigReadRepository {
+) : AudioConfigReadRepository, AudioConfigWriteRepository {
 
     override val state = dataSource.settings.map {
         sanitizeSettings(it)
@@ -31,37 +32,37 @@ class AudioConfigRepositoryImpl @Inject constructor(
         sanitizeSettings(dataSource.getCurrentSettingsState())
     )
 
-    fun setAudioSource(value: Int) {
+    override fun setAudioSource(value: Int) {
         sanitizeAndWriteSettings(state.value, audioSource = value)
     }
 
-    fun setOutputFormat(format: Container) {
+    override fun setOutputFormat(format: Container) {
         sanitizeAndWriteSettings(state.value,
             outputFormat = format)
     }
 
-    fun setCodec(codec: Codec<*>) {
+    override fun setCodec(codec: Codec<*>) {
         sanitizeAndWriteSettings(
             state.value,
             encoder = codec
         )
     }
 
-    fun setNumberOfChannels(channels: AudioChannels) {
+    override fun setNumberOfChannels(channels: AudioChannels) {
         sanitizeAndWriteSettings(
             state.value,
             numOfChannels = channels
         )
     }
 
-    fun setSampleRate(rate: Int) {
+    override fun setSampleRate(rate: Int) {
         sanitizeAndWriteSettings(
             state.value,
             sampleRate = rate
         )
     }
 
-    fun setBitDepth(bitDepth: BitDepthOption) {
+    override fun setBitDepth(bitDepth: BitDepthOption) {
         require(
             state.value.encoder.resolutionOptions
                     is BitRateSettingType.BitDepthDiscreteValues
@@ -73,7 +74,7 @@ class AudioConfigRepositoryImpl @Inject constructor(
         )
     }
 
-    fun setBitRate(rate: Float) {
+    override fun setBitRate(rate: Float) {
         require(state.value.encoder.resolutionOptions
                 is BitRateSettingType.BitRateValues)
 
@@ -83,7 +84,7 @@ class AudioConfigRepositoryImpl @Inject constructor(
         )
     }
 
-    fun sanitizeAndWriteSettings(
+    private fun sanitizeAndWriteSettings(
         settings: SettingsState<*>,
         audioSource: Int = settings.audioSource,
         outputFormat: Container = settings.outputFormat,

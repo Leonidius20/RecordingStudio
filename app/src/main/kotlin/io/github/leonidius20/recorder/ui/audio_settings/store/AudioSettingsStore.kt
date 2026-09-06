@@ -4,10 +4,10 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import io.github.leonidius20.recorder.audio_config.data.repository.AudioConfigRepositoryImpl
 import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSourceOption
-import io.github.leonidius20.recorder.audio_config.domain.impl.GetAvailableSettingsUseCase
+import io.github.leonidius20.recorder.audio_config.domain.impl.use_cases.GetAvailableSettingsUseCase
 import io.github.leonidius20.recorder.audio_config.domain.impl.options.AudioConfigSettings
+import io.github.leonidius20.recorder.audio_config.domain.impl.repository.AudioConfigWriteRepository
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
@@ -79,9 +79,7 @@ class AudioSettingsStoreFactory @Inject constructor(
 
 
     class ExecutorImpl @Inject constructor(
-        // todo: also move write capabilities to use case.
-        //  and make repo internal if we add DI to data modules
-        private val settings: AudioConfigRepositoryImpl,
+        private val settings: AudioConfigWriteRepository,
         private val getAvailableSettings: GetAvailableSettingsUseCase
     ): CoroutineExecutor<Intent, Action, State, Msg, Nothing>() {
 

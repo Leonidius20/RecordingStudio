@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -27,6 +29,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt)
+    ksp(libs.hilt.compiler)
 
     implementation(projects.di)
     implementation(projects.entities)

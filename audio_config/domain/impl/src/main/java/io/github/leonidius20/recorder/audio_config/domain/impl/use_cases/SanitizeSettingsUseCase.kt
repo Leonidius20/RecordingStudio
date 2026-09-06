@@ -1,5 +1,12 @@
-package io.github.leonidius20.recorder.audio_config.domain.impl
+package io.github.leonidius20.recorder.audio_config.domain.impl.use_cases
 
+import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.audio_config.domain.impl.defaultCodec
+import io.github.leonidius20.recorder.audio_config.domain.impl.supportedBitRateClosestTo
+import io.github.leonidius20.recorder.audio_config.domain.impl.supportedSampleRateClosestTo
+import io.github.leonidius20.recorder.audio_config.domain.impl.supports
+import io.github.leonidius20.recorder.audio_config.domain.impl.supportsBitrate
+import io.github.leonidius20.recorder.audio_config.domain.impl.supportsSampleRate
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
