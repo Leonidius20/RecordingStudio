@@ -191,6 +191,7 @@ dependencies {
 
     implementation(project(":entities"))
     implementation(project(":domain:recorder"))
-    implementation(project(":domain:audio_settings"))
+    implementation(projects.audioConfig.domain.impl)
+    implementation(projects.audioConfig.domain.api)
     implementation(project(":di"))
 }

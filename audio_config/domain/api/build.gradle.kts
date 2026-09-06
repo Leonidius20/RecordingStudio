@@ -15,8 +15,6 @@ kotlin {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(libs.kotlinx.coroutines)
-    implementation(libs.javax.inject)
-    implementation(project(":entities"))
-    implementation(project(":di"))
-    implementation(projects.audioConfig.domain.api)
+
+    implementation(projects.entities) // todo: split be feature too? or move SettingsState here to api
 }

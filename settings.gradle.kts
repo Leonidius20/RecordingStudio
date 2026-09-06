@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         mavenLocal()
@@ -28,4 +30,5 @@ include(":file_import")
 include(":domain:recorder")
 include(":entities")
 include(":di")
-include(":domain:audio_settings")
+include(":audio_config:domain:api")
+include(":audio_config:domain:impl")

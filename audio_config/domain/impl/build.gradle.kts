@@ -16,7 +16,8 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(libs.kotlinx.coroutines)
     implementation(libs.javax.inject)
-    implementation(project(":entities"))
-    implementation(project(":domain:recorder")) //todo: dont, create a separate domain core module for settings repo interfaces
-    implementation(project(":di"))
+
+    implementation(projects.entities)
+    implementation(projects.audioConfig.domain.api)
+    implementation(projects.di)
 }

@@ -1,7 +1,7 @@
-package io.github.leonidius20.recorder.domain.audio_settings
+package io.github.leonidius20.recorder.audio_config.domain.impl
 
+import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType

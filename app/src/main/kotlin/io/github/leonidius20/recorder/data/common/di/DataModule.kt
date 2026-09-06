@@ -9,9 +9,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.leonidius20.recorder.domain.audio_settings.AudioConfigRepositoryImpl
-import io.github.leonidius20.recorder.domain.audio_settings.AudioSettingsDataSource
-import io.github.leonidius20.recorder.domain.audio_settings.DeviceAudioCapabilities
+import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
+import io.github.leonidius20.recorder.audio_config.domain.impl.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSettingsDataSource
+import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
 import io.github.leonidius20.recorder.data.settings.AudioSettingsDataSourceImpl
 import io.github.leonidius20.recorder.data.settings.DeviceAudioCapabilitiesImpl
 import io.github.leonidius20.recorder.data.settings.UserSettingsRepositoryImpl
@@ -27,7 +28,6 @@ import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsMana
 import io.github.leonidius20.recorder.domain.recorder.Stopwatch
 import io.github.leonidius20.recorder.domain.recorder.StopwatchWrapper
 import io.github.leonidius20.recorder.domain.recorder.UnitedSystemEventObserver
-import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
 import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
