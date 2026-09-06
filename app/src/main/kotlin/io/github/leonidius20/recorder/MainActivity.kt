@@ -20,6 +20,7 @@ import androidx.preference.PreferenceManager
 import com.google.android.material.internal.ViewUtils.requestApplyInsetsWhenAttached
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.leonidius20.recorder.common.ui.doOnApplyWindowInsets
 import io.github.leonidius20.recorder.databinding.ActivityMainBinding
 
 @AndroidEntryPoint
@@ -139,18 +140,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-@SuppressLint("RestrictedApi")
-fun View.doOnApplyWindowInsets(block: (View, WindowInsetsCompat, Rect) -> WindowInsetsCompat) {
-
-    val initialPadding = recordInitialPaddingForView(this)
-
-    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
-        block(v, insets, initialPadding)
-    }
-
-    requestApplyInsetsWhenAttached(this)
-}
-
-private fun recordInitialPaddingForView(view: View) =
-    Rect(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom)

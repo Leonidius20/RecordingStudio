@@ -7,6 +7,8 @@ import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
 import io.github.leonidius20.recorder.entities.audio_settings.Container
+import io.github.leonidius20.recorder.recorder.domain.recorder.OutputFile
+import io.github.leonidius20.recorder.recorder.domain.recorder.OutputFileFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

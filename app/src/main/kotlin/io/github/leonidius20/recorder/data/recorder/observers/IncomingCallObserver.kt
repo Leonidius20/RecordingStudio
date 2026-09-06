@@ -3,8 +3,8 @@ package io.github.leonidius20.recorder.data.recorder.observers
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.data.recorder.IncomingCallBroadcastReceiver
-import io.github.leonidius20.recorder.domain.events.SystemEvent
-import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject

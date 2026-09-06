@@ -8,8 +8,8 @@ import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.domain.settings.UserSettings
-import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettings
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted

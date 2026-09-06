@@ -9,9 +9,9 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.domain.recorder.PERSISTENT_NOTIFICATION_ID
-import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.domain.recorder.RecordingNotificationsManagerImpl
-import io.github.leonidius20.recorder.domain.recorder.RecordingState
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingState
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

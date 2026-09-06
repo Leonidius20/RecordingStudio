@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         mavenLocal()
@@ -23,9 +25,14 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "RecordingStudio"
-include(":app")
-include(":file_import")
-include(":domain:recorder")
-include(":entities")
 include(":di")
-include(":domain:audio_settings")
+include(":entities")
+include(":file_import")
+include(":recorder:domain")
+include(":audio_config:domain:api")
+include(":audio_config:domain:impl")
+include(":app")
+include(":audio_config:data")
+include(":audio_config:presentation")
+include(":common:ui")
+include(":audio_config:ui")

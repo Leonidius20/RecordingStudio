@@ -6,10 +6,10 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import io.github.leonidius20.recorder.audio_config.data.valueForAudioRecordApi
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
-import io.github.leonidius20.recorder.domain.audio_settings.PcmBitDepthOption
-import io.github.leonidius20.recorder.data.settings.valueForAudioRecordApi
-import io.github.leonidius20.recorder.domain.recorder.AudioRecorder
+import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
+import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

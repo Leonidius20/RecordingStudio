@@ -5,8 +5,8 @@ import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import io.github.leonidius20.recorder.domain.recorder.OutputFileImpl
-import io.github.leonidius20.recorder.domain.recorder.RecordAudioUseCase
-import io.github.leonidius20.recorder.domain.recorder.RecordingState
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordAudioUseCase
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingState
 import io.github.leonidius20.recorder.ui.common.secondsToStopwatchString
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Intent
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Label
