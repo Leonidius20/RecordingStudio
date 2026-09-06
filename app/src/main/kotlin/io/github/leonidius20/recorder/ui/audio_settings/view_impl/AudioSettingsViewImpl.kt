@@ -14,9 +14,9 @@ import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
-import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsView
+import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.Intent
+import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.State
+import io.github.leonidius20.recorder.audio_config.presentation.view.AudioSettingsView
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 

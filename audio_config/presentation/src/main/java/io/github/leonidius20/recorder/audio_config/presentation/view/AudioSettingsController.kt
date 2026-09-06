@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.audio_settings.view
+package io.github.leonidius20.recorder.audio_config.presentation.view
 
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.lifecycle.Lifecycle
@@ -10,7 +10,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.states
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStoreFactory
+import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStoreFactory
 
 class AudioSettingsController @AssistedInject constructor(
     private val storeFactory: AudioSettingsStoreFactory,

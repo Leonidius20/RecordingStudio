@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.coreLibraryDesugaring
 import java.util.Properties
 
 plugins {
@@ -87,6 +88,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
@@ -190,10 +193,15 @@ dependencies {
     implementation(libs.flexbox)
 
     implementation(project(":entities"))
+
+    // todo: only leave dependency on UI
     implementation(projects.recorder.domain)
     implementation(projects.audioConfig.domain.impl)
     implementation(projects.audioConfig.domain.api)
     implementation(projects.audioConfig.data)
+    implementation(projects.audioConfig.presentation)
 
-    implementation(project(":di"))
+    implementation(projects.di)
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

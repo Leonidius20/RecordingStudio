@@ -12,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
 import io.github.leonidius20.recorder.doOnApplyWindowInsets
-import io.github.leonidius20.recorder.ui.audio_settings.view.AudioSettingsController
+import io.github.leonidius20.recorder.audio_config.presentation.view.AudioSettingsController
 import javax.inject.Inject
 
 @AndroidEntryPoint

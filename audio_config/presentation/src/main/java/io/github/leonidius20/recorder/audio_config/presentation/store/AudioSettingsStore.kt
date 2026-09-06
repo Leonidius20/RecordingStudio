@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.audio_settings.store
+package io.github.leonidius20.recorder.audio_config.presentation.store
 
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
@@ -12,8 +12,8 @@ import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.Intent
-import io.github.leonidius20.recorder.ui.audio_settings.store.AudioSettingsStore.State
+import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.Intent
+import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.State
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
