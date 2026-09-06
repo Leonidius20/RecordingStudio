@@ -1,7 +1,7 @@
 package io.github.leonidius20.recorder.ui.home.view
 
 import com.arkivanov.mvikotlin.core.view.MviView
-import io.github.leonidius20.recorder.domain.recorder.RecordingState
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingState
 import io.github.leonidius20.recorder.ui.home.RecPauseBtnState
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Intent
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Label

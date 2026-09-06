@@ -4,8 +4,8 @@ import io.github.leonidius20.recorder.data.recorder.observers.ControlObserver
 import io.github.leonidius20.recorder.data.recorder.observers.IncomingCallObserver
 import io.github.leonidius20.recorder.data.recorder.observers.LowBatteryObserver
 import io.github.leonidius20.recorder.data.recorder.observers.LowStorageObserver
-import io.github.leonidius20.recorder.domain.events.SystemEvent
-import io.github.leonidius20.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEventObserver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject

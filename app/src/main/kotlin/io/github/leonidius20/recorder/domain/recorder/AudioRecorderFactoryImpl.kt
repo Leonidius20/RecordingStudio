@@ -6,6 +6,9 @@ import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
 import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
 import io.github.leonidius20.recorder.di.Scope
 import io.github.leonidius20.recorder.entities.audio_settings.Resolution
+import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
+import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorderFactory
+import io.github.leonidius20.recorder.recorder.domain.recorder.OutputFile
 import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import javax.inject.Inject

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class StopwatchWrapper @Inject constructor() :
-    io.github.leonidius20.recorder.domain.recorder.Stopwatch {
+    io.github.leonidius20.recorder.recorder.domain.recorder.Stopwatch {
 
     private val _timer = MutableStateFlow(0L)
     override val timer: StateFlow<Long>

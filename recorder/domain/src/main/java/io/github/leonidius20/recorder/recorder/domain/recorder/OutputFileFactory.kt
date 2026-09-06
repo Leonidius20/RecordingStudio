@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.domain.recorder
+package io.github.leonidius20.recorder.recorder.domain.recorder
 
 import io.github.leonidius20.recorder.entities.audio_settings.Container
 

@@ -1,11 +1,11 @@
-package io.github.leonidius20.recorder.domain.recorder
+package io.github.leonidius20.recorder.recorder.domain.recorder
 
 import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
 import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.di.Scope
-import io.github.leonidius20.recorder.domain.events.SystemEvent
-import io.github.leonidius20.recorder.domain.events.SystemEventObserver
-import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEvent
+import io.github.leonidius20.recorder.recorder.domain.events.SystemEventObserver
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettingsReadRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi

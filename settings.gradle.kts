@@ -25,10 +25,10 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "RecordingStudio"
-include(":app")
-include(":file_import")
-include(":domain:recorder")
-include(":entities")
 include(":di")
+include(":entities")
+include(":file_import")
+include(":recorder:domain")
 include(":audio_config:domain:api")
 include(":audio_config:domain:impl")
+include(":app")

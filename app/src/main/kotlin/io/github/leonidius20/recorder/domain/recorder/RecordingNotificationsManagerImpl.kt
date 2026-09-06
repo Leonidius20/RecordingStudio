@@ -15,6 +15,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.leonidius20.recorder.MainActivity
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.data.recorder.RecordingControlBroadcastReceiver
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingNotificationsManager
+import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingState
 import javax.inject.Inject
 
 private const val REC_IN_PROGRESS_CHANNEL_ID = "io.github.leonidius20.recorder.inprogress"

@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.domain.settings
+package io.github.leonidius20.recorder.recorder.domain.settings
 
 import kotlinx.coroutines.flow.StateFlow
 

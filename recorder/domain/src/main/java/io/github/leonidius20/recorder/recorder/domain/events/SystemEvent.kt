@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.domain.events
+package io.github.leonidius20.recorder.recorder.domain.events
 
 enum class SystemEvent {
 

@@ -14,7 +14,7 @@ import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.domain.settings.UserSettingsReadRepository
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettingsReadRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint

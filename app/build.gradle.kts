@@ -190,7 +190,7 @@ dependencies {
     implementation(libs.flexbox)
 
     implementation(project(":entities"))
-    implementation(project(":domain:recorder"))
+    implementation(projects.recorder.domain)
     implementation(projects.audioConfig.domain.impl)
     implementation(projects.audioConfig.domain.api)
     implementation(project(":di"))
