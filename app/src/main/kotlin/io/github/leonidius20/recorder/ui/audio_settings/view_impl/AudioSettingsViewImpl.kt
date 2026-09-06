@@ -8,7 +8,7 @@ import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.slider.Slider
 import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.data.settings.AudioSourceOption
+import io.github.leonidius20.recorder.audio_config.data.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
@@ -27,6 +27,7 @@ class AudioSettingsViewImpl(
 
     private val context get() = binding.root.context
 
+    // todo: UI mapped models?
     private val audioSourcesAdapter = ChipSettingsAdapter<AudioSourceOption> { source ->
         dispatch(Intent.SetAudioSource(source))
     }

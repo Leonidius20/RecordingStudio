@@ -193,5 +193,7 @@ dependencies {
     implementation(projects.recorder.domain)
     implementation(projects.audioConfig.domain.impl)
     implementation(projects.audioConfig.domain.api)
+    implementation(projects.audioConfig.data)
+
     implementation(project(":di"))
 }

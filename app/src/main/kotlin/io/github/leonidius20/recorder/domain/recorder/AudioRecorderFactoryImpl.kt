@@ -1,6 +1,6 @@
 package io.github.leonidius20.recorder.domain.recorder
 
-import io.github.leonidius20.recorder.audio_config.domain.impl.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.audio_config.data.repository.AudioConfigRepositoryImpl
 import io.github.leonidius20.recorder.data.recorder.MediaRecorderWrapper
 import io.github.leonidius20.recorder.data.recorder.PcmAudioRecorder
 import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption

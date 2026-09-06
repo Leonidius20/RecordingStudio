@@ -1,12 +1,11 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.recorder.audio_config.data.data_source
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaRecorder
-import androidx.annotation.StringRes
 import androidx.core.content.edit
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSettingsDataSource
+import io.github.leonidius20.recorder.audio_config.data.getBitDepthOptionFromPrefValue
+import io.github.leonidius20.recorder.audio_config.data.valueForPref
+import io.github.leonidius20.recorder.audio_config.data.repository.AudioSettingsDataSource
 import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
 import io.github.leonidius20.recorder.audio_config.domain.impl.bitDepthOrRateForCodecPrefKey
 import io.github.leonidius20.recorder.audio_config.domain.impl.defaultCodec
@@ -14,7 +13,6 @@ import io.github.leonidius20.recorder.audio_config.domain.impl.getByValue
 import io.github.leonidius20.recorder.audio_config.domain.impl.supportedBitRateClosestTo
 import io.github.leonidius20.recorder.audio_config.domain.impl.supports
 import io.github.leonidius20.recorder.audio_config.domain.impl.supportsBitrate
-import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
@@ -27,7 +25,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class AudioSettingsDataSourceImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val pref: SharedPreferences,
     private val capabilities: DeviceAudioCapabilities,
 ) : AudioSettingsDataSource {
@@ -60,14 +57,14 @@ class AudioSettingsDataSourceImpl @Inject constructor(
     override fun getCurrentSettingsState(): SettingsState<*> {
         val container = Container.getByValue(
             pref.getInt(
-                R.string.pref_output_format_key,
+                PREF_OUTPUT_FORMAT_KEY,
                 MediaRecorder.OutputFormat.THREE_GPP, // todo: remove reference to android here, Use enum with IDs
             ), capabilities
         )
 
         var codec = Codec.getByValue(
             pref.getInt(
-                R.string.pref_encoder_key,
+                PREF_ENCODER_KEY,
                 container.defaultCodec(capabilities).value,
             ), capabilities
         )
@@ -110,19 +107,19 @@ class AudioSettingsDataSourceImpl @Inject constructor(
 
         return SettingsState(
             audioSource = pref.getInt(
-                R.string.pref_audio_source_key,
+                PREF_AUDIO_SOURCE_KEY,
                 MediaRecorder.AudioSource.MIC,
             ),
             outputFormat = container,
             encoder = codec,
             numOfChannels = AudioChannels.fromInt(
                 pref.getInt(
-                    R.string.num_channels_pref_key,
+                    PREF_NUM_CHANNELS_KEY,
                     AudioChannels.MONO.numberOfChannels()
                 )
             ),
             sampleRate = pref.getInt(
-                R.string.sample_rate_pref_key,
+                PREF_SAMPLE_RATE_KEY,
                 // in sanitation, we will check if device supports this sample rate
                 codec.supportedSampleRates.first()
             ),
@@ -137,26 +134,26 @@ class AudioSettingsDataSourceImpl @Inject constructor(
     override fun saveSettingsToDisk(settings: SettingsState<*>) {
         pref.edit {
             putInt(
-                context.getString(R.string.pref_audio_source_key),
+                PREF_AUDIO_SOURCE_KEY,
                 settings.audioSource
             )
 
             putInt(
-                context.getString(R.string.pref_output_format_key),
+                PREF_OUTPUT_FORMAT_KEY,
                 settings.outputFormat.value
             )
 
             putInt(
-                context.getString(R.string.pref_encoder_key),
+                PREF_ENCODER_KEY,
                 settings.encoder.value
             )
 
             putInt(
-                context.getString(R.string.num_channels_pref_key),
+                PREF_NUM_CHANNELS_KEY,
                 settings.numOfChannels.numberOfChannels()
             )
 
-            putInt(context.getString(R.string.sample_rate_pref_key),
+            putInt(PREF_SAMPLE_RATE_KEY,
                 settings.sampleRate)
 
             when (val res = settings.resolution) {
@@ -179,12 +176,12 @@ class AudioSettingsDataSourceImpl @Inject constructor(
         }
     }
 
-    private fun SharedPreferences.getInt(
-        @StringRes key: Int,
-        defaultValue: Int,
-    ) = getInt(
-        context.getString(key),
-        defaultValue
-    )
+    companion object {
+        private const val PREF_OUTPUT_FORMAT_KEY = "output_format"
+        private const val PREF_ENCODER_KEY = "codec"
+        private const val PREF_AUDIO_SOURCE_KEY = "audio_source"
+        private const val PREF_NUM_CHANNELS_KEY = "num_channels"
+        private const val PREF_SAMPLE_RATE_KEY = "sample_rate_pref_key"
+    }
 
 }

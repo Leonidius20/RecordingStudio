@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.recorder.audio_config.data
 
 import android.media.MediaRecorder
 import android.os.Build

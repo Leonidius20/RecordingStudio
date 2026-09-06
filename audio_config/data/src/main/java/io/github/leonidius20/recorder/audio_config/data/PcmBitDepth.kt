@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.data.settings
+package io.github.leonidius20.recorder.audio_config.data
 
 import android.media.AudioFormat
 import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
@@ -10,9 +10,9 @@ val PcmBitDepthOption.valueForAudioRecordApi get() = when(this) {
     //PCM_8BIT_INT -> AudioFormat.ENCODING_PCM_8BIT
 }
 
-val PcmBitDepthOption.valueForPref get() = valueForAudioRecordApi
+internal val PcmBitDepthOption.valueForPref get() = valueForAudioRecordApi
 
-val BitDepthOption.valueForPref get() = when(this) {
+internal val BitDepthOption.valueForPref get() = when(this) {
     is PcmBitDepthOption -> this.valueForPref
     else -> throw IllegalArgumentException()
 }

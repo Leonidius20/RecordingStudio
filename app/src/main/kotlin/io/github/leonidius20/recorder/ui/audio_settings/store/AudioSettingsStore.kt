@@ -4,14 +4,14 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import io.github.leonidius20.recorder.audio_config.domain.impl.AudioConfigRepositoryImpl
+import io.github.leonidius20.recorder.audio_config.data.AudioSourceOption
+import io.github.leonidius20.recorder.audio_config.data.audioSourceOptions
+import io.github.leonidius20.recorder.audio_config.data.repository.AudioConfigRepositoryImpl
 import io.github.leonidius20.recorder.audio_config.domain.impl.DeviceAudioCapabilities
-import io.github.leonidius20.recorder.data.settings.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.data.settings.audioSourceOptions
 import io.github.leonidius20.recorder.audio_config.domain.impl.availableCodecs
 import io.github.leonidius20.recorder.audio_config.domain.impl.supportedContainers
 import io.github.leonidius20.recorder.entities.audio_settings.BitDepthOption

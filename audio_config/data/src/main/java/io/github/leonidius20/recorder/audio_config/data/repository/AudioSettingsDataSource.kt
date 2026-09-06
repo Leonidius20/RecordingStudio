@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.audio_config.domain.impl
+package io.github.leonidius20.recorder.audio_config.data.repository
 
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
