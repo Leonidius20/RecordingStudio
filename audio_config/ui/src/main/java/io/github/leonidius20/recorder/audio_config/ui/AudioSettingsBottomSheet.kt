@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.audio_settings.view_impl
+package io.github.leonidius20.recorder.audio_config.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,10 +9,10 @@ import com.arkivanov.essenty.instancekeeper.instanceKeeper
 import com.arkivanov.essenty.lifecycle.essentyLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
-import io.github.leonidius20.recorder.doOnApplyWindowInsets
 import io.github.leonidius20.recorder.audio_config.presentation.view.AudioSettingsController
+import io.github.leonidius20.recorder.audio_config.ui.databinding.BottomSheetAudioSettingsBinding
+import io.github.leonidius20.recorder.common.ui.R
+import io.github.leonidius20.recorder.common.ui.doOnApplyWindowInsets
 import javax.inject.Inject
 
 @AndroidEntryPoint

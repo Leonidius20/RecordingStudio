@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.mviKotlin.main)
     implementation(libs.mviKotlin.extensions.coroutines)
 
-    implementation("com.google.dagger:dagger:2.60.1")
-    ksp("com.google.dagger:dagger-compiler:2.60.1")
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
 
 }

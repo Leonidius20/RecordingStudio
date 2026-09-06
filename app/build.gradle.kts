@@ -176,7 +176,6 @@ dependencies {
 
     // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
-    implementation(libs.androidx.viewpager2)
 
     "fullImplementation"(libs.androidAudioPlugin)
     "fullImplementation"(libs.androidAudioPlugin.manager)
@@ -190,7 +189,6 @@ dependencies {
 
     implementation(libs.timber)
 
-    implementation(libs.flexbox)
 
     implementation(project(":entities"))
 
@@ -199,9 +197,11 @@ dependencies {
     implementation(projects.audioConfig.domain.impl)
     implementation(projects.audioConfig.domain.api)
     implementation(projects.audioConfig.data)
-    implementation(projects.audioConfig.presentation)
+    implementation(projects.audioConfig.ui)
 
     implementation(projects.di)
+
+    implementation(projects.common.ui)
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

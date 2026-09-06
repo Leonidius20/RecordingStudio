@@ -1,12 +1,11 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.audio_config.ui
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import io.github.leonidius20.recorder.ui.common.SelectorViewPagerAdapter.ViewHolder
-import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.audio_config.ui.SelectorViewPagerAdapter.ViewHolder
 
 class SelectorViewPagerAdapter(
     private val context: Context,

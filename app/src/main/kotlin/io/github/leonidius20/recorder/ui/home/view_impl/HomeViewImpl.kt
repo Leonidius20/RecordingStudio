@@ -13,9 +13,9 @@ import com.arkivanov.mvikotlin.core.utils.diff
 import com.arkivanov.mvikotlin.core.view.BaseMviView
 import com.arkivanov.mvikotlin.core.view.ViewRenderer
 import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.audio_config.ui.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.data.recorder.RecorderService
 import io.github.leonidius20.recorder.databinding.FragmentHomeBinding
-import io.github.leonidius20.recorder.ui.audio_settings.view_impl.AudioSettingsBottomSheet
 import io.github.leonidius20.recorder.ui.home.RecPauseBtnState
 import io.github.leonidius20.recorder.ui.home.RecPermissionManager
 import io.github.leonidius20.recorder.ui.home.store.HomeStore.Intent

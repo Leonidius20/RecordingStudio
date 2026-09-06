@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.audio_settings.view_impl
+package io.github.leonidius20.recorder.audio_config.ui
 
 import androidx.core.view.isVisible
 import com.arkivanov.mvikotlin.core.utils.diff
@@ -7,16 +7,15 @@ import com.arkivanov.mvikotlin.core.view.ViewRenderer
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.slider.Slider
-import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.audio_config.domain.impl.AudioSourceOption
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Codec
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.databinding.BottomSheetAudioSettingsBinding
 import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.Intent
 import io.github.leonidius20.recorder.audio_config.presentation.store.AudioSettingsStore.State
 import io.github.leonidius20.recorder.audio_config.presentation.view.AudioSettingsView
+import io.github.leonidius20.recorder.audio_config.ui.databinding.BottomSheetAudioSettingsBinding
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 

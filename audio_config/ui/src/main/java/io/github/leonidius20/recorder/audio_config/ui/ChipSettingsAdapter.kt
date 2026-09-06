@@ -1,4 +1,4 @@
-package io.github.leonidius20.recorder.ui.audio_settings.view_impl
+package io.github.leonidius20.recorder.audio_config.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,9 +8,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
-import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.audio_config.domain.impl.options.DiscreteAudioSetting
-import io.github.leonidius20.recorder.ui.common.ifDifferentFrom
+import io.github.leonidius20.recorder.common.ui.ifDifferentFrom
 
 // todo: T: ChipSetting
 class ChipSettingsAdapter<T>(

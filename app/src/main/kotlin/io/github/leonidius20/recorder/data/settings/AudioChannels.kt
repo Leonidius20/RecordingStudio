@@ -1,7 +1,7 @@
 package io.github.leonidius20.recorder.data.settings
 
 import androidx.annotation.StringRes
-import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.audio_config.ui.R
 import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 
 @StringRes

@@ -1,8 +1,7 @@
-package io.github.leonidius20.recorder.ui.common
+package io.github.leonidius20.recorder.audio_config.ui
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -10,7 +9,6 @@ import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.viewpager2.widget.ViewPager2
-import io.github.leonidius20.recorder.R
 
 class Selector @JvmOverloads constructor(
     private val context: Context,
@@ -27,7 +25,7 @@ class Selector @JvmOverloads constructor(
     private var listener: ((Int) -> Unit)? = null
 
     private val buttonEnabledColor = ContextCompat.getColor(
-        context, R.color.md_theme_onSurface
+        context, io.github.leonidius20.recorder.common.ui.R.color.md_theme_onSurface
     )
     private val buttonDisabledColor =
         (buttonEnabledColor and 0x00FFFFFF) or 0x59000000 // 35% opacity

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- md.sys.shape.corner.large -->
+    <dimen name="view_selector_border_radius">16dp</dimen>
+
+    <dimen name="selector_height">56dp</dimen>
+
+</resources>

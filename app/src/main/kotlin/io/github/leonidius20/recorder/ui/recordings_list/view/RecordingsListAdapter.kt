@@ -6,8 +6,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import io.github.leonidius20.recorder.R
-import io.github.leonidius20.recorder.ui.common.ifDifferentFrom
+import io.github.leonidius20.recorder.common.ui.R
+import io.github.leonidius20.recorder.common.ui.ifDifferentFrom
 
 /**
  * this adapter supports selecting multiple items, removing and
@@ -24,9 +24,9 @@ class RecordingsListAdapter(
     /**
      * for when the element is neither selected nor is playing right now
      */
-    private val regularIcon = ContextCompat.getDrawable(context, R.drawable.ic_microphone)
-    private val playingIcon = ContextCompat.getDrawable(context, R.drawable.ic_audio_playing)
-    private val selectedIcon = ContextCompat.getDrawable(context, R.drawable.ic_selected)
+    private val regularIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_microphone)
+    private val playingIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_audio_playing)
+    private val selectedIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_selected)
 
     fun setData(newData: ArrayList<RecordingUiModel>) {
         submitList(newData)
@@ -133,7 +133,7 @@ class RecordingsListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)
-        root.inflateAsync(R.layout.recording_list_item)
+        root.inflateAsync(io.github.leonidius20.recorder.R.layout.recording_list_item)
         return ViewHolder(root)
     }
 
