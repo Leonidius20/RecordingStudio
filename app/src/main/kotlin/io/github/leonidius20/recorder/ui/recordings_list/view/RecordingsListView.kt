@@ -231,6 +231,7 @@ class RecordingsListViewImpl(
 
     init {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
+        binding.recordingList.adapter = adapter
     }
 
     override val renderer: ViewRenderer<Model> = diff {
