@@ -31,17 +31,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
-    <androidx.media3.ui.PlayerView
+    <ViewStub
         android:id="@+id/player_view"
         android:layout_width="0dp"
         android:layout_height="86dp"
-        app:controller_layout_id="@layout/playback_controls"
-        app:hide_on_touch="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recording_list"
-        app:show_timeout="0"
-        app:surface_type="none" />
+        android:layout="@layout/view_player" />
+
     <!-- todo change the height of the controls -->
 </androidx.constraintlayout.widget.ConstraintLayout>

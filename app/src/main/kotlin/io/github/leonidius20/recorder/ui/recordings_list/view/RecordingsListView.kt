@@ -15,12 +15,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.media3.ui.PlayerView
 import androidx.navigation.fragment.findNavController
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.lifecycle.Lifecycle
@@ -46,6 +48,7 @@ import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.RecorderApp
 import io.github.leonidius20.recorder.data.playback.PlaybackService
 import io.github.leonidius20.recorder.databinding.FragmentRecordingsListBinding
+import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.domain.recordings_list.Recording
 import io.github.leonidius20.recorder.ui.common.millisecondsToStopwatchString
 import io.github.leonidius20.recorder.ui.recordings_list.view.RecordingsListView.Event
@@ -54,7 +57,14 @@ import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.Label
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.Intent
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStore.State
 import io.github.leonidius20.recorder.ui.recordings_list.viewmodel.RecordingsListStoreFactory
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 interface RecordingsListView : MviView<Model, Event> {
 
@@ -109,7 +119,7 @@ interface RecordingsListView : MviView<Model, Event> {
 
 }
 
-class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
+class RecordingsListViewImpl(
     val binding: FragmentRecordingsListBinding,
     val fragment: Fragment,
     val requireActivity: () -> Activity = { fragment.requireActivity() },
@@ -119,6 +129,8 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var mediaController: MediaController? = null
+
+    private var playerView: PlayerView? = null
 
     private var adapter: RecordingsListAdapter = RecordingsListAdapter(
         context,
@@ -219,13 +231,10 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
 
     init {
         binding.recordingList.setHasFixedSize(true) // supposedly improves performance
-        binding.recordingList.adapter = adapter
-
-        binding.playerView.showController()
     }
 
     override val renderer: ViewRenderer<Model> = diff {
-        diff(Model::recordings, set = adapter::setData)
+        diff(Model::recordings, set = adapter::submitList)
 
         diff(Model::showEmptyListText, set = {
             binding.emptyListText.isVisible = it
@@ -372,63 +381,79 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
         context.startActivity(android.content.Intent.createChooser(shareIntent, null))
     }
 
+    @OptIn(UnstableApi::class)
     override fun connectToMediaPlayer() {
-        val sessionToken =
-            SessionToken(context, ComponentName(context, PlaybackService::class.java))
-        val factory = MediaController.Builder(context, sessionToken).buildAsync()
-        controllerFuture = factory
-        factory.addListener({
-            mediaController = factory.let {
-                if (it.isDone)
-                    it.get()
-                else
-                    null
-            }
+        // we use main dispatcher (not main.immediate) so that it doesn't
+        // happen when rendering transition to the recordings tab
 
-            binding.playerView.player = mediaController
 
-            dispatch(Event.MediaControllerConnected)
+        fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            delay(300.milliseconds) // let tab switch animation complete
+            playerView = binding.playerView.inflate() as PlayerView
+            playerView!!.showController()
 
-            mediaController?.addListener(object : Player.Listener {
+            val sessionToken =
+                SessionToken(context, ComponentName(context, PlaybackService::class.java))
+            val factory = MediaController.Builder(context, sessionToken).buildAsync()
 
-                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    mediaItem?.let {
-                        mediaController?.currentMediaItemIndex?.let { index ->
-                            dispatch(Event.OtherRecordingStartedPlaying(
-                                id = mediaItem.mediaId.toLong(),
-                                index = index,
-                            ))
-                        } ?: dispatch(Event.PlaybackEnded)
-                    } ?: dispatch(Event.PlaybackEnded)
+            controllerFuture = factory
+            factory.addListener({
+                mediaController = factory.let {
+                    if (it.isDone)
+                        it.get()
+                    else
+                        null
                 }
 
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (isPlaying) {
-                        mediaController?.let { mediaController ->
-                            val index = mediaController.currentMediaItemIndex
+                playerView!!.player = mediaController
 
-                            mediaController.currentMediaItem?.let { item ->
-                                dispatch(Event.OtherRecordingStartedPlaying(
-                                    id = item.mediaId.toLong(),
-                                    index = index,
-                                ))
+                dispatch(Event.MediaControllerConnected)
+
+                mediaController?.addListener(object : Player.Listener {
+
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        mediaItem?.let {
+                            mediaController?.currentMediaItemIndex?.let { index ->
+                                dispatch(
+                                    Event.OtherRecordingStartedPlaying(
+                                        id = mediaItem.mediaId.toLong(),
+                                        index = index,
+                                    )
+                                )
+                            } ?: dispatch(Event.PlaybackEnded)
+                        } ?: dispatch(Event.PlaybackEnded)
+                    }
+
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        if (isPlaying) {
+                            mediaController?.let { mediaController ->
+                                val index = mediaController.currentMediaItemIndex
+
+                                mediaController.currentMediaItem?.let { item ->
+                                    dispatch(
+                                        Event.OtherRecordingStartedPlaying(
+                                            id = item.mediaId.toLong(),
+                                            index = index,
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        dispatch(Event.PlaybackEnded)
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        if (playbackState == Player.STATE_ENDED) {
+                            dispatch(Event.PlaybackEnded)
+                        }
                     }
-                }
 
-            })
+                })
 
-            mediaController?.prepare()
+                mediaController?.prepare()
 
 
-        }, MoreExecutors.directExecutor())
+            }, MoreExecutors.directExecutor())
+        }
     }
 
     override fun disconnectFromMediaPlayer() {
@@ -437,7 +462,7 @@ class RecordingsListViewImpl @OptIn(UnstableApi::class) constructor(
         }
         controllerFuture = null
         mediaController = null
-        binding.playerView.player = null
+        playerView?.player = null // todo
         dispatch(Event.MediaControllerDisconnected)
     }
 
@@ -491,6 +516,7 @@ internal val eventToIntent: Event.() -> Intent = {
 
 class RecordingsListController @AssistedInject constructor(
     private val storeFactory: RecordingsListStoreFactory,
+    @param:Dispatcher.Default private val defaultDispatcher: CoroutineDispatcher,
     @Assisted instanceKeeper: InstanceKeeper,
 ) {
     private val store = instanceKeeper.getStore {
@@ -506,12 +532,17 @@ class RecordingsListController @AssistedInject constructor(
 
     fun onViewCreated(view: RecordingsListView, viewLifecycle: Lifecycle) {
         bind(viewLifecycle, BinderLifecycleMode.START_STOP) {
-            store.states.map(stateToModel) bindTo view
+            store.states
+                .map(stateToModel)
+                .flowOn(defaultDispatcher) bindTo view
             view.events.map(eventToIntent) bindTo store
             store.labels bindTo view::handleLabel
         }
 
-        viewLifecycle.doOnStart { view.connectToMediaPlayer() }
+        viewLifecycle.doOnStart {
+
+            view.connectToMediaPlayer()
+        }
 
         viewLifecycle.doOnStop { view.disconnectFromMediaPlayer() }
     }

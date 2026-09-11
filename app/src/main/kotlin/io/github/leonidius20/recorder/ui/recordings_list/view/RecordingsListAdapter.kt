@@ -28,10 +28,6 @@ class RecordingsListAdapter(
     private val playingIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_audio_playing)
     private val selectedIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_selected)
 
-    fun setData(newData: ArrayList<RecordingUiModel>) {
-        submitList(newData)
-    }
-
     inner class ViewHolder(
         val root: RecordingListItemWrapper,
     ) : RecyclerView.ViewHolder(root) {
