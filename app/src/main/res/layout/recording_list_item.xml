@@ -3,14 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="@dimen/rec_list_item_height"
     android:background="@color/selectable_list_item_background_tint"
     android:backgroundTintMode="multiply"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?selectableItemBackground"
     android:longClickable="true"
-    android:minHeight="72dp"
     tools:theme="@style/Theme.Material3.DayNight">
 
     <ImageView

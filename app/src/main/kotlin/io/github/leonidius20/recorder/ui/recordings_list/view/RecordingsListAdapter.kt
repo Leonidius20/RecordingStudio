@@ -24,9 +24,13 @@ class RecordingsListAdapter(
     /**
      * for when the element is neither selected nor is playing right now
      */
-    private val regularIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_microphone)
-    private val playingIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_audio_playing)
-    private val selectedIcon = ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_selected)
+    private val regularIcon by lazy { ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_microphone) }
+    private val playingIcon by lazy { ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_audio_playing) }
+    private val selectedIcon by lazy { ContextCompat.getDrawable(context, io.github.leonidius20.recorder.R.drawable.ic_selected) }
+
+    init {
+        setHasStableIds(true)
+    }
 
     inner class ViewHolder(
         val root: RecordingListItemWrapper,
@@ -34,6 +38,24 @@ class RecordingsListAdapter(
 
         private var isRecordSelected = false
         private var isRecordPlaying = false
+
+        init {
+            root.invokeWhenInflated {
+                binding.root.setOnClickListener {
+                    val position = bindingAdapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        onItemClicked(getItem(position).id)
+                    }
+                }
+                binding.root.setOnLongClickListener {
+                    val position = bindingAdapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        onItemLongClicked(getItem(position).id)
+                    }
+                    true
+                }
+            }
+        }
 
         internal fun updateName(newName: String) {
             root.invokeWhenInflated {
@@ -102,14 +124,6 @@ class RecordingsListAdapter(
 
         fun bind(recording: RecordingUiModel) {
             root.invokeWhenInflated {
-                binding.root.setOnClickListener {
-                    onItemClicked(recording.id)
-                }
-                binding.root.setOnLongClickListener {
-                    onItemLongClicked(recording.id)
-                    true
-                }
-
                 updateName(recording.name)
                 updateSize(recording.size)
                 updateDuration(recording.duration)
@@ -126,6 +140,8 @@ class RecordingsListAdapter(
         }
 
     }
+
+    override fun getItemId(position: Int) = getItem(position).id
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val root = RecordingListItemWrapper(parent.context)

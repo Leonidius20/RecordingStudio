@@ -2,8 +2,8 @@ package io.github.leonidius20.recorder.ui.recordings_list.view
 
 import android.content.Context
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.databinding.RecordingListItemBinding
 import tech.okcredit.layout_inflator.OkLayoutInflater
 
@@ -19,7 +19,11 @@ class RecordingListItemWrapper(
     0
 ) {
     init {
-        layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+        layoutParams = LayoutParams(MATCH_PARENT,
+            // we need proper size. If we use wrap_content, that would be 0dp
+            // until the actual layout is inflated, and recyclerview will create
+            // a bunch of items to fill the screen that we don't need
+            resources.getDimensionPixelSize(R.dimen.rec_list_item_height))
     }
 
     private var isInflated = false

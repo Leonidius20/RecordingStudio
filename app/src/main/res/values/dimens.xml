@@ -5,4 +5,6 @@
 
     <dimen name="icon_btn_dimension">48dp</dimen>
 
+    <dimen name="rec_list_item_height">72dp</dimen>
+
 </resources>
