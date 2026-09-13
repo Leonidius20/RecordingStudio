@@ -3,35 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/rec_list_item_height"
     android:background="@color/selectable_list_item_background_tint"
     android:backgroundTintMode="multiply"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?selectableItemBackground"
     android:longClickable="true"
-    android:minHeight="72dp"
     tools:theme="@style/Theme.Material3.DayNight">
 
     <ImageView
         android:id="@+id/leading_icon"
 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
 
         android:layout_marginStart="@dimen/margin_normal"
         android:layout_marginEnd="@dimen/margin_normal"
+        android:contentDescription="@null"
         android:tint="?colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/txt_headline"
 
-        app:layout_constraintHeight_max="24dp"
-        app:layout_constraintHeight_min="24dp"
+
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
 
-        app:layout_constraintWidth_max="24dp"
-        app:layout_constraintWidth_min="24dp"
         tools:ignore="UseAppTint"
         tools:src="@drawable/ic_microphone" />
 
@@ -45,7 +42,6 @@
         android:textAlignment="viewStart"
         android:textAppearance="?textAppearanceBodyLarge"
         android:textColor="?colorOnSurface"
-        app:firstBaselineToTopHeight="17dp"
         app:lastBaselineToBottomHeight="7dp"
         app:layout_constraintBottom_toTopOf="@+id/size_text"
         app:layout_constraintEnd_toStartOf="@id/duration_text"
@@ -66,7 +62,6 @@
         android:textAppearance="?textAppearanceBodyMedium"
         android:textColor="?colorOnSurfaceVariant"
         app:firstBaselineToTopHeight="15dp"
-        app:lastBaselineToBottomHeight="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/txt_headline"
         app:layout_constraintStart_toStartOf="@id/txt_headline"
@@ -76,20 +71,17 @@
 
     <TextView
         android:id="@+id/duration_text"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin_normal"
-        android:firstBaselineToTopHeight="12dp"
-        android:lastBaselineToBottomHeight="4dp"
-
+        android:maxLines="1"
         android:textAppearance="?textAppearanceLabelSmall"
         android:textColor="?colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toEndOf="@id/txt_headline"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="duration" />
 
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider"

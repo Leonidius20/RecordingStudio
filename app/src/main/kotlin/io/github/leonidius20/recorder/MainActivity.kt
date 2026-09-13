@@ -1,8 +1,6 @@
 package io.github.leonidius20.recorder
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -13,11 +11,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import com.google.android.material.internal.ViewUtils.requestApplyInsetsWhenAttached
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.leonidius20.recorder.common.ui.doOnApplyWindowInsets
@@ -47,7 +44,9 @@ class MainActivity : AppCompatActivity() {
         // todo: https://developer.android.com/guide/navigation/testing
         val navView: NavigationBarView = binding.navView as NavigationBarView
 
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        val navHostFragment = binding.navHostFragmentActivityMain
+            .getFragment<NavHostFragment>()
+        val navController = navHostFragment.navController
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
