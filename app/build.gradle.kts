@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "io.github.leonidius20.recorder"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.leonidius20.recorder"
@@ -24,10 +24,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // translated only into english and ukrainian languages,
-        // exclude strings from libraries in other languages
-        resourceConfigurations.addAll(listOf("en", "uk"))
-
         // for optimizing build times
         javaCompileOptions {
             annotationProcessorOptions {
@@ -37,6 +33,15 @@ android {
                 )
             }
         }
+    }
+
+    androidResources {
+        // translated only into english and ukrainian languages,
+        // exclude strings from libraries in other languages
+        @Suppress("UnstableApiUsage")
+        localeFilters.addAll(
+            listOf("en", "uk")
+        )
     }
 
     signingConfigs {
@@ -171,6 +176,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
+    implementation(libs.kotlinx.coroutines.guava) // for media3 ListenableFuture
 
     implementation (libs.customactivityoncrash)
 
@@ -179,7 +185,7 @@ dependencies {
 
     "fullImplementation"(libs.androidAudioPlugin)
     "fullImplementation"(libs.androidAudioPlugin.manager)
-    "fullImplementation"(project(":file_import"))
+    "fullImplementation"(projects.fileImport)
 
     implementation(libs.mviKotlin)
     implementation(libs.mviKotlin.main)
@@ -190,7 +196,7 @@ dependencies {
     implementation(libs.timber)
 
 
-    implementation(project(":entities"))
+    implementation(projects.entities)
 
     // todo: only leave dependency on UI
     implementation(projects.recorder.domain)
@@ -203,5 +209,5 @@ dependencies {
 
     implementation(projects.common.ui)
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
