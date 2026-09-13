@@ -298,6 +298,14 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             )
         )
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            add(AudioSourceOption(
+                MediaRecorder.AudioSource.VOICE_PERFORMANCE,
+                "Voice performance",
+                "Reduced latency"
+            ))
+        }
+
         // todo: check if phone supports.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             add(
