@@ -8,11 +8,11 @@ data class SettingsState<T: BitRateSettingType>(
     val numOfChannels: AudioChannels,
     val sampleRate: Int,
 
-    // todo: have an AudioConfig class with some sealed heirarchy that
+    // todo: have an AudioConfig class with some sealed hierarchy that
     //  does away with the nullable things like that
     val resolution: Resolution<T>,
 
-    // todo: maybe we instead should make Codec a proper class with subsclasses,
+    // todo: maybe we instead should make Codec a proper class with subclasses,
     // where each instance is a codec with certain parameters set up (sample rate, bit rate)
     // and the class itself will be checking if these parameters work together?
 )

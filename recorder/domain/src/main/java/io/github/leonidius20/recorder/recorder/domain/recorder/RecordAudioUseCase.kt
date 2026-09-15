@@ -169,11 +169,12 @@ class RecordAudioUseCase @Inject constructor(
         watchSystemEventsJob?.cancel()
         watchSystemEventsJob = null
 
+        val duration = timer.value
         stopwatch.clear()
         // todo: maybe move .buffer() to viewmodel or wherever
         _amplitudes.resetReplayCache()
 
-        file.updateMetadata(duration = timer.value)
+        file.updateMetadata(duration = duration)
 
         file.close()
 

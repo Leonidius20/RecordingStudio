@@ -1,19 +1,24 @@
 package io.github.leonidius20.recorder.domain.recorder
 
+import io.github.leonidius20.recorder.audio_config.data.data_source.DeviceAudioCapabilitiesImpl.Companion.codecAmrNb
+import io.github.leonidius20.recorder.audio_config.data.data_source.DeviceAudioCapabilitiesImpl.Companion.container3gpp
+import io.github.leonidius20.recorder.audio_config.domain.api.AudioConfigReadRepository
+import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
+import io.github.leonidius20.recorder.entities.audio_settings.BitRateSettingType
 import io.github.leonidius20.recorder.entities.audio_settings.Container
-import io.github.leonidius20.recorder.domain.settings.AudioConfigReadRepository
-import io.github.leonidius20.recorder.data.settings.codecAmrNb
-import io.github.leonidius20.recorder.data.settings.container3gpp
+import io.github.leonidius20.recorder.entities.audio_settings.Resolution
+import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import io.github.leonidius20.recorder.recorder.domain.events.SystemEvent
 import io.github.leonidius20.recorder.recorder.domain.events.SystemEventObserver
-import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
-import io.github.leonidius20.recorder.entities.audio_settings.SettingsState
 import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
 import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorderFactory
 import io.github.leonidius20.recorder.recorder.domain.recorder.OutputFile
 import io.github.leonidius20.recorder.recorder.domain.recorder.OutputFileFactory
 import io.github.leonidius20.recorder.recorder.domain.recorder.RecordAudioUseCase
 import io.github.leonidius20.recorder.recorder.domain.recorder.RecordingState
+import io.github.leonidius20.recorder.recorder.domain.recorder.Stopwatch
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettings
+import io.github.leonidius20.recorder.recorder.domain.settings.UserSettingsReadRepository
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,12 +37,17 @@ import org.junit.Test
 // todo: refactor Codec and Container to remove references to MediaRecorder ints
 class RecordAudioUseCaseTest {
 
-    val fakeSettings = SettingsState(
-        stopOnLowBattery = false,
-        false,
-        false,
+    val fakeAudioSettings = SettingsState(
         0, container3gpp,
-        codecAmrNb, AudioChannels.MONO, 0, null, 0f
+        codecAmrNb, AudioChannels.MONO, 0,
+        // todo: redesign this api
+        Resolution.Bitrate(0f) as Resolution<BitRateSettingType.BitRateDiscreteValues>,
+    )
+
+    val fakeUserSettings = UserSettings(
+        stopOnLowBattery = false,
+        stopOnLowStorage = false,
+        pauseOnCall = false,
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,16 +55,20 @@ class RecordAudioUseCaseTest {
     fun `When low battery, stop if setting enabled`() = runTest {
         val scope = this
 
-        val settings = fakeSettings.copy(
+        val settings = fakeUserSettings.copy(
             stopOnLowBattery = true
         )
 
-        val settingsProvider = object : AudioConfigReadRepository {
+        val userSettingsProvider = object : UserSettingsReadRepository {
             val _state = MutableStateFlow(settings)
-            override val state: StateFlow<SettingsState>
+            override val userSettings: StateFlow<UserSettings>
                 get() = _state
         }
 
+        val settingsProvider = object : AudioConfigReadRepository {
+            override val state: StateFlow<SettingsState<*>>
+                get() = MutableStateFlow(fakeAudioSettings)
+        }
 
         val observer = object : SystemEventObserver {
 
@@ -95,8 +109,21 @@ class RecordAudioUseCaseTest {
                     return mockk(relaxed = true) // todo: return fake impl?
                 }
             },
-            stopwatch = mockk(relaxed = true) // todo: fake
+            stopwatch = object : Stopwatch {
+                override val timer: StateFlow<Long>
+                    get() = MutableStateFlow(0L)
 
+                override fun start() {}
+
+                override fun stop() {}
+
+                override fun pause() {}
+
+                override fun resume() {}
+
+                override fun clear() {}
+            },
+            userSettings = userSettingsProvider,
         )
 
         var useCase = createUseCase()
@@ -109,7 +136,7 @@ class RecordAudioUseCaseTest {
 
         useCase.stop()
 
-        settingsProvider._state.value = settings.copy(
+        userSettingsProvider._state.value = settings.copy(
             stopOnLowBattery = false
         )
 
