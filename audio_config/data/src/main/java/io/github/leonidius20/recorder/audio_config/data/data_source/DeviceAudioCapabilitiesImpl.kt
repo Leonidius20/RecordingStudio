@@ -307,6 +307,8 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
         }
 
         // todo: check if phone supports.
+        // todo: make sure default is used if updating from prev version were this
+        //  was available
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             add(
                 AudioSourceOption(
