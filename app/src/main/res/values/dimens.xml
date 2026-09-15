@@ -3,15 +3,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="icon_btn_dimension">48dp</dimen>
 
-    <dimen name="margin_normal">16dp</dimen>
+    <dimen name="rec_list_item_height">72dp</dimen>
 
-    <dimen name="margin_small">8dp</dimen>
-
-    <dimen name="margin_large">48dp</dimen>
-
-    <!-- md.sys.shape.corner.large -->
-    <dimen name="view_selector_border_radius">16dp</dimen>
-
-    <dimen name="selector_height">56dp</dimen>
 </resources>

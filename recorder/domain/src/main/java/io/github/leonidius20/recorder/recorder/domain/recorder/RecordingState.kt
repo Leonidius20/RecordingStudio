@@ -1,0 +1,20 @@
+package io.github.leonidius20.recorder.recorder.domain.recorder
+
+sealed interface RecordingState {
+
+    data object Preparing : RecordingState
+
+    data class Recording(
+        val supportsPausing: Boolean,
+    ) : RecordingState
+
+    data object Paused : RecordingState
+
+    data class Error(
+        val t: Throwable
+    ) : RecordingState
+
+    data object Stopping : RecordingState
+
+    data object Idle : RecordingState
+}

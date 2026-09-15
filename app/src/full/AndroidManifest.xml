@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- query plugins -->
+    <queries>
+        <intent>
+            <action android:name="org.androidaudioplugin.AudioPluginService.V3" />
+        </intent>
+    </queries>
+
+</manifest>

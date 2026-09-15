@@ -1,10 +1,9 @@
+import org.gradle.kotlin.dsl.coreLibraryDesugaring
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kapt)
     alias(libs.plugins.hilt)
     id("com.github.alexfu.androidautoversion")
     id("androidx.navigation.safeargs.kotlin")
@@ -12,12 +11,12 @@ plugins {
 
 android {
     namespace = "io.github.leonidius20.recorder"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.leonidius20.recorder"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = androidAutoVersion.versionCode
         versionName = androidAutoVersion.versionName
 
@@ -25,9 +24,24 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        // for optimizing build times
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "dagger.fastInit" to "enabled",
+                    "dagger.hilt.disableModulesHaveInstallInCheck" to "true"
+                )
+            }
+        }
+    }
+
+    androidResources {
         // translated only into english and ukrainian languages,
         // exclude strings from libraries in other languages
-        resourceConfigurations.addAll(listOf("en", "uk"))
+        @Suppress("UnstableApiUsage")
+        localeFilters.addAll(
+            listOf("en", "uk")
+        )
     }
 
     signingConfigs {
@@ -79,13 +93,14 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
     buildFeatures {
-        dataBinding = true
+        viewBinding = true
         buildConfig = true
+        resValues = true
     }
 
     testOptions.unitTests.isIncludeAndroidResources = true
@@ -102,6 +117,9 @@ android {
 
         create("full") {
             dimension = "version"
+            minSdk = 29
+
+            resValue("string", "aap_version", libs.versions.aap.get())
         }
 
     }
@@ -112,10 +130,17 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.service)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
@@ -123,6 +148,9 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    // todo: remove once architecture is good enough so it's not needed
+    testImplementation(libs.mockk)
 
     testImplementation(libs.androidx.junit)
     testImplementation(libs.androidx.espresso.core)
@@ -134,8 +162,6 @@ dependencies {
 
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
-
-    implementation(libs.material.lists)
 
     implementation(libs.ok.layoutinflater)
 
@@ -150,12 +176,38 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
+    implementation(libs.kotlinx.coroutines.guava) // for media3 ListenableFuture
 
     implementation (libs.customactivityoncrash)
 
     // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
 
-    // todo: if flavour = full, include AAP framework
+    "fullImplementation"(libs.androidAudioPlugin)
+    "fullImplementation"(libs.androidAudioPlugin.manager)
+    "fullImplementation"(projects.fileImport)
+
+    implementation(libs.mviKotlin)
+    implementation(libs.mviKotlin.main)
+    //debugImplementation(libs.mviKotlin.logging)
+    //debugImplementation(libs.mviKotlin.timetravel)
+    implementation(libs.mviKotlin.extensions.coroutines)
+
+    implementation(libs.timber)
+
+
+    implementation(projects.entities)
+
+    // todo: only leave dependency on UI
+    implementation(projects.recorder.domain)
+    implementation(projects.audioConfig.domain.impl)
+    implementation(projects.audioConfig.domain.api)
+    implementation(projects.audioConfig.data)
+    implementation(projects.audioConfig.ui)
+
+    implementation(projects.di)
+
+    implementation(projects.common.ui)
+
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
