@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "io.github.leonidius20.recorder"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = androidAutoVersion.versionCode
         versionName = androidAutoVersion.versionName
 
