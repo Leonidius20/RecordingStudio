@@ -2,9 +2,11 @@
 An Android sound recorder app. External effect plugin support is planned for the Full version.
 
 ---
+[<img src="docs/badges/googleplay.png" width="200px">](https://play.google.com/store/apps/details?id=io.github.leonidius20.recorder.lite)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="200px">](https://f-droid.org/en/packages/io.github.leonidius20.recorder.lite/)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid2.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/io.github.leonidius20.recorder.lite)
 
+[Sign up for testing on Google Play](https://play.google.com/apps/testing/io.github.leonidius20.recorder.lite) to get access to the latest updates.
 
 ---
 
