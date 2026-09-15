@@ -4,3 +4,4 @@
 - Fixed 3-button navigation bar overlaid on UI
 - No longer showing containers with no supported codecs and codecs with no supported sample rates
 - Fixed app hanging after stopping a paused recording with OPUS encoder
+- added "Voice performance" audio source
