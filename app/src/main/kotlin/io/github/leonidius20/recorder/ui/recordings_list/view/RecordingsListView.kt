@@ -390,7 +390,9 @@ class RecordingsListViewImpl(
 
         fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             delay(300.milliseconds) // let tab switch animation complete
-            playerView = binding.playerView.inflate() as PlayerView
+            if (playerView == null) {
+                playerView = binding.playerView.inflate() as PlayerView
+            }
             playerView!!.showController()
 
             val sessionToken =
