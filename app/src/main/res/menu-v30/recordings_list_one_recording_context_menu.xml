@@ -20,4 +20,9 @@
         android:icon="@drawable/ic_share"
         android:title="@string/recordings_list_action_share"/>
 
+    <item
+        android:id="@+id/recordings_list_action_edit"
+        android:visible="false"
+        android:title="@string/recordings_list_action_edit"/>
+
 </menu>

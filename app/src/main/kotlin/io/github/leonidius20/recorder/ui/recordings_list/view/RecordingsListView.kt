@@ -44,6 +44,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.leonidius20.recorder.BuildConfig
 import io.github.leonidius20.recorder.R
 import io.github.leonidius20.recorder.RecorderApp
 import io.github.leonidius20.recorder.data.playback.PlaybackService
@@ -172,6 +173,9 @@ class RecordingsListViewImpl(
                 )
             } else {
                 mode.menuInflater.inflate(R.menu.recordings_list_one_recording_context_menu, menu)
+                if (BuildConfig.FLAVOR == "full") {
+                    menu.findItem(R.id.recordings_list_action_edit)?.isVisible = true
+                }
             }
 
             return true
