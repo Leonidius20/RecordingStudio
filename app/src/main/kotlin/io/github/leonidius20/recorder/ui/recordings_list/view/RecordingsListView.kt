@@ -337,7 +337,7 @@ class RecordingsListViewImpl(
                 dispatch(Event.DisableSelectionMode)
             }
             is Label.Edit -> {
-// todo: check if aap and ndk is not used in lite veriosn
+                // todo: remove from lite?
                 fragment.findNavController().navigate(
                     RecordingsListFragmentDirections
                         .actionRecordingsListToEditRecording(

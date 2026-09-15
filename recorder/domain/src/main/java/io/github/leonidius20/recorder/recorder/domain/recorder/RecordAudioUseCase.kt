@@ -46,7 +46,7 @@ class RecordAudioUseCase @Inject constructor(
 
     lateinit var recorder: AudioRecorder
 
-    private lateinit var amplitudeVizUpdateJob: Job
+    private var amplitudeVizUpdateJob: Job? = null
 
     /**
      * length of the recording so far in milliseconds
@@ -121,20 +121,18 @@ class RecordAudioUseCase @Inject constructor(
                 file
             )
 
+            recorder.start()
         } catch (e: Throwable) {
             e.printStackTrace()
             stopOnError(e)
             return false
         }
 
-        recorder.start()
-
         _state.value = RecordingState.Recording(
             supportsPausing = recorder.supportsPausing()
         )
 
         stopwatch.start()
-
 
         amplitudeVizUpdateJob = scope.launch(defaultDispatcher) {
             // every 100ms, emit maxAmplitude
@@ -200,7 +198,7 @@ class RecordAudioUseCase @Inject constructor(
     }
 
     fun stop(): Job {
-        amplitudeVizUpdateJob.cancel()
+        amplitudeVizUpdateJob?.cancel()
         stopwatch.stop()
 
         return scope.launch {
