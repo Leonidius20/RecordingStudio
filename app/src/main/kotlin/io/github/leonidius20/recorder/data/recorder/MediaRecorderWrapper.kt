@@ -26,19 +26,19 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
     bitRate: Float?,
 ) : AudioRecorder {
 
-    val recorder = MediaRecorder().apply {
+    private val encoderValue = encoder.value
+
+    private val recorder = MediaRecorder().apply {
         setAudioSource(audioSource)
         setOutputFormat(container.value)
         setOutputFile(descriptor.fileDescriptor)
-        setAudioEncoder(encoder.value)
+        setAudioEncoder(encoderValue)
         setAudioChannels(channels.numberOfChannels())
-        //todo uncomment once bit rate is implemented
         setAudioSamplingRate(sampleRate)
         if (bitRate != null) {
             setAudioEncodingBitRate((bitRate * 1000).toInt()) // 1 kbps = 1000 bps
         }
 
-        //setAudioEncodingBitRate()
         /*setOnInfoListener(object : MediaRecorder.OnInfoListener {
             override fun onInfo(
                 mr: MediaRecorder?,
@@ -49,7 +49,6 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
             }
 
         })*/
-        // setAudioEncodingBitRate() // in bits per s
 
         prepare() // throws IOException
     }
@@ -71,6 +70,11 @@ class MediaRecorderWrapper @Throws(IOException::class) constructor(
 
     override suspend fun stop() {
         recorder.apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && encoderValue == MediaRecorder.AudioEncoder.OPUS) {
+                // to avoid a bug where it hangs after stopping when paused
+                resume()
+            }
             stop()
             release()
         }

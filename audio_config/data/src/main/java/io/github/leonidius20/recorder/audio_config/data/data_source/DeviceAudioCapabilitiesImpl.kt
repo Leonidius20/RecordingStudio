@@ -42,84 +42,23 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             null
         }) ?: sortedSetOf(8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
 
-    override val containers = buildList {
-
-        add(container3gpp)
-
-        add(
-            Container(
-                id = ContainerId.MPEG4,
-                MediaRecorder.OutputFormat.MPEG_4,
-                "MPEG4", "audio/mp4",
-                listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD)
-            )
-        )
-
-        add(
-            Container(
-                id = ContainerId.AAC_ADTS,
-                MediaRecorder.OutputFormat.AAC_ADTS,
-                "AAC ADTS", "audio/aac-adts",
-                listOf(
-                    CodecId.AAC,
-                    // todo fix and bring back
-                    // CodecId.HE_AAC,
-                    // CodecId.AAC_ELD,
-                )
-            )
-        )
-
-        add(
-            Container(
-                id = ContainerId.AMR_NB,
-                MediaRecorder.OutputFormat.AMR_NB,
-                "AMR Narrowband", "audio/amr",
-                listOf(CodecId.AMR_NB)
-            )
-        )
-
-        add(
-            Container(
-                id = ContainerId.AMR_WB,
-                MediaRecorder.OutputFormat.AMR_WB,
-                "AMR Wideband", "audio/amr-wb",
-                listOf(CodecId.AMR_WB)
-            )
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            add(
-                Container(
-                    id = ContainerId.OGG,
-                    MediaRecorder.OutputFormat.OGG,
-                    "OGG", "audio/ogg",
-                    listOf(CodecId.OPUS)
-                )
-            )
-        }
-
-
-        add(
-            Container(
-                id = ContainerId.WAV,
-                value = -1,
-                displayName = "WAV", mimeType = "audio/x-wav",
-                supportedCodecIds = listOf(CodecId.PCM)
-            )
-        )
-    }
-
-    override val containersMap = containers.associateBy {
-        it.value
-    }
-
     override val codecs = buildList {
+        fun addIfHasSupportedSampleRates(codec: Codec<*>) {
+            val modified = codec.copy(
+                supportedSampleRates = codec.supportedSampleRates
+                    .intersect(sampleRatesSupportedByDevice).toList()
+            )
+
+            if (modified.supportedSampleRates.isNotEmpty()) {
+                add(modified)
+            }
+        }
 
         // todo: check support some other way too
 
-        add(codecAmrNb)
+        addIfHasSupportedSampleRates(codecAmrNb)
 
-        add(
+        addIfHasSupportedSampleRates(
             Codec(
                 id = CodecId.AMR_WB,
                 MediaRecorder.AudioEncoder.AMR_WB,
@@ -146,7 +85,7 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
         )
 
         // todo: vbr, cbr, etc?
-        add(
+        addIfHasSupportedSampleRates(
             Codec(
                 id = CodecId.AAC,
                 MediaRecorder.AudioEncoder.AAC,
@@ -167,7 +106,7 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             )
         )
 
-        add(
+        addIfHasSupportedSampleRates(
             Codec(
                 id = CodecId.HE_AAC,
                 MediaRecorder.AudioEncoder.HE_AAC,
@@ -188,7 +127,7 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             )
         )
 
-        add(
+        addIfHasSupportedSampleRates(
             Codec(
                 id = CodecId.AAC_ELD,
                 MediaRecorder.AudioEncoder.AAC_ELD,
@@ -201,7 +140,7 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-            add(
+            addIfHasSupportedSampleRates(
                 Codec(
                     id = CodecId.OPUS,
                     MediaRecorder.AudioEncoder.OPUS,
@@ -219,7 +158,7 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
         }
 
 
-        add(
+        addIfHasSupportedSampleRates(
             Codec(
                 id = CodecId.PCM,
                 value = -1,
@@ -250,6 +189,87 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
     // todo remove
     override val codecByValue = codecs.associateBy { it.value }
 
+    override val containers = buildList {
+        val supportedCodecs = codecs.map { it.id }.toSet()
+
+        fun addIfHasSupportedCodecs(container: Container) {
+            val modified = container.copy(
+                supportedCodecIds = container.supportedCodecIds
+                    .intersect(supportedCodecs).toList()
+            )
+            if (modified.supportedCodecIds.isNotEmpty()) {
+                add(modified)
+            }
+        }
+
+        addIfHasSupportedCodecs(container3gpp)
+
+        addIfHasSupportedCodecs(
+            Container(
+                id = ContainerId.MPEG4,
+                MediaRecorder.OutputFormat.MPEG_4,
+                "MPEG4", "audio/mp4",
+                listOf(CodecId.AAC, CodecId.HE_AAC, CodecId.AAC_ELD)
+            )
+        )
+
+        addIfHasSupportedCodecs(
+            Container(
+                id = ContainerId.AAC_ADTS,
+                MediaRecorder.OutputFormat.AAC_ADTS,
+                "AAC ADTS", "audio/aac-adts",
+                listOf(
+                    CodecId.AAC,
+                    // todo fix and bring back
+                    // CodecId.HE_AAC,
+                    // CodecId.AAC_ELD,
+                )
+            )
+        )
+
+        addIfHasSupportedCodecs(
+            Container(
+                id = ContainerId.AMR_NB,
+                MediaRecorder.OutputFormat.AMR_NB,
+                "AMR Narrowband", "audio/amr",
+                listOf(CodecId.AMR_NB)
+            )
+        )
+
+        addIfHasSupportedCodecs(
+            Container(
+                id = ContainerId.AMR_WB,
+                MediaRecorder.OutputFormat.AMR_WB,
+                "AMR Wideband", "audio/amr-wb",
+                listOf(CodecId.AMR_WB)
+            )
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            addIfHasSupportedCodecs(
+                Container(
+                    id = ContainerId.OGG,
+                    MediaRecorder.OutputFormat.OGG,
+                    "OGG", "audio/ogg",
+                    listOf(CodecId.OPUS)
+                )
+            )
+        }
+
+        addIfHasSupportedCodecs(
+            Container(
+                id = ContainerId.WAV,
+                value = -1,
+                displayName = "WAV", mimeType = "audio/x-wav",
+                supportedCodecIds = listOf(CodecId.PCM)
+            )
+        )
+    }
+
+    override val containersMap = containers.associateBy {
+        it.value
+    }
+
     override val audioSourceOptions = buildList {
         // todo: localize
         addAll(
@@ -278,7 +298,17 @@ class DeviceAudioCapabilitiesImpl @Inject constructor(
             )
         )
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            add(AudioSourceOption(
+                MediaRecorder.AudioSource.VOICE_PERFORMANCE,
+                "Voice performance",
+                "Reduced latency"
+            ))
+        }
+
         // todo: check if phone supports.
+        // todo: make sure default is used if updating from prev version were this
+        //  was available
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             add(
                 AudioSourceOption(

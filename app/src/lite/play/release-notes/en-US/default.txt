@@ -2,3 +2,5 @@
 - Added the option to share recordings from the list
 - Fixed recording being played not highlighted after screen rotation
 - Fixed 3-button navigation bar overlaid on UI
+- No longer showing containers with no supported codecs and codecs with no supported sample rates
+- Fixed app hanging after stopping a paused recording with OPUS encoder

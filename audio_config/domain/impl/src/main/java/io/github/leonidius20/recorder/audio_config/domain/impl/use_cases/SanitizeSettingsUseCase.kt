@@ -95,9 +95,8 @@ class SanitizeSettingsUseCase @Inject constructor(
      * the latter yet.
      */
     private fun medianSampleRateSupportedByCodecAndDevice(codec: Codec<*>): Int {
-        val rates = codec.supportedSampleRates.intersect(
-            deviceAudioCapabilities.sampleRatesSupportedByDevice
-        ).toIntArray()
+        // no need to intersect with device capabilities - it already includes them
+        val rates = codec.supportedSampleRates
 
         val middleIndex = rates.size / 2
 

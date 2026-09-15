@@ -1,7 +1,7 @@
 package io.github.leonidius20.recorder.entities.audio_settings
 
 // todo: replace w/ sealed interface?
-class Container(
+data class Container(
     val id: ContainerId,
     /**
      * value as expected by MediaRecorder.setOutputFormat()
