@@ -9,11 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.leonidius20.recorder.data.common.di.Dispatcher
 import io.github.leonidius20.recorder.data.plugins.PluginModel
 import io.github.leonidius20.recorder.data.plugins.PluginsRepository
 import io.github.leonidius20.recorder.data.recordings_list.RecordingsListRepository
-import io.github.leonidius20.recorder.data.settings.Container
+import io.github.leonidius20.recorder.di.Dispatcher
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginChainItem
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsScope
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginDetailsState
@@ -156,7 +155,8 @@ class PluginDetailsViewModel @Inject constructor(
     fun saveFile() {
         val outFile = recordingsRepo.createRecordingFile(
             System.currentTimeMillis().toString(),
-            Container.WAV.mimeType
+            //Container.WAV.mimeType
+            "audio/x-wav"
         )
 
         context.contentResolver.openOutputStream(outFile)!!.use { out ->

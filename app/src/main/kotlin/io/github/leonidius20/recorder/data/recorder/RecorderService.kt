@@ -27,6 +27,10 @@ class RecorderService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
+        // todo: move elsewhere? only need to happen once, really
+        notificationsManager.createRecInProgressNotificationChannel()
+        notificationsManager.createPrematureStopNotificationChannel()
+
         val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
 
@@ -50,10 +54,6 @@ class RecorderService : LifecycleService() {
             e.printStackTrace()
             stopSelf()
         }
-
-        // todo: move elsewhere? only need to happen once, really
-        notificationsManager.createRecInProgressNotificationChannel()
-        notificationsManager.createPrematureStopNotificationChannel()
 
         lifecycleScope.launch {
             recordAudioUseCase.state.collect {
