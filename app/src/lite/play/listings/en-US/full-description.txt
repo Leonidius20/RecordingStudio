@@ -1,4 +1,5 @@
 Audio recorder
-* Supports various formats and codecs
-* Recordings playback, renaming and deleting
+* Supports various formats and codecs, including uncompressed WAV
+* Changeable sample rate and bitrate / bit depth
+* Recordings playback, renaming, deleting / trashing and sharing
 * Auto-pausing recordings on phone call, low battery or storage
