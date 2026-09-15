@@ -35,12 +35,13 @@ jobs:
           SIGNATURE_KEYSTORE_PASSWORD: ${{ secrets.SIGNATURE_KEYSTORE_PASSWORD }}
           SIGNATURE_KEY_PASSWORD: ${{ secrets.SIGNATURE_KEY_PASSWORD }}
           SIGNATURE_KEY_ALIAS: ${{ vars.SIGNATURE_KEY_ALIAS }}
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleLiteRelease # todo: also test, lint and make Full
       - name: Read version name
         id: read_version_name
         uses: ActionsTools/read-json-action@main
         with:
           file_path: "./app/version"
+          # todo: migrate to https://github.com/softprops/action-gh-release
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -63,12 +64,12 @@ jobs:
           asset_path: ./app/build/outputs/apk/lite/release/app-lite-release.apk
           asset_name: lite.apk
           asset_content_type: application/vnd.android.package-archive
-      #- name: Attach deobfuscation file to Release
-      #  uses: actions/upload-release-asset@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #    asset_path: ./app/build/app-r8-mapping.txt
-      #    asset_name: app-r8-mapping.txt
-      #    asset_content_type: text/plain
+      - name: Attach deobfuscation file to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./app/build/outputs/mapping/liteRelease/mapping.txt
+          asset_name: lite-mapping.txt
+          asset_content_type: text/plain
