@@ -33,6 +33,8 @@ enum class PcmBitDepthOption(
         maxAmplitudeExtractorFactory = { Int16BitMaxAmpExtractor() },
     ),
 
+    // only supported at I Build.VERSION_CODES.M and newer
+    // todo: not allow this on old androids. dynamically build the list.
     PCM_BIT_FLOAT(
         displayName = "32 bit float",
         //valueForAudioRecordApi = AudioFormat.ENCODING_PCM_FLOAT,
