@@ -53,6 +53,7 @@ class RecorderService : LifecycleService() {
             }
             e.printStackTrace()
             stopSelf()
+            return START_NOT_STICKY
         }
 
         lifecycleScope.launch {
