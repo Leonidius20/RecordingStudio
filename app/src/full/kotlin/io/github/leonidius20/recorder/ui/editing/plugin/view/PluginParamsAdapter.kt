@@ -3,7 +3,7 @@ package io.github.leonidius20.recorder.ui.editing.plugin.view
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import io.github.leonidius20.recorder.R
+import io.github.leonidius20.recorder.common.ui.R
 import io.github.leonidius20.recorder.databinding.PluginParameterBinding
 import org.androidaudioplugin.ParameterInformation
 
