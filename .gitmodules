@@ -1,3 +1,6 @@
 [submodule "external/choc"]
 	path = external/choc
 	url = https://github.com/Tracktion/choc.git
+[submodule "external/cmidi2"]
+	path = external/cmidi2
+	url = https://github.com/atsushieno/cmidi2.git
