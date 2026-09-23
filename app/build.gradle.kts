@@ -184,7 +184,7 @@ dependencies {
 
 
     "fullImplementation"(libs.androidAudioPlugin)
-    "fullImplementation"(projects.androidaudiopluginManager)
+    "fullImplementation"(projects.pluginChain)
     "fullImplementation"(projects.fileImport)
 
     implementation(libs.mviKotlin)

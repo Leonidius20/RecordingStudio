@@ -6,6 +6,8 @@ import dev.atsushieno.ktmidi.toPlatformNativeBytes
 import org.androidaudioplugin.hosting.NativeRemotePluginInstance
 import org.androidaudioplugin.hosting.UmpHelper
 
+// todo: remove all midi-related code? or keep to resuse this module
+//  in a future project?
 class PluginPlayer private constructor(private val native: Long) : AutoCloseable {
 
     companion object {
