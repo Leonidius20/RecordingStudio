@@ -77,6 +77,9 @@ class PcmAudioRecorder(
 
         audioRecord.startRecording()
 
+        // todo: a different thread (another Launch, and the dispatcher should be IO)
+        //  to write stuff to file. synchronize them with a Channel.
+        //   also maybe a 3rd coroutine for max amplitude
         micReadingThread = coroutineScope.launch(cpuDispatcher) {
             val outStream = FileOutputStream(descriptor.fileDescriptor).also {
                 // leaving space for the header

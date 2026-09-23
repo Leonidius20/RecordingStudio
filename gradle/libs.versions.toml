@@ -31,6 +31,7 @@ androidx-media3 = "1.8.1"
 mviKotlin = "4.4.0"
 aap = "0.8.3.9.4"
 ndk = "26.1.10909125"
+cmake = "3.22.1"
 viewpager2 = "1.1.0"
 jetbrainsKotlinJvm = "2.2.0"
 #noinspection GradleDependency : last version to support android 5
@@ -71,8 +72,9 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidx-media3" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "androidx-media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
+# todo: replace with clean
 androidAudioPlugin = { group = "com.github.Leonidius20.aap-core", name = "androidaudioplugin", version.ref = "aap" }
-androidAudioPlugin-manager = { group = "com.github.Leonidius20.aap-core", name = "androidaudioplugin-manager", version.ref = "aap" }
+# androidAudioPlugin-manager = { group = "com.github.Leonidius20.aap-core", name = "androidaudioplugin-manager", version.ref = "aap" }
 mviKotlin = { group = "com.arkivanov.mvikotlin", name = "mvikotlin", version.ref = "mviKotlin" }
 mviKotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", version.ref = "mviKotlin" }
 mviKotlin-logging = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-logging", version.ref = "mviKotlin" }
@@ -81,6 +83,14 @@ mviKotlin-extensions-coroutines = { group = "com.arkivanov.mvikotlin", name = "m
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycle" }
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "hilt" }
 dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "hilt" }
+
+# for Plugin-player
+# todo: is it needed really?
+ktmidi = { module = "dev.atsushieno:ktmidi", version = "0.6.2" }
+oboe = { module = "com.google.oboe:oboe", version = "1.8.0" }
+# todo: is it needed really?
+startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
