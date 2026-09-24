@@ -130,7 +130,7 @@ class PluginDetailsScope private constructor(
     }
 
     // todo: other indicies
-    fun setParameterValue(id: UInt, value: Float, pluginIndex: Int = 0) {
+    fun setParameterValue(id: ParameterInformation, value: Float, pluginIndex: Int = 0) {
         val ins = instances[pluginIndex]
 
         if (ins != null)

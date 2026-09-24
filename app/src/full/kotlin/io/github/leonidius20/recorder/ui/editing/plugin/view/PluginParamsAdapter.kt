@@ -8,7 +8,7 @@ import io.github.leonidius20.recorder.databinding.PluginParameterBinding
 import org.androidaudioplugin.ParameterInformation
 
 class PluginParamsAdapter(
-    private val onParamChange: (paramId: UInt, newVal: Float) -> Unit,
+    private val onParamChange: (param: ParameterInformation, newVal: Float) -> Unit,
 ) : RecyclerView.Adapter<PluginParamsAdapter.ViewHolder>() {
 
     private var parameters: List<ParameterInformation> = emptyList()
@@ -23,7 +23,7 @@ class PluginParamsAdapter(
 
             binding.slider.addOnChangeListener { slider, newVal, fromUser ->
                 if (fromUser) {
-                    onParamChange(param.id.toUInt(), newVal)
+                    onParamChange(param, newVal)
                 }
             }
 
