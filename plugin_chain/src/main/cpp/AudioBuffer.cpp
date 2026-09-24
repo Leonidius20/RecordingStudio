@@ -30,12 +30,12 @@ aap_buffer_t aap::AudioBuffer::asAAPBuffer() {
     return ret;
 }
 
-int32_t aap::AudioBuffer::aapBufferGetNumFrames(aap_buffer_t &b) {
-    return ((AudioBuffer*) b.impl)->audio.getNumFrames();
+int32_t aap::AudioBuffer::aapBufferGetNumFrames(aap_buffer_t *b) {
+    return ((AudioBuffer*) b->impl)->audio.getNumFrames();
 }
 
-void *aap::AudioBuffer::aapBufferGetBuffer(aap_buffer_t &b, int32_t portIndex) {
-    auto data = (AudioBuffer*) b.impl;
+void *aap::AudioBuffer::aapBufferGetBuffer(aap_buffer_t *b, int32_t portIndex) {
+    auto data = (AudioBuffer*) b->impl;
     if (portIndex < data->audio.getChannelRange().end)
         return data->audio.getChannel(portIndex).data.data;
     switch (portIndex - data->audio.getChannelRange().end) {
@@ -46,8 +46,8 @@ void *aap::AudioBuffer::aapBufferGetBuffer(aap_buffer_t &b, int32_t portIndex) {
     return nullptr;
 }
 
-int32_t aap::AudioBuffer::aapBufferGetBufferSize(aap_buffer_t &b, int32_t portIndex) {
-    auto data = (AudioBuffer*) b.impl;
+int32_t aap::AudioBuffer::aapBufferGetBufferSize(aap_buffer_t *b, int32_t portIndex) {
+    auto data = (AudioBuffer*) b->impl;
     if (portIndex < data->audio.getChannelRange().end)
         return data->audio.getNumFrames() * sizeof(float);
     switch (portIndex - data->audio.getChannelRange().end) {
@@ -59,7 +59,7 @@ int32_t aap::AudioBuffer::aapBufferGetBufferSize(aap_buffer_t &b, int32_t portIn
     return 0;
 }
 
-int32_t aap::AudioBuffer::aapBufferGetNumPorts(aap_buffer_t &b) {
-    auto data = (AudioBuffer*) b.impl;
+int32_t aap::AudioBuffer::aapBufferGetNumPorts(aap_buffer_t *b) {
+    auto data = (AudioBuffer*) b->impl;
     return data->audio.getNumChannels() + 2;
 }

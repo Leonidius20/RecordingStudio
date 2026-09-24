@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.hosting.AudioPluginClientBase
 import timber.log.Timber
 import java.io.File
@@ -96,7 +97,7 @@ class PluginDetailsViewModel @Inject constructor(
         }
     }
 
-    fun changeParam(id: UInt, value: Float, pluginIndex: Int) {
+    fun changeParam(id: ParameterInformation, value: Float, pluginIndex: Int) {
         val state = uiState.value as PluginDetailsState.Connected
         state.scope.setParameterValue(id, value, pluginIndex)
         _uiState.value = state.copy(isFileReady = false)

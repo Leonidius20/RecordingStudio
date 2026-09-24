@@ -10,10 +10,10 @@
 namespace aap {
 
     class AudioBuffer {
-        static int32_t aapBufferGetNumFrames(aap_buffer_t &);
-        static void *aapBufferGetBuffer(aap_buffer_t &, int32_t);
-        static int32_t aapBufferGetBufferSize(aap_buffer_t &, int32_t);
-        static int32_t aapBufferGetNumPorts(aap_buffer_t &);
+        static int32_t aapBufferGetNumFrames(aap_buffer_t *);
+        static void *aapBufferGetBuffer(aap_buffer_t *, int32_t);
+        static int32_t aapBufferGetBufferSize(aap_buffer_t *, int32_t);
+        static int32_t aapBufferGetNumPorts(aap_buffer_t *);
 
     public:
         choc::buffer::ChannelArrayBuffer<float> audio;

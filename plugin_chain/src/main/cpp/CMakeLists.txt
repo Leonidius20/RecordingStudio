@@ -9,7 +9,6 @@ set (androidaudioplugin-manager_SOURCES
 		AudioDevice.cpp
         AudioDeviceManager.cpp
 		OboeAudioDeviceManager.cpp
-		VirtualAudioDeviceManager.cpp
 		FileAudioDeviceManager.cpp
 		FileAudioDeviceOut.cpp
 		AudioGraph.cpp
@@ -22,8 +21,7 @@ set (androidaudioplugin-manager_SOURCES
 		PluginPlayerConfiguration.cpp
 		JNI.cpp
 		fdstream.cpp
-		nodes/input/file/FileAudioDataSourceNode.cpp
-	)
+)
 
 set(CMAKE_BUILD_TYPE Debug)
 

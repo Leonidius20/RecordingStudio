@@ -6,11 +6,12 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import io.github.leonidius20.recorder.databinding.PluginChainItemBinding
 import io.github.leonidius20.recorder.ui.editing.plugin.model.PluginChainItem
+import org.androidaudioplugin.ParameterInformation
 
 class PluginsChainAdapter(
     private val toggleParamsVisibility: (pluginIndex: Int) -> Unit,
     private val changePluginParam:
-        (pluginIndex: Int, paramIndex: UInt, newValue: Float) -> Unit,
+        (pluginIndex: Int, param: ParameterInformation, newValue: Float) -> Unit,
 ) : RecyclerView.Adapter<PluginsChainAdapter.ViewHolder>() {
 
     private var chain = emptyList<PluginChainItem>()
