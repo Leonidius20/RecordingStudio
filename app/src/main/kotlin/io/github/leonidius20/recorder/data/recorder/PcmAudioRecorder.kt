@@ -4,27 +4,25 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.os.Build
 import android.os.ParcelFileDescriptor
 import io.github.leonidius20.recorder.audio_config.data.valueForAudioRecordApi
-import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.audio_config.domain.impl.PcmBitDepthOption
+import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.math.max
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
@@ -40,10 +38,8 @@ class PcmAudioRecorder(
      * used to launch the coroutine reading bytes from mic in loop
      */
     private val coroutineScope: CoroutineScope,
-    private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AudioRecorder {
-
-    private lateinit var audioRecord: AudioRecord
 
     private lateinit var micReadingThread: Job
 
@@ -59,112 +55,146 @@ class PcmAudioRecorder(
     )
     val bufSize = minBufSize * 4 // why 4?
 
-    private val isPausedState = MutableStateFlow(false)
-
     private val maxAmplitudeState = MutableStateFlow(0)
 
     private val maxAmplitudeExtractor = bitDepth.maxAmplitudeExtractorFactory()
 
-    @SuppressLint("MissingPermission")
-    override fun start() {
-        audioRecord = AudioRecord(
-            audioSource,
-            sampleRate,
-            inputChannel,
-            encoder,
-            bufSize
-        )
-
-        audioRecord.startRecording()
-
-        micReadingThread = coroutineScope.launch(cpuDispatcher) {
-            val outStream = FileOutputStream(descriptor.fileDescriptor).also {
-                // leaving space for the header
-                it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
-            }
-
-            val buffer = ByteBuffer.allocateDirect(bufSize).order(ByteOrder.LITTLE_ENDIAN)
-
-            var bytesRecorded = 0
-
-            while (isActive) {
-                //val time = measureTime {
-
-                if (isPausedState.value == true) {
-                    // waiting either to be resumed, or to be stopped (cancelled)
-                    try {
-                        isPausedState.first { it == false }
-                    } catch (_: CancellationException) {
-                        // recording got stopped (coroutine cancelled) while waiting
-                        break // get to writing the header and closing streams
-                    }
-                }
-
-                val bytesRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    audioRecord.read(
-                        buffer, bufSize,
-                        AudioRecord.READ_NON_BLOCKING,
-                    )
-                } else {
-                    audioRecord.read(
-                        buffer, bufSize,
-                    )
-                }
-
-                if (bytesRead == 0
-                    || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
-                    || bytesRead == AudioRecord.ERROR_BAD_VALUE
-                    || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
-                    || bytesRead == AudioRecord.ERROR
-                ) {
-                    continue
-                }
-
-                //val readBytesAsArray = buffer.capacity()//.sliceArray(0 until bytesRead)
-
-                //val bb = buffer
-                buffer.limit(bytesRead)
-
-                outStream.channel.write(buffer)
-                // outStream.write(readBytesAsArray)
-                bytesRecorded += bytesRead
-                extractAndRecordMaxAmplitude(buffer)
-
-                buffer.clear()
-                //}
-
-                // Log.d("timing", "It took $time ms to run one iteration of loop")
-            }
-
-            audioRecord.apply {
-                stop()
-                release()
-            }
-
-            outStream.channel.position(0) // back to the start to fill in the header
-            outStream.write(
-                generateWavHeader(
-                    bytesRecorded = bytesRecorded,
-                    numOfChannels = monoOrStereo.numberOfChannels().toShort(),
-                    sampleRateHz = sampleRate,
-                )
-            )
-
-            outStream.close()
-        }
-
+    enum class State {
+        RECORDING,
+        PAUSED,
+        STOPPED,
     }
 
+    private val state = MutableStateFlow(State.RECORDING)
+
+    @OptIn(ExperimentalAtomicApi::class)
+    @SuppressLint("MissingPermission")
+    override fun start() {
+        val bufferPoolSize = 4
+
+        // queue of buffers
+        val buffersPull = Channel<ByteBuffer>(capacity = bufferPoolSize)
+        repeat(bufferPoolSize) {
+            buffersPull.trySend(ByteBuffer.allocateDirect(bufSize).order(ByteOrder.LITTLE_ENDIAN))
+        }
+
+        val readChunks = Channel<ByteBuffer>(capacity = bufferPoolSize)
+
+        micReadingThread = coroutineScope.launch(ioDispatcher) {
+            // producer
+            launch {
+                val audioRecord = AudioRecord(
+                    audioSource,
+                    sampleRate,
+                    inputChannel,
+                    encoder,
+                    bufSize
+                )
+
+                audioRecord.startRecording()
+
+                try {
+                    while (true) {
+                        // wait for first non-paused state
+                        val state = state.first { it != State.PAUSED }
+
+                        if (state == State.STOPPED) {
+                            break
+                        }
+
+                        val buffer = buffersPull.receive()
+
+                        // blocking read. non-blocking would
+                        // return 0 if not ready, causing the loop
+                        // to execute more often than needed
+                        val bytesRead = audioRecord.read(
+                            buffer, bufSize,
+                        )
+
+                        if (bytesRead == 0
+                            || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
+                            || bytesRead == AudioRecord.ERROR_BAD_VALUE
+                            || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
+                            || bytesRead == AudioRecord.ERROR
+                        ) {
+                            // return buffer
+                            buffer.clear()
+                            buffersPull.send(buffer)
+                            continue
+                        }
+
+                        buffer.limit(bytesRead)
+
+                        readChunks.send(buffer)
+
+                        // todo: get rid of, move to different thread
+                        //  fix speed too
+                        extractAndRecordMaxAmplitude(buffer)
+                    }
+                } finally {
+                    readChunks.close()
+
+                    audioRecord.apply {
+                        try {
+                            stop()
+                        } finally {
+                            release()
+                        }
+                    }
+                }
+            }
+
+            // consumer
+            launch {
+                val outStream = FileOutputStream(descriptor.fileDescriptor).also {
+                    // leaving space for the header
+                    it.channel.position(WAV_HEADER_LENGTH_BYTES.toLong())
+                }
+                var bytesRecorded = 0
+
+                // channel iterator. completes normally
+                // when channel is closed + there is no more data in buffer
+                try {
+                    for (buffer in readChunks) {
+                        outStream.channel.write(buffer)
+                        bytesRecorded += buffer.limit()
+                        buffer.clear()
+                        buffersPull.send(buffer)
+                    }
+                } finally {
+                    // maybe because of coroutine cancellation
+                    // we just disregard buffers that still may be
+                    // in the channel (though could try getting them out)
+
+                    // try writing header and close.
+                    // todo: do not swallow exception that can happen here?
+                    outStream.use { outStream ->
+                        outStream.channel.position(0) // back to the start to fill in the header
+                        outStream.write(
+                            generateWavHeader(
+                                bytesRecorded = bytesRecorded,
+                                numOfChannels = monoOrStereo.numberOfChannels().toShort(),
+                                sampleRateHz = sampleRate,
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalAtomicApi::class)
     override suspend fun stop() {
-        micReadingThread.cancelAndJoin()
+        state.update { State.STOPPED }
+        micReadingThread.join()
     }
 
     override fun pause() {
-        isPausedState.value = true
+        state.update { State.PAUSED }
     }
 
     override fun resume() {
-        isPausedState.value = false
+        state.update { State.RECORDING }
     }
 
     private fun generateWavHeader(
