@@ -45,6 +45,11 @@ class DataModule {
 
     @Singleton
     @Provides
+    @Dispatcher.Io
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    @Singleton
+    @Provides
     @Scope.App
     fun provideAppScope(): CoroutineScope = MainScope()
 

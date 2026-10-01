@@ -11,18 +11,20 @@ import io.github.leonidius20.recorder.entities.audio_settings.AudioChannels
 import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.fetchAndUpdate
 import kotlin.math.max
 
 private const val WAV_HEADER_LENGTH_BYTES = 44
@@ -38,7 +40,8 @@ class PcmAudioRecorder(
      * used to launch the coroutine reading bytes from mic in loop
      */
     private val coroutineScope: CoroutineScope,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val ioDispatcher: CoroutineDispatcher,
+    private val defaultDispatcher: CoroutineDispatcher,
 ) : AudioRecorder {
 
     private lateinit var micReadingThread: Job
@@ -55,7 +58,8 @@ class PcmAudioRecorder(
     )
     val bufSize = minBufSize * 4 // why 4?
 
-    private val maxAmplitudeState = MutableStateFlow(0)
+    @OptIn(ExperimentalAtomicApi::class)
+    private val maxAmplitudeState = AtomicInt(0)
 
     private val maxAmplitudeExtractor = bitDepth.maxAmplitudeExtractorFactory()
 
@@ -66,6 +70,10 @@ class PcmAudioRecorder(
     }
 
     private val state = MutableStateFlow(State.RECORDING)
+
+    private val _amplitudeFlow = MutableSharedFlow<Int>(
+        extraBufferCapacity = 60, onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     @OptIn(ExperimentalAtomicApi::class)
     @SuppressLint("MissingPermission")
@@ -79,6 +87,8 @@ class PcmAudioRecorder(
         }
 
         val readChunks = Channel<ByteBuffer>(capacity = bufferPoolSize)
+
+        val amplitudeChannel = Channel<ByteBuffer>(capacity = Channel.UNLIMITED)
 
         micReadingThread = coroutineScope.launch(ioDispatcher) {
             // producer
@@ -127,12 +137,11 @@ class PcmAudioRecorder(
 
                         readChunks.send(buffer)
 
-                        // todo: get rid of, move to different thread
-                        //  fix speed too
-                        extractAndRecordMaxAmplitude(buffer)
+                        amplitudeChannel.trySend(buffer)
                     }
                 } finally {
                     readChunks.close()
+                    amplitudeChannel.close()
 
                     audioRecord.apply {
                         try {
@@ -178,6 +187,15 @@ class PcmAudioRecorder(
                             )
                         )
                     }
+                }
+            }
+
+            // visualizer
+            launch(defaultDispatcher) {
+                // todo: are we sure the same buffer will not recycled
+                //  and re-written before we finish extraction?
+                for (chunk in amplitudeChannel) {
+                    extractAndRecordMaxAmplitude(chunk)
                 }
             }
         }
@@ -332,20 +350,23 @@ class PcmAudioRecorder(
 
 
     // this is happening in a non-main thread that reads bytes from mic
+    @OptIn(ExperimentalAtomicApi::class)
     private fun extractAndRecordMaxAmplitude(pcmBytes: ByteBuffer) {
         val valueForThisBuffer = maxAmplitudeExtractor.extractFrom(
             buffer = pcmBytes,
             numberOfChannels = monoOrStereo.numberOfChannels()
         )
 
-        maxAmplitudeState.update { currentValue ->
+        maxAmplitudeState.fetchAndUpdate { currentValue ->
             max(currentValue, valueForThisBuffer)
         }
     }
 
+    // todo: remove this api. instead, expose time-stabilised a flow
+    @OptIn(ExperimentalAtomicApi::class)
     override fun maxAmplitude(): Int {
         // return old value and set new value to 0
-        return maxAmplitudeState.getAndUpdate { 0 }
+        return maxAmplitudeState.fetchAndUpdate {0 }
     }
 
     override fun supportsPausing() = true

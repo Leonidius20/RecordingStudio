@@ -134,6 +134,7 @@ class RecordAudioUseCase @Inject constructor(
 
         stopwatch.start()
 
+        // todo remove: instead directly implement streams in recorders?
         amplitudeVizUpdateJob = scope.launch(defaultDispatcher) {
             // every 100ms, emit maxAmplitude
             while (isActive) {
