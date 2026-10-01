@@ -12,9 +12,7 @@ import io.github.leonidius20.recorder.recorder.domain.recorder.AudioRecorder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -70,10 +68,6 @@ class PcmAudioRecorder(
     }
 
     private val state = MutableStateFlow(State.RECORDING)
-
-    private val _amplitudeFlow = MutableSharedFlow<Int>(
-        extraBufferCapacity = 60, onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
 
     @OptIn(ExperimentalAtomicApi::class)
     @SuppressLint("MissingPermission")
@@ -366,7 +360,7 @@ class PcmAudioRecorder(
     @OptIn(ExperimentalAtomicApi::class)
     override fun maxAmplitude(): Int {
         // return old value and set new value to 0
-        return maxAmplitudeState.fetchAndUpdate {0 }
+        return maxAmplitudeState.fetchAndUpdate { 0 }
     }
 
     override fun supportsPausing() = true

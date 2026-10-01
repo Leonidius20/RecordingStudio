@@ -139,7 +139,10 @@ class RecordAudioUseCase @Inject constructor(
             // every 100ms, emit maxAmplitude
             while (isActive) {
                 if (state.value is RecordingState.Recording) {
-                    _amplitudes.emit(recorder.maxAmplitude())
+                    _amplitudes.emit(recorder.maxAmplitude().let {
+                        // don't send 0-s, they are ignored by the view component
+                        if (it != 0) it else 1
+                    })
                     delay(100.milliseconds)
                 } else {
                     // first() supposed to be cancellable?
