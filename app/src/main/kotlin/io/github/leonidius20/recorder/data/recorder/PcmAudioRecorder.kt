@@ -54,7 +54,21 @@ class PcmAudioRecorder(
     val minBufSize = AudioRecord.getMinBufferSize(
         sampleRate, inputChannel, encoder
     )
-    val bufSize = minBufSize * 4 // why 4?
+
+    private val bitsPerSample = bitDepth.bitsPerSample
+
+    // bytes per one sample, if stereo that would be only left or only right channel sample
+    private val bytesPerSample = (bitsPerSample / 8)
+
+    // by instant i mean 1 sample if it is mono or 2 samples (left and right) from one instant in time, if it is stereo
+    private val bytesPerInstant = bytesPerSample * monoOrStereo.numberOfChannels()
+
+    val sampleRatePer25ms = (sampleRate * 25 / 1000)
+
+    val bufSize = max(
+        minBufSize,
+        bytesPerInstant * sampleRatePer25ms
+    ) // it's for 25ms, but at least minBufSize
 
     @OptIn(ExperimentalAtomicApi::class)
     private val maxAmplitudeState = AtomicInt(0)
@@ -115,12 +129,14 @@ class PcmAudioRecorder(
                             buffer, bufSize,
                         )
 
-                        if (bytesRead == 0
+                        if (bytesRead == AudioRecord.ERROR_DEAD_OBJECT
                             || bytesRead == AudioRecord.ERROR_INVALID_OPERATION
                             || bytesRead == AudioRecord.ERROR_BAD_VALUE
-                            || bytesRead == AudioRecord.ERROR_DEAD_OBJECT
-                            || bytesRead == AudioRecord.ERROR
                         ) {
+                            break
+                        }
+
+                        if (bytesRead == 0 || bytesRead == AudioRecord.ERROR) {
                             // return buffer
                             buffer.clear()
                             buffersPull.send(buffer)
@@ -189,7 +205,9 @@ class PcmAudioRecorder(
                 // todo: are we sure the same buffer will not recycled
                 //  and re-written before we finish extraction?
                 for (chunk in amplitudeChannel) {
-                    extractAndRecordMaxAmplitude(chunk)
+                    extractAndRecordMaxAmplitude(
+                        chunk.duplicate() // shallow copy for now
+                    )
                 }
             }
         }
@@ -332,16 +350,6 @@ class PcmAudioRecorder(
 
         return header
     }
-
-    private val bitsPerSample =
-        bitDepth.bitsPerSample // for now 16_BIT // means 16 bits per one sample. If stereo, there are going to be 2 samples for left and right for a total of 32 bits (4 bytes)
-
-    // bytes per one sample, if stereo that would be only left or only right channel sample
-    private val bytesPerSample = (bitsPerSample / 8)
-
-    // by instant i mean 1 sample if it is mono or 2 samples (left and right) from one instant in time, if it is stereo
-    private val bytesPerInstant = bytesPerSample * monoOrStereo.numberOfChannels()
-
 
     // this is happening in a non-main thread that reads bytes from mic
     @OptIn(ExperimentalAtomicApi::class)
